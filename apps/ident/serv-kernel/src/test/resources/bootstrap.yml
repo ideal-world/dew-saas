@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: ident-serv-kernel-test
+  cloud:
+    config:
+      discovery:
+        enabled: false
+      enabled: false

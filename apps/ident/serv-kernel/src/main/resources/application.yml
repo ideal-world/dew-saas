@@ -1,0 +1,10 @@
+dew:
+  cluster:
+    cache: redis
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+
