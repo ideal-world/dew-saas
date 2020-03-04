@@ -37,7 +37,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>ms.dew</groupId>
+            <groupId>group.idealworld.dew</groupId>
             <artifactId>test-starter</artifactId>
         </dependency>
     </dependencies>

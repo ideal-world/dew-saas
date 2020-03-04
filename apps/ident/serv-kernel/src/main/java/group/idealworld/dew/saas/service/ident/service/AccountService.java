@@ -18,7 +18,7 @@ package group.idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.saas.service.ident.domain.CertAccount;
-import ms.dew.Dew;
+import group.idealworld.dew.Dew;
 import org.springframework.stereotype.Service;
 
 /**

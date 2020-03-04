@@ -41,11 +41,11 @@
             <artifactId>saas-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>ms.dew</groupId>
+            <groupId>group.idealworld.dew</groupId>
             <artifactId>cloud-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>ms.dew</groupId>
+            <groupId>group.idealworld.dew</groupId>
             <artifactId>cluster-spi-redis</artifactId>
         </dependency>
         <dependency>
