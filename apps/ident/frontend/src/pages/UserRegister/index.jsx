@@ -200,7 +200,7 @@ class UserRegister extends Component {
           <FormattedMessage id="userregister.register.register" />
         </h3>
         <Form onSubmit={this.handleSubmit}>
-          <FormItem>
+          <FormItem className={styles.len}>
             {getFieldDecorator('mail', {
               rules: [
                 {
@@ -225,7 +225,7 @@ class UserRegister extends Component {
               />,
             )}
           </FormItem>
-          <FormItem help={help}>
+          <FormItem help={help} className={styles.len}>
             <Popover
               getPopupContainer={node => {
                 if (node && node.parentNode) {
@@ -274,7 +274,7 @@ class UserRegister extends Component {
               )}
             </Popover>
           </FormItem>
-          <FormItem>
+          <FormItem className={styles.len}>
             {getFieldDecorator('confirm', {
               rules: [
                 {
@@ -297,7 +297,7 @@ class UserRegister extends Component {
               />,
             )}
           </FormItem>
-          <FormItem>
+          <FormItem className={styles.len}>
             <InputGroup compact>
               {/*<Select*/}
                 {/*size="large"*/}
@@ -375,7 +375,7 @@ class UserRegister extends Component {
               {/*/!*</Col>*!/*/}
             {/*</Row>*/}
           </FormItem>
-          <FormItem>
+          <FormItem className={styles.len}>
             <Button
               size="large"
               loading={submitting}
