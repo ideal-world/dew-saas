@@ -1,6 +1,7 @@
 package group.idealworld.dew.saas.service.ident.domain;
 
 import com.ecfront.dew.common.exception.RTException;
+import group.idealworld.dew.saas.basic.common.service.domain.SafeEntity;
 import group.idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,13 +18,13 @@ import java.util.Arrays;
  */
 @Entity
 @Table(name = "ident_organization", indexes = {
-        @Index(columnList = "delFlag,relTenantId,relAppId,code")
+        @Index(columnList = "relTenantId,relAppId,code")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Organization extends SafeSoftDelEntity {
+public class Organization extends SafeEntity {
 
     public enum Kind {
 

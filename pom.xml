@@ -33,6 +33,7 @@
     <version>2.1.0-SNAPSHOT</version>
 
     <properties>
+        <dew-saas.version>2.1.0-SNAPSHOT</dew-saas.version>
     </properties>
 
     <developers>
@@ -66,12 +67,12 @@
             <dependency>
                 <groupId>group.idealworld.dew</groupId>
                 <artifactId>saas-common</artifactId>
-                <version>${dew.version}</version>
+                <version>${dew-saas.version}</version>
             </dependency>
             <dependency>
                 <groupId>group.idealworld.dew</groupId>
                 <artifactId>saas-common-service</artifactId>
-                <version>${dew.version}</version>
+                <version>${dew-saas.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -100,7 +101,8 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
-                <updatePolicy>interval:10</updatePolicy>
+                <updatePolicy>never</updatePolicy>
+               <!-- <updatePolicy>interval:10</updatePolicy>-->
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
         </repository>

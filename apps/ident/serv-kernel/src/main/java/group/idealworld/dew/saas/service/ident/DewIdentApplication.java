@@ -18,11 +18,21 @@ package group.idealworld.dew.saas.service.ident;
 
 import group.idealworld.dew.saas.basic.common.service.DewSAASApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
 /**
  * The type Dew ident application.
  */
 @SpringCloudApplication
 public class DewIdentApplication extends DewSAASApplication {
+
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(DewIdentApplication.class).run(args);
+    }
 
 }

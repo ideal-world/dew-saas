@@ -1,7 +1,7 @@
 package group.idealworld.dew.saas.service.ident.domain;
 
 import com.ecfront.dew.common.exception.RTException;
-import group.idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
+import group.idealworld.dew.saas.basic.common.service.domain.SafeEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,18 +17,17 @@ import java.util.Arrays;
  */
 @Entity
 @Table(name = "ident_resource", indexes = {
-        @Index(columnList = "delFlag,relAppId,identifier,method"),
-        @Index(columnList = "delFlag,relAppId,code")
+        @Index(columnList = "relAppId,identifier,method", unique = true)
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Resource extends SafeSoftDelEntity {
+public class Resource extends SafeEntity {
 
     public enum Kind {
 
-        URI("URI"), MENU("MENU"), ACTION("ACTION");
+        GROUP("GROUP"), URI("URI"), MENU("MENU"), ACTION("ACTION");
 
         private String code;
 
@@ -50,9 +49,6 @@ public class Resource extends SafeSoftDelEntity {
     }
 
     @Column(nullable = false)
-    private String code;
-
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Kind kind;
 
@@ -65,10 +61,10 @@ public class Resource extends SafeSoftDelEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String icon;
 
-    @Column
+    @Column(nullable = false)
     private Integer sort;
 
     @Column(nullable = false)

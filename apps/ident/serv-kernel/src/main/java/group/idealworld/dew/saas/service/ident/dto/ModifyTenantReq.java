@@ -1,5 +1,7 @@
 package group.idealworld.dew.saas.service.ident.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,10 +10,11 @@ import java.io.Serializable;
 
 @Data
 @Builder
+@ApiModel("租户修改请求")
 public class ModifyTenantReq implements Serializable {
-    @NotNull
+    @ApiModelProperty(value = "租户名称",required = true)
     private String tenantName;
-    @NotNull
+    @ApiModelProperty(value = "租户图标")
     private String tenantIcon;
 
 }

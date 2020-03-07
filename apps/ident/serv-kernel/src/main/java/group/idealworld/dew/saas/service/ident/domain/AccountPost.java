@@ -12,25 +12,24 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 
 /**
- * The type Permission.
+ * The type Organization Position.
  *
  * @author gudaoxuri
  */
 @Entity
-@Table(name = "ident_permission", indexes = {
-        @Index(columnList = "postCode"),
-        @Index(columnList = "resourceCode")
+@Table(name = "ident_account,post", indexes = {
+        @Index(columnList = "accountId,postId")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Permission extends SafeEntity {
+public class AccountPost extends SafeEntity {
 
     @Column(nullable = false)
-    private String postCode;
+    private String accountId;
 
     @Column(nullable = false)
-    private String resourceCode;
+    private String postId;
 
 }

@@ -1,5 +1,6 @@
 package group.idealworld.dew.saas.service.ident.domain;
 
+import group.idealworld.dew.saas.basic.common.service.domain.SafeEntity;
 import group.idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,13 +16,13 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "ident_position", indexes = {
-        @Index(columnList = "delFlag,relAppId,code")
+        @Index(columnList = "relAppId,code")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Position extends SafeSoftDelEntity {
+public class Position extends SafeEntity {
 
     @Column(nullable = false)
     private String code;

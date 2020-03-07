@@ -31,6 +31,26 @@ public class AccountService extends BasicService {
     // TODO config
     private static final int SK_KIND_VCODE_EXPRIE_SEC = 60 * 5;
 
+   /* public Resp<String> addAccount(){
+
+    }
+
+    public Resp<Void> modifyAccount(){
+
+    }
+
+    public Resp<Page<>> getAccount(){
+
+    }
+
+    public Resp<Page<>> findAccounts(){
+
+    }
+
+    public Resp<Void> deleteAccount(){
+
+    }*/
+
     public void sendSk(CertAccount.Kind certKind, String ak) {
         switch (certKind) {
             case PHONE:
