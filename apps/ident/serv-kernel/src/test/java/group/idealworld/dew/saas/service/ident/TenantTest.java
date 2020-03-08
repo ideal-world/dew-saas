@@ -16,10 +16,10 @@
 
 package group.idealworld.dew.saas.service.ident;
 
-import group.idealworld.dew.saas.service.ident.domain.CertAccount;
-import group.idealworld.dew.saas.service.ident.dto.ModifyTenantReq;
-import group.idealworld.dew.saas.service.ident.dto.RegisterTenantReq;
-import group.idealworld.dew.saas.service.ident.dto.TenantInfoResp;
+import group.idealworld.dew.saas.service.ident.domain.AccountCert;
+import group.idealworld.dew.saas.service.ident.dto.tenant.ModifyTenantReq;
+import group.idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
+import group.idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +39,7 @@ public class TenantTest extends BasicTest {
     public void testRegisterTenant() {
         var registerTenantReq = RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
-                .certKind(CertAccount.Kind.USERNAME)
+                .certKind(AccountCert.Kind.USERNAME)
                 .ak("gudaoxuri")
                 .sk("pwd123")
                 .tenantName("测试租户")

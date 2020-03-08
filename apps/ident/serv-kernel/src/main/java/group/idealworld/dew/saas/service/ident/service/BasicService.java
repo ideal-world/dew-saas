@@ -21,6 +21,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import group.idealworld.dew.saas.basic.common.service.domain.IdEntity;
 import group.idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
 import group.idealworld.dew.saas.basic.common.service.domain.SoftDelEntity;
+import group.idealworld.dew.saas.service.ident.IdentInitiator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -29,6 +32,8 @@ import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.criteria.Root;
 
 public abstract class BasicService {
+
+    private static final Logger logger = LoggerFactory.getLogger(BasicService.class);
 
     @Autowired
     protected JPAQueryFactory queryFactory;

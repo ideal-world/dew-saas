@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package group.idealworld.dew.saas.service.ident.controller;
+package group.idealworld.dew.saas.service.ident.controller.console;
 
 import com.ecfront.dew.common.Resp;
-import group.idealworld.dew.saas.service.ident.dto.ModifyTenantReq;
-import group.idealworld.dew.saas.service.ident.dto.RegisterTenantReq;
-import group.idealworld.dew.saas.service.ident.dto.TenantInfoResp;
+import group.idealworld.dew.saas.service.ident.controller.BasicController;
+import group.idealworld.dew.saas.service.ident.dto.tenant.ModifyTenantReq;
+import group.idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
+import group.idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
 import group.idealworld.dew.saas.service.ident.service.TenantService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,55 +35,44 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Api(value = "租户管理操作")
-@RequestMapping(value = "/console")
+@RequestMapping(value = "/console/tenant")
 @Validated
-public class TenantController {
+public class TenantController extends BasicController {
 
     @Autowired
     private TenantService tenantService;
 
-    @PostMapping(value = "tenant")
+    @PostMapping(value = "")
     @ApiOperation(value = "注册租户")
     public Resp<Long> registerTenant(@RequestBody RegisterTenantReq request) {
        return tenantService.registerTenant(request);
     }
 
-    @GetMapping(value = "tenant/{tenantId}")
+    @GetMapping(value = "{tenantId}")
     @ApiOperation(value = "获取租户信息")
-    public Resp<TenantInfoResp> getTenant(@PathVariable Long tenantId) {
+    public Resp<TenantInfoResp> getTenantByCurrentTenantAdmin(@PathVariable Long tenantId) {
+        if(!compareWithCurrentTenant(tenantId).ok()){
+            return Resp.unAuthorized("您没有权限访问该资源");
+        }
         return tenantService.getTenantInfo(tenantId);
     }
 
-    @PutMapping(value = "tenant/{tenantId}")
+    @PutMapping(value = "{tenantId}")
     @ApiOperation(value = "修改租户信息")
-    public Resp<Void> modifyTenant(@PathVariable Long tenantId, @RequestBody ModifyTenantReq request) {
-        return tenantService.modifyTenant(tenantId,request);
+    public Resp<Void> modifyTenantByCurrentTenantAdmin(@PathVariable Long tenantId, @RequestBody ModifyTenantReq request) {
+        if(!compareWithCurrentTenant(tenantId).ok()){
+            return Resp.unAuthorized("您没有权限访问该资源");
+        }
+        return tenantService.modifyTenant(request,tenantId);
     }
 
-    @DeleteMapping(value = "tenant/{tenantId}")
+    @DeleteMapping(value = "{tenantId}")
     @ApiOperation(value = "注销租户")
-    public Resp<Void> unRegisterTenant(@PathVariable Long tenantId) {
+    public Resp<Void> unRegisterTenantByCurrentTenantAdmin(@PathVariable Long tenantId) {
+        if(!compareWithCurrentTenant(tenantId).ok()){
+            return Resp.unAuthorized("您没有权限访问该资源");
+        }
         return tenantService.unRegisterTenant(tenantId);
-    }
-
-    public void addApp() {
-
-    }
-
-    public void getApps() {
-
-    }
-
-    public void getApp() {
-
-    }
-
-    public void modifyApp() {
-
-    }
-
-    public void deleteApp() {
-
     }
 
 }

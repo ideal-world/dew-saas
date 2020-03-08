@@ -29,7 +29,7 @@ public class Tenant extends SafeSoftDelEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String icon;
 
 }

@@ -1,4 +1,4 @@
-package group.idealworld.dew.saas.service.ident.dto;
+package group.idealworld.dew.saas.service.ident.dto.tenant;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

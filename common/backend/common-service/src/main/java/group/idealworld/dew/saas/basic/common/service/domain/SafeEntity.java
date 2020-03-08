@@ -45,10 +45,10 @@ public abstract class SafeEntity extends TimestampEntity {
             }
         });
         if (StringUtils.isEmpty(this.getCreateUser())) {
-            this.setCreateUser(0L);
+            this.setCreateUser(-1L);
         }
         if (StringUtils.isEmpty(this.getUpdateUser())) {
-            this.setUpdateUser(0L);
+            this.setUpdateUser(-1L);
         }
     }
 
@@ -60,7 +60,7 @@ public abstract class SafeEntity extends TimestampEntity {
             }
         });
         if (StringUtils.isEmpty(this.getUpdateUser())) {
-            this.setUpdateUser(0L);
+            this.setUpdateUser(-1L);
         }
     }
 

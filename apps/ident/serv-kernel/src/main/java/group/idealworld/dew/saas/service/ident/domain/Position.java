@@ -30,9 +30,10 @@ public class Position extends SafeEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String icon;
 
+    // relAppId为空时表示是租户或系统级角色
     @Column(nullable = false)
     private Long relAppId;
 

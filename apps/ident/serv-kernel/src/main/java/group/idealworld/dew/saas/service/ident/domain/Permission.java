@@ -18,8 +18,8 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_permission", indexes = {
-        @Index(columnList = "postCode"),
-        @Index(columnList = "resourceCode")
+        @Index(columnList = "relPostId"),
+        @Index(columnList = "relResourceId")
 })
 @Data
 @SuperBuilder
@@ -28,9 +28,9 @@ import javax.persistence.Table;
 public class Permission extends SafeEntity {
 
     @Column(nullable = false)
-    private String postCode;
+    private Long relPostId;
 
     @Column(nullable = false)
-    private String resourceCode;
+    private Long relResourceId;
 
 }

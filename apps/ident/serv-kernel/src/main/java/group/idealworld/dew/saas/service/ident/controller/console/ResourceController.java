@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package group.idealworld.dew.saas.service.ident.controller;
+package group.idealworld.dew.saas.service.ident.controller.console;
 
 import com.ecfront.dew.common.Resp;
+import group.idealworld.dew.saas.service.ident.controller.BasicController;
 import group.idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
 import group.idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import group.idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;

@@ -17,7 +17,7 @@ import java.util.Date;
  * @author gudaoxuri
  */
 @Entity
-@Table(name = "ident_cert_account", indexes = {
+@Table(name = "ident_account_cert", indexes = {
         @Index(columnList = "delFlag,kind,ak"),
         @Index(columnList = "relAccountId,kind,delFlag")
 })
@@ -25,7 +25,7 @@ import java.util.Date;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class CertAccount extends SafeSoftDelEntity {
+public class AccountCert extends SafeSoftDelEntity {
 
     public enum Kind {
 
@@ -60,11 +60,11 @@ public class CertAccount extends SafeSoftDelEntity {
     @Column(nullable = false)
     private String sk;
 
-    @Column
+    @Column(nullable = false)
     private Date validTime;
 
-    @Column
-    private Integer validTimes;
+    @Column(nullable = false)
+    private Long validTimes;
 
     @Column(nullable = false)
     private Long relAccountId;

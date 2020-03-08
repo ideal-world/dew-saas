@@ -15,7 +15,7 @@ import java.util.Date;
  * @author gudaoxuri
  */
 @Entity
-@Table(name = "ident_cert_app", indexes = {
+@Table(name = "ident_app_cert", indexes = {
         @Index(columnList = "ak", unique = true),
         @Index(columnList = "relAppId"),
         @Index(columnList = "delFlag, ak")
@@ -24,7 +24,7 @@ import java.util.Date;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class CertApp extends SafeSoftDelEntity {
+public class AppCert extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     private String ak;
@@ -32,11 +32,11 @@ public class CertApp extends SafeSoftDelEntity {
     @Column(nullable = false)
     private String sk;
 
-    @Column
+    @Column(nullable = false)
     private Date validTime;
 
-    @Column
-    private Integer validTimes;
+    @Column(nullable = false)
+    private Long validTimes;
 
     @Column(nullable = false)
     private Long relAppId;

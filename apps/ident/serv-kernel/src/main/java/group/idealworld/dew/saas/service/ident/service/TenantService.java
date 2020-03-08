@@ -19,9 +19,12 @@ package group.idealworld.dew.saas.service.ident.service;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.saas.service.ident.domain.*;
-import group.idealworld.dew.saas.service.ident.dto.ModifyTenantReq;
-import group.idealworld.dew.saas.service.ident.dto.RegisterTenantReq;
-import group.idealworld.dew.saas.service.ident.dto.TenantInfoResp;
+import group.idealworld.dew.saas.service.ident.dto.tenant.ModifyTenantReq;
+import group.idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
+import group.idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
+import group.idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
+import group.idealworld.dew.saas.service.ident.dto.account.AddAccountPostReq;
+import group.idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,51 +37,48 @@ public class TenantService extends BasicService {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private PostService postService;
 
     @Transactional
-    public Resp<Long> registerTenant(RegisterTenantReq request) {
-        var validateSk = accountService.validateSk(request.getCertKind(), request.getAk(), request.getSk());
-        if (!validateSk.ok()) {
-            return Resp.error(validateSk);
+    public Resp<Long> registerTenant(RegisterTenantReq registerTenantReq) {
+        var getTenantPostIdR = postService.getTenantPostId();
+        if(!getTenantPostIdR.ok()){
+            return Resp.error(getTenantPostIdR);
         }
-        var account = Account.builder()
-                .name(request.getAccountName())
-                .status(Account.Status.DISABLED)
-                .relTenantId(-1L)
-                .createUser(-1L)
-                .updateUser(-1L)
-                .build();
-        entityManager.persist(account);
+        var addAccountR = accountService.addAccount(AddAccountReq.builder()
+                .name(registerTenantReq.getAccountName())
+                .certReq(AddAccountCertReq.builder()
+                        .kind(registerTenantReq.getCertKind())
+                        .ak(registerTenantReq.getAk())
+                        .sk(registerTenantReq.getSk())
+                        .build())
+                .postReq(AddAccountPostReq.builder()
+                        .relPostId(getTenantPostIdR.getBody())
+                        .build())
+                .build(), -1L);
+        if (!addAccountR.ok()) {
+            return Resp.error(addAccountR);
+        }
         var tenant = Tenant.builder()
-                .name(request.getTenantName())
-                .createUser(account.getId())
-                .updateUser(account.getId())
+                .name(registerTenantReq.getTenantName())
+                .icon("")
+                .createUser(addAccountR.getBody())
+                .updateUser(addAccountR.getBody())
                 .build();
         entityManager.persist(tenant);
         var qAccount = QAccount.account;
         queryFactory.update(qAccount)
                 .set(qAccount.relTenantId, tenant.getId())
-                .set(qAccount.status, Account.Status.ENABLED)
-                .set(qAccount.createUser, account.getId())
-                .set(qAccount.updateUser, account.getId())
+                .where(qAccount.id.eq(addAccountR.getBody()))
                 .execute();
-        var certAccount = CertAccount.builder()
-                .kind(request.getCertKind())
-                .ak(request.getAk())
-                // TODO 加密存储
-                .sk(request.getSk())
-                .relAccountId(account.getId())
-                .createUser(account.getId())
-                .updateUser(account.getId())
-                .build();
-        entityManager.persist(certAccount);
         return Resp.success(tenant.getId());
     }
 
     public Resp<TenantInfoResp> getTenantInfo(Long tenantId) {
         QTenant qTenant = QTenant.tenant;
         var tenantInfo = queryFactory
-                .select(Projections.constructor(TenantInfoResp.class, qTenant.id, qTenant.name, qTenant.icon))
+                .select(Projections.bean(TenantInfoResp.class, qTenant.id, qTenant.name, qTenant.icon))
                 .from(qTenant)
                 .where(qTenant.id.eq(tenantId))
                 .fetchOne();
@@ -90,7 +90,7 @@ public class TenantService extends BasicService {
     }
 
     @Transactional
-    public Resp<Void> modifyTenant(Long tenantId, ModifyTenantReq request) {
+    public Resp<Void> modifyTenant(ModifyTenantReq modifyTenantReq,Long tenantId) {
         QTenant qTenant = QTenant.tenant;
         var tenant = queryFactory
                 .selectFrom(qTenant)
@@ -99,8 +99,8 @@ public class TenantService extends BasicService {
         if (tenant == null) {
             return Resp.badRequest("租户 [" + tenantId + "] 不存在");
         }
-        tenant.setName(request.getTenantName());
-        tenant.setIcon(request.getTenantIcon());
+        tenant.setName(modifyTenantReq.getTenantName());
+        tenant.setIcon(modifyTenantReq.getTenantIcon());
         entityManager.persist(tenant);
         return Resp.success(null);
     }

@@ -16,10 +16,17 @@
 
 package group.idealworld.dew.saas.service.ident.controller;
 
+import com.ecfront.dew.common.Resp;
+
 public abstract class BasicController {
 
     protected Long getCurrentAppId() {
         // TODO throw exception
         return 1L;
+    }
+
+    protected Resp<Void> compareWithCurrentTenant(Long inputTenantId) {
+        // TODO throw exception
+        return Resp.success(null);
     }
 }

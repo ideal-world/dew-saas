@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>group.idealworld.dew</groupId>
-            <artifactId>cloud-starter</artifactId>
+            <artifactId>boot-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>group.idealworld.dew</groupId>

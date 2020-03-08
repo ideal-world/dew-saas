@@ -17,8 +17,8 @@ import javax.persistence.Table;
  * @author gudaoxuri
  */
 @Entity
-@Table(name = "ident_account,post", indexes = {
-        @Index(columnList = "accountId,postId")
+@Table(name = "ident_account_post", indexes = {
+        @Index(columnList = "relAccountId,relPostId")
 })
 @Data
 @SuperBuilder
@@ -27,9 +27,9 @@ import javax.persistence.Table;
 public class AccountPost extends SafeEntity {
 
     @Column(nullable = false)
-    private String accountId;
+    private Long relAccountId;
 
     @Column(nullable = false)
-    private String postId;
+    private Long relPostId;
 
 }

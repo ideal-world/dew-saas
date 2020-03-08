@@ -18,7 +18,8 @@ package group.idealworld.dew.saas.basic.common.service;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.SpringCloudApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 
 import javax.persistence.EntityManager;
@@ -26,7 +27,7 @@ import javax.persistence.EntityManager;
 /**
  * The type Dew saas application.
  */
-@SpringCloudApplication
+@EnableCaching
 public class DewSAASApplication {
 
     @Bean

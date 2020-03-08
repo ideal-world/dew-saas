@@ -30,7 +30,7 @@ public class App extends SafeSoftDelEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String icon;
 
     @Column(nullable = false)

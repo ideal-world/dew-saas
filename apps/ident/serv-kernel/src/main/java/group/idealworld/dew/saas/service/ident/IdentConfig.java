@@ -16,23 +16,26 @@
 
 package group.idealworld.dew.saas.service.ident;
 
-import group.idealworld.dew.saas.basic.common.service.DewSAASApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
- * The type Dew ident application.
+ * @author gudaoxuri
  */
-@SpringBootApplication
-public class DewIdentApplication extends DewSAASApplication {
+@Component
+@Data
+@ConfigurationProperties(prefix = "ident")
+public class IdentConfig {
 
-    /**
-     * The entry point of application.
-     *
-     * @param args the input arguments
-     */
-    public static void main(String[] args) {
-        new SpringApplicationBuilder(DewIdentApplication.class).run(args);
+    private Security security = new Security();
+
+    @Data
+    public static class Security {
+        private String systemAdminPositionCode = "SYSTEM_ADMIN";
+        private String systemAdminPositionName = "系统管理员";
+        private String tenantAdminPositionCode = "TENANT_ADMIN";
+        private String tenantAdminPositionName = "租户管理员";
     }
 
 }

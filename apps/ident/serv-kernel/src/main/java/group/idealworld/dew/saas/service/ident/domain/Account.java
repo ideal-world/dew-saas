@@ -52,10 +52,10 @@ public class Account extends SafeSoftDelEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String avatar;
 
-    @Column
+    @Column(nullable = false)
     private String parameters;
 
     @Column(nullable = false)

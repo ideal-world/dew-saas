@@ -16,10 +16,18 @@
 
 package group.idealworld.dew.saas.service.ident.service;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
-import group.idealworld.dew.saas.service.ident.domain.CertAccount;
 import group.idealworld.dew.Dew;
+import group.idealworld.dew.saas.service.ident.domain.Account;
+import group.idealworld.dew.saas.service.ident.domain.AccountCert;
+import group.idealworld.dew.saas.service.ident.domain.AccountPost;
+import group.idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.text.ParseException;
+import java.util.Date;
 
 /**
  * @author gudaoxuri
@@ -30,42 +38,57 @@ public class AccountService extends BasicService {
     private static final String SK_KIND_VCODE_TMP_REL = "sk-kind:vocde:tmp-rel:";
     // TODO config
     private static final int SK_KIND_VCODE_EXPRIE_SEC = 60 * 5;
+    private static Date NEVER_EXPIRE_TIME;
 
-   /* public Resp<String> addAccount(){
-
-    }
-
-    public Resp<Void> modifyAccount(){
-
-    }
-
-    public Resp<Page<>> getAccount(){
-
-    }
-
-    public Resp<Page<>> findAccounts(){
-
-    }
-
-    public Resp<Void> deleteAccount(){
-
-    }*/
-
-    public void sendSk(CertAccount.Kind certKind, String ak) {
-        switch (certKind) {
-            case PHONE:
-                String tmpSk = (int) ((Math.random() * 9 + 1) * 1000) + "";
-                Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + ak, tmpSk, SK_KIND_VCODE_EXPRIE_SEC);
-                // TODO
-                //sendSkByVCode(ak,sk);
-                break;
-            default:
-                break;
+    static {
+        try {
+            NEVER_EXPIRE_TIME = $.time().yyyy_MM_dd.parse("3000-01-01");
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 
-    public Resp<Void> validateSk(CertAccount.Kind certKind, String ak, String sk) {
+    @Transactional
+    public Resp<Long> addAccount(AddAccountReq addAccountReq, Long relTenantId) {
+        var processR = certProcessSK(addAccountReq.getCertReq().getKind(),
+                addAccountReq.getCertReq().getAk(),
+                addAccountReq.getCertReq().getSk());
+        if (!processR.ok()) {
+            return Resp.error(processR);
+        }
+        var account = Account.builder()
+                .name(addAccountReq.getName())
+                .avatar(addAccountReq.getAvatar() != null ? addAccountReq.getAvatar() : "")
+                .parameters(addAccountReq.getParameters() != null ? addAccountReq.getParameters() : "")
+                .status(Account.Status.ENABLED)
+                .relTenantId(relTenantId)
+                .build();
+        entityManager.persist(account);
+        var accountCert = AccountCert.builder()
+                .kind(addAccountReq.getCertReq().getKind())
+                .ak(addAccountReq.getCertReq().getAk())
+                .sk(processR.getBody())
+                .validTime(addAccountReq.getCertReq().getValidTime() != null ? addAccountReq.getCertReq().getValidTime() : NEVER_EXPIRE_TIME)
+                .validTimes(addAccountReq.getCertReq().getValidTimes() != null ? addAccountReq.getCertReq().getValidTimes() : -1L)
+                .relAccountId(account.getId())
+                .build();
+        entityManager.persist(accountCert);
+        var accountPost = AccountPost.builder()
+                .relPostId(addAccountReq.getPostReq().getRelPostId())
+                .relAccountId(account.getId())
+                .build();
+        entityManager.persist(accountPost);
+        return Resp.success(account.getId());
+    }
+
+    public void certSendVC(String ak) {
+        String tmpSk = (int) ((Math.random() * 9 + 1) * 1000) + "";
+        Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + ak, tmpSk, SK_KIND_VCODE_EXPRIE_SEC);
+    }
+
+    private Resp<String> certProcessSK(AccountCert.Kind certKind, String ak, String sk) {
         switch (certKind) {
+            case EMAIL:
             case PHONE:
                 String tmpSk = Dew.cluster.cache.get(SK_KIND_VCODE_TMP_REL + ak);
                 if (tmpSk == null) {
@@ -74,12 +97,14 @@ public class AccountService extends BasicService {
                 if (!tmpSk.equalsIgnoreCase(sk)) {
                     return Resp.badRequest("验证码错误");
                 }
-                return Resp.success(null);
+                return Resp.success("");
             case WECHAT:
                 // TODO
                 return Resp.success(null);
+            case USERNAME:
+                return Resp.success($.security.digest.digest(ak + sk, "SHA-512"));
             default:
-                return Resp.success(null);
+                return Resp.notFound("凭证类型不合法");
         }
     }
 

@@ -27,7 +27,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 public class Post extends SafeEntity {
 
-    @Column
+    @Column(nullable = false)
     private String organizationCode;
 
     @Column(nullable = false)

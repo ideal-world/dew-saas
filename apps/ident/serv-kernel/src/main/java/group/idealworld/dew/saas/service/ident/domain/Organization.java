@@ -67,13 +67,13 @@ public class Organization extends SafeEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column
+    @Column(nullable = false)
     private String icon;
 
-    @Column
+    @Column(nullable = false)
     private Integer sort;
 
-    @Column
+    @Column(nullable = false)
     private Long parentId;
 
     @Column(nullable = false)
