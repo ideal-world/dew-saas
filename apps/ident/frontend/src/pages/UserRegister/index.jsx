@@ -40,7 +40,7 @@ class UserRegister extends Component {
     confirmDirty: false,
     visible: false,
     help: '',
-    prefix: '86',
+    // prefix: '86',
   };
 
   interval = undefined;
@@ -48,8 +48,8 @@ class UserRegister extends Component {
   componentDidUpdate() {
     const { userRegister, form } = this.props;
     const account = form.getFieldValue('mail');
-
-    if (userRegister.status === 'ok') {
+    console.info(userRegister);
+    if (userRegister.code === '200') {
       message.success('注册成功！');
       router.push({
         pathname: '/user/register-result',
@@ -83,7 +83,7 @@ class UserRegister extends Component {
 
   getPasswordStatus = () => {
     const { form } = this.props;
-    const value = form.getFieldValue('password');
+    const value = form.getFieldValue('sk');
 
     if (value && value.length > 9) {
       return 'ok';
@@ -118,7 +118,7 @@ class UserRegister extends Component {
   checkConfirm = (rule, value, callback) => {
     const { form } = this.props;
 
-    if (value && value !== form.getFieldValue('password')) {
+    if (value && value !== form.getFieldValue('sk')) {
       callback(
         formatMessage({
           id: 'userregister.password.twice',
@@ -201,18 +201,53 @@ class UserRegister extends Component {
         </h3>
         <Form onSubmit={this.handleSubmit}>
           <FormItem className={styles.len}>
-            {getFieldDecorator('mail', {
+            {/*<InputGroup compact>*/}
+            {/*<Select*/}
+            {/*size="large"*/}
+            {/*value={prefix}*/}
+            {/*onChange={this.changePrefix}*/}
+            {/*style={{*/}
+            {/*width: '30%',*/}
+            {/*}}*/}
+            {/*>*/}
+            {/*<Option value="86">+86</Option>*/}
+            {/*<Option value="87">+87</Option>*/}
+            {/*</Select>*/}
+            {getFieldDecorator('accountName', {
               rules: [
                 {
                   required: true,
                   message: formatMessage({
-                    id: 'userregister.email.required',
+                    id: 'userregister.accountName.required',
+                  }),
+                },
+              ],
+            })(
+              <Input
+                size="large"
+                style={{
+                  // width: '80%',
+                }}
+                placeholder={formatMessage({
+                  id: 'userregister.accountName.placeholder',
+                })}
+              />,
+            )}
+            {/*</InputGroup>*/}
+          </FormItem>
+          <FormItem className={styles.len}>
+            {getFieldDecorator('ak', {
+              rules: [
+                {
+                  required: true,
+                  message: formatMessage({
+                    id: 'userregister.ak.required',
                   }),
                 },
                 {
                   type: 'email',
                   message: formatMessage({
-                    id: 'userregister.email.wrong-format',
+                    id: 'userregister.ak.wrong-format',
                   }),
                 },
               ],
@@ -220,7 +255,7 @@ class UserRegister extends Component {
               <Input
                 size="large"
                 placeholder={formatMessage({
-                  id: 'userregister.email.placeholder',
+                  id: 'userregister.ak.placeholder',
                 })}
               />,
             )}
@@ -257,7 +292,7 @@ class UserRegister extends Component {
               placement="right"
               visible={visible}
             >
-              {getFieldDecorator('password', {
+              {getFieldDecorator('sk', {
                 rules: [
                   {
                     validator: this.checkPassword,
@@ -298,82 +333,29 @@ class UserRegister extends Component {
             )}
           </FormItem>
           <FormItem className={styles.len}>
-            <InputGroup compact>
-              {/*<Select*/}
-                {/*size="large"*/}
-                {/*value={prefix}*/}
-                {/*onChange={this.changePrefix}*/}
-                {/*style={{*/}
-                  {/*width: '30%',*/}
-                {/*}}*/}
-              {/*>*/}
-                {/*<Option value="86">+86</Option>*/}
-                {/*<Option value="87">+87</Option>*/}
-              {/*</Select>*/}
-              {getFieldDecorator('mobile', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({
-                      id: 'userregister.phone-number.required',
-                    }),
-                  },
-                  {
-                    pattern: /^\d{11}$/,
-                    message: formatMessage({
-                      id: 'userregister.phone-number.wrong-format',
-                    }),
-                  },
-                ],
-              })(
-                <Input
-                  size="large"
-                  style={{
-                    // width: '80%',
-                  }}
-                  placeholder={formatMessage({
-                    id: 'userregister.phone-number.placeholder',
-                  })}
-                />,
-              )}
-            </InputGroup>
-          </FormItem>
-          <FormItem>
-            {/*<Row gutter={8}>*/}
-              {/*<Col span={16}>*/}
-                {/*{getFieldDecorator('captcha', {*/}
-                  {/*rules: [*/}
-                    {/*{*/}
-                      {/*required: true,*/}
-                      {/*message: formatMessage({*/}
-                        {/*id: 'userregister.verification-code.required',*/}
-                      {/*}),*/}
-                    {/*},*/}
-                  {/*],*/}
-                {/*})(*/}
-                  {/*<Input*/}
-                    {/*size="large"*/}
-                    {/*placeholder={formatMessage({*/}
-                      {/*id: 'userregister.verification-code.placeholder',*/}
-                    {/*})}*/}
-                  {/*/>,*/}
-                {/*)}*/}
-              {/*</Col>*/}
-              {/*/!*<Col span={8}>*!/*/}
-                {/*/!*<Button*!/*/}
-                  {/*/!*size="large"*!/*/}
-                  {/*/!*disabled={!!count}*!/*/}
-                  {/*/!*className={styles.getCaptcha}*!/*/}
-                  {/*/!*onClick={this.onGetCaptcha}*!/*/}
-                {/*/!*>*!/*/}
-                  {/*/!*{count*!/*/}
-                    {/*/!*? `${count} s`*!/*/}
-                    {/*/!*: formatMessage({*!/*/}
-                        {/*/!*id: 'userregister.register.get-verification-code',*!/*/}
-                      {/*/!*})}*!/*/}
-                {/*/!*</Button>*!/*/}
-              {/*/!*</Col>*!/*/}
-            {/*</Row>*/}
+            {getFieldDecorator('tenantName', {
+              rules: [
+                {
+                  required: true,
+                  message: formatMessage({
+                    id: 'userregister.tenantName.required',
+                  }),
+                },
+                {
+                  min:1,max:100,
+                  message:formatMessage({
+                    id: 'userregister.tenantName.length',
+                  }),
+                }
+              ],
+            })(
+              <Input
+                size="large"
+                placeholder={formatMessage({
+                  id: 'userregister.tenantName.placeholder',
+                })}
+              />,
+            )}
           </FormItem>
           <FormItem className={styles.len}>
             <Button

@@ -83,7 +83,7 @@ export default {
           component: './user/login',
         },
         {
-          name: '注册页',
+          name: 'register',
           icon: 'smile',
           path: '/user/register',
           component: './UserRegister',
