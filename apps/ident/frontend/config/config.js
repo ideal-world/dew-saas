@@ -108,34 +108,39 @@ export default {
               name: 'welcome',
               icon: 'smile',
               component: './Welcome',
-            },
-            {
-              path: '/admin',
-              name: 'admin',
-              icon: 'crown',
-              component: './Admin',
-              authority: ['admin'],
-              routes: [
-                {
-                  path: '/admin/sub-page',
-                  name: 'sub-page',
-                  icon: 'smile',
-                  component: './Welcome',
-                  authority: ['admin'],
-                },
-              ],
-            },
-            {
-              name: 'list.basic-list',
-              icon: 'smile',
-              path: '/listbasiclist',
-              component: './ListBasicList',
-            },
+            }, // {
+            //   path: '/admin',
+            //   name: 'admin',
+            //   icon: 'crown',
+            //   component: './Admin',
+            //   authority: ['admin'],
+            //   routes: [
+            //     {
+            //       path: '/admin/sub-page',
+            //       name: 'sub-page',
+            //       icon: 'smile',
+            //       component: './Welcome',
+            //       authority: ['admin'],
+            //     },
+            //   ],
+            // },
+            // {
+            //   name: 'list.basic-list',
+            //   icon: 'smile',
+            //   path: '/listbasiclist',
+            //   component: './ListBasicList',
+            // },
             {
               name: 'list.table-list',
               icon: 'table',
               path: '/list',
               component: './ListTableList',
+            },
+            {
+              name: '资源管理',
+              icon: 'smile',
+              path: '/resources',
+              component: './resources',
             },
             {
               component: './404',
