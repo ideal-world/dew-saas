@@ -1,7 +1,8 @@
 import request from '@/utils/request';
 
 export async function fakeRegister(params) {
-  return request('/api/register', {
+  params.certKind='EMAIL';
+  return request('/api/ident/console/tenant', {
     method: 'POST',
     data: params,
   });
