@@ -1,15 +1,1 @@
-重置密码
-索引分析
-错误码统一
-文档检查
-
-/admin/*
-/admin/tenant/ -> enable/disable
-/admin/tenant/{tenantId}/app/ -> enable/disable
-/admin/tenant/{tenantId}/account/ -> enable/disable
-/console/*
-/console/tenant/ post | public
-/console/tenant/ put delete get
-/console/tenant/{tenantId}/account post put delete get
-/app/{appId}/*
-/app/{appId}/account/ post | public
+重置密码 索引分析 错误码统一 文档检查 级联删除 找回密码 改密码

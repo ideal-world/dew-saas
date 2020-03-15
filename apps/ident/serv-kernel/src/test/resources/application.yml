@@ -1,6 +1,9 @@
 dew:
   cluster:
     cache: redis
+  basic:
+    format:
+      auto-trim-from-req: true
 
 spring:
   jpa:
