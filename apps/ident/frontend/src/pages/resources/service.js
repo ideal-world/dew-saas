@@ -1,22 +1,23 @@
 import request from '@/utils/request';
-export async function queryRule(params) {
+export async function queryResource(params) {
   return request('/api/ident/console/resource', {
     params,
   });
 }
-export async function removeRule(params) {
+export async function removeResource(params) {
   return request('/api/rule', {
     method: 'POST',
     data: { ...params, method: 'delete' },
   });
 }
-export async function addRule(params) {
-  return request('/api/rule', {
+export async function addResource(params) {
+  console.info(params);
+  return request('/api/ident/console/resource/'+params.appId, {
     method: 'POST',
     data: { ...params, method: 'post' },
   });
 }
-export async function updateRule(params) {
+export async function updateResource(params) {
   return request('/api/rule', {
     method: 'POST',
     data: { ...params, method: 'update' },

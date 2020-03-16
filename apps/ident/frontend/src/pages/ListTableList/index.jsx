@@ -79,9 +79,17 @@ const TableList = () => {
   const actionRef = useRef();
   const columns = [
     {
-      title: '规则名称',
+      title: 'ID',
+      dataIndex: 'id',
+      valueType: 'int',
+      hideInForm: true,
+      hideInSearch: true,
+    },
+    {
+      title: '资源名称',
       dataIndex: 'name',
       hideInSearch: true,
+      valueType: 'string',
       rules: [
         {
           required: true,
@@ -90,65 +98,28 @@ const TableList = () => {
       ],
     },
     {
-      title: '描述',
-      dataIndex: 'desc',
-      valueType: 'textarea',
+      title: '资源方法',
+      dataIndex: 'method',
+      hideInSearch: true,
+      valueType: 'string',
     },
     {
-      title: '服务调用次数',
-      dataIndex: 'callNo',
-      sorter: true,
-      hideInForm: true,
-      renderText: val => `${val} 万`,
+      title: '资源图标',
+      dataIndex: 'icon',
+      hideInSearch: true,
+      valueType: 'string',
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      hideInForm: true,
-      valueEnum: {
-        0: {
-          text: '关闭',
-          status: 'Default',
-        },
-        1: {
-          text: '运行中',
-          status: 'Processing',
-        },
-        2: {
-          text: '已上线',
-          status: 'Success',
-        },
-        3: {
-          text: '异常',
-          status: 'Error',
-        },
-      },
+      title: '资源标识',
+      dataIndex: 'identifier',
+      hideInSearch: true,
+      valueType: 'string',
     },
     {
-      title: '上次调度时间',
-      dataIndex: 'updatedAt',
-      sorter: true,
-      valueType: 'dateTime',
-      hideInForm: true,
-    },
-    {
-      title: '操作',
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => (
-        <>
-          <a
-            onClick={() => {
-              handleUpdateModalVisible(true);
-              setStepFormValues(record);
-            }}
-          >
-            配置
-          </a>
-          <Divider type="vertical" />
-          <a href="">订阅警报</a>
-        </>
-      ),
+      title: '资源类型',
+      dataIndex: 'kind',
+      hideInSearch: true,
+      valueType: 'string',
     },
   ];
   return (
