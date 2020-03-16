@@ -34,12 +34,6 @@ public class AccountCertInfoResp implements Serializable {
     @ApiModelProperty(value = "账号凭证过期时间")
     private Date validTime;
 
-    @ApiModelProperty(value = "账号凭证有效次数")
-    private Long validTimes;
-
-    @ApiModelProperty(value = "是否删除", required = true)
-    private boolean delFlag;
-
     @ApiModelProperty(value = "创建者", required = true)
     protected String createUserName;
 

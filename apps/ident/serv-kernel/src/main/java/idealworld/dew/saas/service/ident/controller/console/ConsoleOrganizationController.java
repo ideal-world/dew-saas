@@ -34,7 +34,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台机构管理操作")
+@Api(value = "租户控制台机构管理操作", description = "租户控制台机构管理操作")
 @RequestMapping(value = "/console/organization")
 @Validated
 public class ConsoleOrganizationController extends BasicController {
@@ -65,7 +65,7 @@ public class ConsoleOrganizationController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}/{organizationId}")
-    @ApiOperation(value = "删除当前租户某个应用的某个机构")
+    @ApiOperation(value = "删除当前租户某个应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
     public Resp<Void> deleteOrganization(@PathVariable Long appId, @PathVariable Long organizationId) {
         return organizationService.deleteOrganization(organizationId, appId, getCurrentTenantId());
     }

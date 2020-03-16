@@ -17,8 +17,8 @@
 package idealworld.dew.saas.service.ident.controller.console;
 
 import com.ecfront.dew.common.Resp;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.controller.BasicController;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.tenant.ModifyTenantReq;
 import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台租户管理操作")
+@Api(value = "租户控制台租户管理操作", description = "租户控制台租户管理操作")
 @RequestMapping(value = "/console/tenant")
 @Validated
 public class ConsoleTenantController extends BasicController {
@@ -60,7 +60,7 @@ public class ConsoleTenantController extends BasicController {
     }
 
     @DeleteMapping(value = "")
-    @ApiOperation(value = "注销当前的租户")
+    @ApiOperation(value = "注销当前的租户", notes = "必须先删除关联的应用")
     public Resp<Void> unRegisterTenant() {
         return tenantService.unRegisterTenant(getCurrentTenantId());
     }

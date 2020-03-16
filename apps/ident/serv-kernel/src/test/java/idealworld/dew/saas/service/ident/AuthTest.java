@@ -16,29 +16,10 @@
 
 package idealworld.dew.saas.service.ident;
 
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.AccountCert;
-import idealworld.dew.saas.service.ident.domain.Organization;
-import idealworld.dew.saas.service.ident.domain.Resource;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
-import idealworld.dew.saas.service.ident.dto.account.*;
-import idealworld.dew.saas.service.ident.dto.app.*;
-import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
-import idealworld.dew.saas.service.ident.dto.organization.ModifyOrganizationReq;
-import idealworld.dew.saas.service.ident.dto.organization.OrganizationInfoResp;
-import idealworld.dew.saas.service.ident.dto.permission.AddPermissionReq;
-import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoResp;
-import idealworld.dew.saas.service.ident.dto.position.AddPositionReq;
-import idealworld.dew.saas.service.ident.dto.position.ModifyPositionReq;
-import idealworld.dew.saas.service.ident.dto.position.PositionInfoResp;
-import idealworld.dew.saas.service.ident.dto.post.AddPostReq;
-import idealworld.dew.saas.service.ident.dto.post.PostInfoResp;
-import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
-import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
-import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
-import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
-import idealworld.dew.saas.service.ident.dto.tenant.ModifyTenantReq;
-import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
-import idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
+import idealworld.dew.saas.service.ident.dto.account.LoginReq;
+import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
 import org.junit.Assert;
 import org.springframework.stereotype.Component;
 

@@ -20,12 +20,11 @@ import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.auth.dto.OptInfo;
-import idealworld.dew.saas.service.ident.Constant;
+import idealworld.dew.saas.common.service.Constant;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,37 +51,25 @@ public class AccountService extends BasicService {
         var qAccount = QAccount.account;
         var qAccountCert = QAccountCert.accountCert;
         var accountInfo = sqlBuilder
-                .select(qAccountCert.id, qAccountCert.sk, qAccount.id, qAccountCert.validTimes)
+                .select(qAccountCert.sk, qAccount.id)
                 .from(qAccountCert)
-                .leftJoin(qAccount).on(qAccountCert.relAccountId.eq(qAccount.id))
+                .leftJoin(qAccount).on(qAccountCert.relAccountId.eq(qAccount.id).and(qAccountCert.delFlag.eq(false)))
                 .where(qAccountCert.kind.eq(loginReq.getCertKind()))
                 .where(qAccountCert.ak.eq(loginReq.getAk()))
                 .where(qAccountCert.validTime.after(new Date()))
-                .where(qAccountCert.validTimes.gt(0).or(qAccountCert.validTimes.eq(-1L)))
                 .where(qAccount.relTenantId.eq(relTenantId))
                 .where(qAccount.delFlag.eq(false))
-                .where(qAccountCert.delFlag.eq(false))
                 .fetchOne();
         if (accountInfo == null) {
             logger.warn("Login Fail: [" + relTenantId + "][" + loginReq.getAk() + "] AK not exist or expired");
             return Resp.notFound("登录凭证不存在或已过期");
         }
-        var certId = accountInfo.get(0, Long.class);
-        var certSk = accountInfo.get(1, String.class);
-        var accountId = accountInfo.get(2, Long.class);
-        var certValidTimes = accountInfo.get(3, Long.class);
+        var certSk = accountInfo.get(0, String.class);
+        var accountId = accountInfo.get(1, Long.class);
         var validateR = validateSK(loginReq.getCertKind(), loginReq.getAk(), loginReq.getSk(), certSk, relTenantId);
         if (!validateR.ok()) {
             logger.warn("Login Fail: [" + relTenantId + "][" + loginReq.getAk() + "] SK un-match");
             return Resp.error(validateR);
-        }
-        if (certValidTimes != -1L) {
-            updateEntity(sqlBuilder
-                    .update(qAccountCert)
-                    .set(qAccountCert.validTimes, qAccountCert.validTimes.add(-1L))
-                    .where(qAccountCert.id.eq(certId))
-                    .where(qAccountCert.validTimes.gt(0))
-            );
         }
         logger.info("Login Success:  [" + relTenantId + "][" + loginReq.getAk() + "]");
         String token = $.field.createUUID();
@@ -112,10 +99,20 @@ public class AccountService extends BasicService {
         if (!processR.ok()) {
             return Resp.error(processR);
         }
+        var qAccountCert = QAccountCert.accountCert;
+        if (sqlBuilder.select(qAccountCert.id)
+                .from(qAccountCert)
+                .where(qAccountCert.delFlag.eq(false))
+                .where(qAccountCert.relTenantId.eq(relTenantId))
+                .where(qAccountCert.kind.eq(addAccountReq.getCertReq().getKind()))
+                .where(qAccountCert.ak.eq(addAccountReq.getCertReq().getAk()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此凭证已存在");
+        }
         var account = Account.builder()
                 .name(addAccountReq.getName())
                 .avatar(addAccountReq.getAvatar() != null ? addAccountReq.getAvatar() : "")
-                .parameters(addAccountReq.getParameters() != null ? addAccountReq.getParameters() : "")
+                .parameters(addAccountReq.getParameters() != null ? addAccountReq.getParameters() : "{}")
                 .status(Account.Status.ENABLED)
                 .relTenantId(relTenantId)
                 .build();
@@ -145,7 +142,8 @@ public class AccountService extends BasicService {
                 .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.id))
                 .where(qAccount.id.eq(accountId))
-                .where(qAccount.relTenantId.eq(relTenantId));
+                .where(qAccount.relTenantId.eq(relTenantId))
+                .where(qAccount.delFlag.eq(false));
         return getDTO(query);
     }
 
@@ -168,7 +166,8 @@ public class AccountService extends BasicService {
                 .from(qAccount)
                 .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.id))
-                .where(qAccount.relTenantId.eq(relTenantId));
+                .where(qAccount.relTenantId.eq(relTenantId))
+                .where(qAccount.delFlag.eq(false));
         return pageDTOs(query, pageNumber, pageSize);
     }
 
@@ -191,30 +190,6 @@ public class AccountService extends BasicService {
     }
 
     @Transactional
-    public Resp<Void> deleteAccounts(Long relTenantId) {
-        var qAccount = QAccount.account;
-        var qAccountCert = QAccountCert.accountCert;
-        var deleteAccountR = updateEntity(sqlBuilder
-                .update(qAccount)
-                .set(qAccount.delFlag, true)
-                .where(qAccount.relTenantId.eq(relTenantId))
-        );
-        if (!deleteAccountR.ok()) {
-            return deleteAccountR;
-        }
-        sqlBuilder
-                .update(qAccountCert)
-                .set(qAccountCert.delFlag, true)
-                .where(qAccountCert.relAccountId.in(
-                        JPAExpressions.select()
-                                .select(qAccount.id)
-                                .from(qAccount)
-                                .where(qAccount.relTenantId.eq(relTenantId))))
-                .execute();
-        return Resp.success(null);
-    }
-
-    @Transactional
     public Resp<Void> deleteAccount(Long accountId, Long relTenantId) {
         var qAccount = QAccount.account;
         var deleteAccountR = updateEntity(sqlBuilder
@@ -227,6 +202,7 @@ public class AccountService extends BasicService {
             return deleteAccountR;
         }
         deleteAccountCerts(accountId, relTenantId);
+        deleteAccountPosts(accountId, relTenantId);
         return Resp.success(null);
     }
 
@@ -236,7 +212,6 @@ public class AccountService extends BasicService {
                 .selectFrom(qAccount)
                 .where(qAccount.id.eq(accountId))
                 .where(qAccount.relTenantId.eq(relTenantId))
-                .where(qAccount.delFlag.eq(false))
                 .fetchCount();
         return num != 0;
     }
@@ -249,6 +224,16 @@ public class AccountService extends BasicService {
         if (!checkAccountMembership(relAccountId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        var qAccountCert = QAccountCert.accountCert;
+        if (sqlBuilder.select(qAccountCert.id)
+                .from(qAccountCert)
+                .where(qAccountCert.delFlag.eq(false))
+                .where(qAccountCert.relTenantId.eq(relTenantId))
+                .where(qAccountCert.kind.eq(addAccountCertReq.getKind()))
+                .where(qAccountCert.ak.eq(addAccountCertReq.getAk()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此凭证已存在");
+        }
         var processR = certProcessSK(addAccountCertReq.getKind(),
                 addAccountCertReq.getAk(),
                 addAccountCertReq.getSk(),
@@ -260,22 +245,11 @@ public class AccountService extends BasicService {
     }
 
     private Resp<Long> doAddAccountCert(AddAccountCertReq addAccountCertReq, String processedSk, Long relAccountId, Long relTenantId) {
-        var qAccountCert = QAccountCert.accountCert;
-        if (sqlBuilder.select(qAccountCert.id)
-                .from(qAccountCert)
-                .where(qAccountCert.delFlag.eq(false))
-                .where(qAccountCert.relTenantId.eq(relTenantId))
-                .where(qAccountCert.kind.eq(addAccountCertReq.getKind()))
-                .where(qAccountCert.ak.eq(addAccountCertReq.getAk()))
-                .fetchCount() != 0) {
-            return Resp.conflict("此凭证已存在");
-        }
         var accountCert = AccountCert.builder()
                 .kind(addAccountCertReq.getKind())
                 .ak(addAccountCertReq.getAk())
                 .sk(processedSk)
                 .validTime(addAccountCertReq.getValidTime() != null ? addAccountCertReq.getValidTime() : Constant.NEVER_EXPIRE_TIME)
-                .validTimes(addAccountCertReq.getValidTimes() != null ? addAccountCertReq.getValidTimes() : -1L)
                 .relAccountId(relAccountId)
                 .relTenantId(relTenantId)
                 .build();
@@ -296,7 +270,6 @@ public class AccountService extends BasicService {
                         qAccountCert.kind,
                         qAccountCert.ak,
                         qAccountCert.sk,
-                        qAccountCert.validTimes,
                         qAccountCert.validTime,
                         qAccountCert.delFlag,
                         qAccountCert.createTime,
@@ -306,7 +279,8 @@ public class AccountService extends BasicService {
                 .from(qAccountCert)
                 .leftJoin(qAccountCreateUser).on(qAccountCert.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qAccountCert.updateUser.eq(qAccountUpdateUser.id))
-                .where(qAccountCert.relAccountId.eq(relAccountId));
+                .where(qAccountCert.relAccountId.eq(relAccountId))
+                .where(qAccountCert.delFlag.eq(false));
         return findDTOs(query);
     }
 
@@ -322,9 +296,6 @@ public class AccountService extends BasicService {
                 .where(qAccountCert.relAccountId.eq(relAccountId));
         if (modifyAccountCertReq.getValidTime() != null) {
             updateClause.set(qAccountCert.validTime, modifyAccountCertReq.getValidTime());
-        }
-        if (modifyAccountCertReq.getValidTimes() != null) {
-            updateClause.set(qAccountCert.validTimes, modifyAccountCertReq.getValidTimes());
         }
         return updateEntity(updateClause);
     }
@@ -364,6 +335,15 @@ public class AccountService extends BasicService {
         if (!checkAccountMembership(relAccountId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        var qAccountPost = QAccountPost.accountPost;
+        if (sqlBuilder.select(qAccountPost.id)
+                .from(qAccountPost)
+                .where(qAccountPost.delFlag.eq(false))
+                .where(qAccountPost.relAccountId.eq(relAccountId))
+                .where(qAccountPost.relPostId.eq(addAccountPostReq.getRelPostId()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此关联岗位已存在");
+        }
         var accountCert = AccountPost.builder()
                 .relPostId(addAccountPostReq.getRelPostId())
                 .relAccountId(relAccountId)
@@ -382,8 +362,23 @@ public class AccountService extends BasicService {
                         qAccountPost.id,
                         qAccountPost.relPostId))
                 .from(qAccountPost)
-                .where(qAccountPost.relAccountId.eq(relAccountId));
+                .where(qAccountPost.relAccountId.eq(relAccountId))
+                .where(qAccountPost.delFlag.eq(false));
         return findDTOs(query);
+    }
+
+    @Transactional
+    public Resp<Void> deleteAccountPosts(Long relAccountId, Long relTenantId) {
+        if (!checkAccountMembership(relAccountId, relTenantId)) {
+            return Constant.RESP.NOT_FOUNT();
+        }
+        var qAccountPost = QAccountPost.accountPost;
+        sqlBuilder
+                .update(qAccountPost)
+                .set(qAccountPost.delFlag, true)
+                .where(qAccountPost.relAccountId.eq(relAccountId))
+                .execute();
+        return Resp.success(null);
     }
 
     @Transactional
@@ -392,11 +387,28 @@ public class AccountService extends BasicService {
             return Constant.RESP.NOT_FOUNT();
         }
         var qAccountPost = QAccountPost.accountPost;
-        return deleteEntity(sqlBuilder
-                .delete(qAccountPost)
+        return updateEntity(sqlBuilder
+                .update(qAccountPost)
+                .set(qAccountPost.delFlag, true)
                 .where(qAccountPost.id.eq(accountPostId))
                 .where(qAccountPost.relAccountId.eq(relAccountId))
         );
+    }
+
+    @Transactional
+    protected Resp<Void> deleteAccountPostByPostIds(List<Long> postIds) {
+        var qAccountPost = QAccountPost.accountPost;
+        var deleteAccountPostIds = sqlBuilder.select(qAccountPost.id)
+                .from(qAccountPost)
+                .where(qAccountPost.relPostId.in(postIds))
+                .where(qAccountPost.delFlag.eq(false))
+                .fetch();
+        sqlBuilder
+                .update(qAccountPost)
+                .set(qAccountPost.delFlag, true)
+                .where(qAccountPost.id.in(deleteAccountPostIds))
+                .execute();
+        return Resp.success(null);
     }
 
     // ========================== Others ==============================
@@ -470,10 +482,19 @@ public class AccountService extends BasicService {
         var qOrganization = QOrganization.organization;
         return sqlBuilder.select(qPosition.code, qPosition.relAppId, qPosition.name, qOrganization.name)
                 .from(qAccountPost)
-                .leftJoin(qPost).on(qAccountPost.relPostId.eq(qPost.id))
-                .leftJoin(qPosition).on(qPost.relPositionCode.eq(qPosition.code))
-                .leftJoin(qOrganization).on(qPost.relOrganizationId.eq(qOrganization.id))
+                .leftJoin(qPost).on(qAccountPost.relPostId.eq(qPost.id).and(qPost.delFlag.eq(false)))
+                .leftJoin(qPosition).on(
+                        qPosition.delFlag.eq(false)
+                                .and(qPost.relTenantId.eq(qPosition.relTenantId))
+                                .and(qPost.relAppId.eq(qPosition.relAppId))
+                                .and(qPost.relPositionCode.eq(qPosition.code)))
+                .leftJoin(qOrganization).on(
+                        qOrganization.delFlag.eq(false)
+                                .and(qPost.relTenantId.eq(qOrganization.relTenantId))
+                                .and(qPost.relAppId.eq(qOrganization.relAppId))
+                                .and(qPost.relPositionCode.eq(qOrganization.code)))
                 .where(qAccountPost.relAccountId.eq(accountId))
+                .where(qAccountPost.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .map(info -> {

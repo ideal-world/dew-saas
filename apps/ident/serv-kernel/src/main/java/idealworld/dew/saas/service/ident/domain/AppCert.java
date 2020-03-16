@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,8 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "ident_app_cert", indexes = {
-        @Index(columnList = "ak", unique = true),
+        @Index(columnList = "delFlag,ak", unique = true),
+        @Index(columnList = "delFlag"),
         @Index(columnList = "relAppId"),
         @Index(columnList = "delFlag, ak")
 })
@@ -40,9 +41,6 @@ public class AppCert extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     private Date validTime;
-
-    @Column(nullable = false)
-    private Long validTimes;
 
     @Column(nullable = false)
     private Long relAppId;

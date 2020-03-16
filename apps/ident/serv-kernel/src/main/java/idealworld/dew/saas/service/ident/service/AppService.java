@@ -19,12 +19,14 @@ package idealworld.dew.saas.service.ident.service;
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.service.ident.Constant;
+import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,6 +34,8 @@ import java.util.List;
  */
 @Service
 public class AppService extends BasicService {
+
+    private static final String CACHE_AK = "app:ak:";
 
     @Transactional
     public Resp<Long> addApp(AddAppReq addAppReq, Long relTenantId) {
@@ -47,6 +51,7 @@ public class AppService extends BasicService {
         var app = App.builder()
                 .name(addAppReq.getName())
                 .icon(addAppReq.getIcon() != null ? addAppReq.getIcon() : "")
+                .parameters(addAppReq.getParameters() != null ? addAppReq.getParameters() : "{}")
                 .relTenantId(relTenantId)
                 .build();
         var saveR = saveEntity(app);
@@ -66,6 +71,7 @@ public class AppService extends BasicService {
                         qApp.id,
                         qApp.name,
                         qApp.icon,
+                        qApp.parameters,
                         qApp.relTenantId,
                         qApp.delFlag,
                         qApp.createTime,
@@ -75,7 +81,8 @@ public class AppService extends BasicService {
                 .from(qApp)
                 .leftJoin(qAccountCreateUser).on(qApp.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qApp.updateUser.eq(qAccountUpdateUser.id))
-                .where(qApp.relTenantId.eq(relTenantId));
+                .where(qApp.relTenantId.eq(relTenantId))
+                .where(qApp.delFlag.eq(false));
         return findDTOs(query);
     }
 
@@ -91,21 +98,50 @@ public class AppService extends BasicService {
         if (modifyAppReq.getIcon() != null) {
             updateClause.set(qApp.icon, modifyAppReq.getIcon());
         }
+        if (modifyAppReq.getParameters() != null) {
+            updateClause.set(qApp.parameters, modifyAppReq.getParameters());
+        }
         return updateEntity(updateClause);
     }
 
     @Transactional
     public Resp<Void> deleteApp(Long appId, Long relTenantId) {
         var qApp = QApp.app;
-        return updateEntity(sqlBuilder
+        var deleteR = updateEntity(sqlBuilder
                 .update(qApp)
                 .set(qApp.delFlag, true)
                 .where(qApp.id.eq(appId))
                 .where(qApp.relTenantId.eq(relTenantId))
         );
+        deleteAppCerts(appId, relTenantId);
+        return deleteR;
     }
 
     // ========================== Cert ==============================
+
+    public void cacheAppCerts() {
+        if (!ELECTION.isLeader()) {
+            return;
+        }
+        var qAppCert = QAppCert.appCert;
+        sqlBuilder
+                .select(qAppCert.ak, qAppCert.sk, qAppCert.validTime)
+                .from(qAppCert)
+                .where(qAppCert.delFlag.eq(false))
+                .where(qAppCert.validTime.gt(new Date()))
+                .fetch()
+                .forEach(info -> {
+                    var ak = info.get(0, String.class);
+                    var sk = info.get(1, String.class);
+                    var validTime = info.get(3, Date.class);
+                    if (validTime.getTime() == Constant.NEVER_EXPIRE_TIME.getTime()) {
+                        Dew.cluster.cache.set(CACHE_AK + ak, sk);
+                    } else {
+                        Dew.cluster.cache.setex(CACHE_AK + ak, sk,
+                                (validTime.getTime() - System.currentTimeMillis()) / 1000);
+                    }
+                });
+    }
 
     @Transactional
     public Resp<Long> addAppCert(AddAppCertReq addAppCertReq, Long relAppId, Long relTenantId) {
@@ -118,10 +154,18 @@ public class AppService extends BasicService {
                 .ak($.field.createShortUUID())
                 .sk($.field.createUUID())
                 .validTime(addAppCertReq.getValidTime() != null ? addAppCertReq.getValidTime() : Constant.NEVER_EXPIRE_TIME)
-                .validTimes(addAppCertReq.getValidTimes() != null ? addAppCertReq.getValidTimes() : -1L)
                 .relAppId(relAppId)
                 .build();
-        return saveEntity(appCert);
+        var saveR = saveEntity(appCert);
+        if (saveR.ok()) {
+            if (addAppCertReq.getValidTime() == null) {
+                Dew.cluster.cache.set(CACHE_AK + appCert.getAk(), appCert.getSk());
+            } else {
+                Dew.cluster.cache.setex(CACHE_AK + appCert.getAk(), appCert.getSk(),
+                        (appCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
+            }
+        }
+        return saveR;
     }
 
     public Resp<List<AppCertInfoResp>> findAppCertInfo(Long relAppId, Long relTenantId) {
@@ -139,7 +183,6 @@ public class AppService extends BasicService {
                         qAppCert.ak,
                         qAppCert.sk,
                         qAppCert.validTime,
-                        qAppCert.validTimes,
                         qAppCert.delFlag,
                         qAppCert.createTime,
                         qAppCert.updateTime,
@@ -148,7 +191,8 @@ public class AppService extends BasicService {
                 .from(qAppCert)
                 .leftJoin(qAccountCreateUser).on(qAppCert.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qAppCert.updateUser.eq(qAccountUpdateUser.id))
-                .where(qAppCert.relAppId.eq(relAppId));
+                .where(qAppCert.relAppId.eq(relAppId))
+                .where(qAppCert.delFlag.eq(false));
         return findDTOs(query);
     }
 
@@ -168,10 +212,23 @@ public class AppService extends BasicService {
         if (modifyAppCertReq.getValidTime() != null) {
             updateClause.set(qAppCert.validTime, modifyAppCertReq.getValidTime());
         }
-        if (modifyAppCertReq.getValidTimes() != null) {
-            updateClause.set(qAppCert.validTimes, modifyAppCertReq.getValidTimes());
+        var updateR = updateEntity(updateClause);
+        if (updateR.ok() && modifyAppCertReq.getValidTime() != null) {
+            var updateAppCert = sqlBuilder.selectFrom(qAppCert)
+                    .where(qAppCert.id.eq(appCertId))
+                    .fetchOne();
+            Dew.cluster.cache.setex(CACHE_AK + updateAppCert.getAk(), updateAppCert.getSk(),
+                    (updateAppCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
         }
-        return updateEntity(updateClause);
+        return updateR;
+    }
+
+    public Resp<String> getAppCertByAk(String ak) {
+        var sk = Dew.cluster.cache.get(CACHE_AK + ak);
+        if (sk == null) {
+            return Resp.notFound("");
+        }
+        return Resp.success(sk);
     }
 
     @Transactional
@@ -185,6 +242,11 @@ public class AppService extends BasicService {
                 .set(qAppCert.delFlag, true)
                 .where(qAppCert.relAppId.eq(relAppId))
                 .execute();
+        sqlBuilder.select(qAppCert.ak)
+                .from(qAppCert)
+                .where(qAppCert.relAppId.eq(relAppId))
+                .fetch()
+                .forEach(ak -> Dew.cluster.cache.del(CACHE_AK + ak));
         return Resp.success(null);
     }
 
@@ -194,12 +256,21 @@ public class AppService extends BasicService {
             return Constant.RESP.NOT_FOUNT();
         }
         var qAppCert = QAppCert.appCert;
-        return updateEntity(sqlBuilder
+        var deleteAppCertR = updateEntity(sqlBuilder
                 .update(qAppCert)
                 .set(qAppCert.delFlag, true)
                 .where(qAppCert.id.eq(appCertId))
                 .where(qAppCert.relAppId.eq(relAppId))
         );
+        if (deleteAppCertR.ok()) {
+            var ak = sqlBuilder.select(qAppCert.ak)
+                    .from(qAppCert)
+                    .where(qAppCert.id.eq(appCertId))
+                    .where(qAppCert.relAppId.eq(relAppId))
+                    .fetchOne();
+            Dew.cluster.cache.del(CACHE_AK + ak);
+        }
+        return deleteAppCertR;
     }
 
     protected Boolean checkAppMembership(Long appId, Long relTenantId) {
@@ -208,7 +279,6 @@ public class AppService extends BasicService {
                 .selectFrom(qApp)
                 .where(qApp.id.eq(appId))
                 .where(qApp.relTenantId.eq(relTenantId))
-                .where(qApp.delFlag.eq(false))
                 .fetchCount();
         return num != 0;
     }

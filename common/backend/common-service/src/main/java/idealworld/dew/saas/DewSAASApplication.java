@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.basic.common.service;
+package idealworld.dew.saas;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.EntityManager;
 
@@ -27,6 +30,7 @@ import javax.persistence.EntityManager;
  * The type Dew saas application.
  */
 @EnableCaching
+@SpringBootApplication
 public class DewSAASApplication {
 
     @Bean

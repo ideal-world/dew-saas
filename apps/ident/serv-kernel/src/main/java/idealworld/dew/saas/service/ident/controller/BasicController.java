@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.controller;
 
 import com.ecfront.dew.common.exception.RTException;
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 
 public abstract class BasicController {
 

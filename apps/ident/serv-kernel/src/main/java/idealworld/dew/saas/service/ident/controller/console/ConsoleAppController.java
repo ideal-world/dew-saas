@@ -32,7 +32,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台应用管理操作")
+@Api(value = "租户控制台应用管理操作", description = "租户控制台应用管理操作")
 @RequestMapping(value = "/console/app")
 @Validated
 public class ConsoleAppController extends BasicController {
@@ -60,7 +60,7 @@ public class ConsoleAppController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}")
-    @ApiOperation(value = "删除当前租户的某个应用")
+    @ApiOperation(value = "删除当前租户的某个应用", notes = "删除应用，关联的应用凭证")
     public Resp<Void> deleteApp(@PathVariable Long appId) {
         return appService.deleteApp(appId, getCurrentTenantId());
     }

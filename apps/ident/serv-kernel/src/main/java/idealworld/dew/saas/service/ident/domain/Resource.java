@@ -1,7 +1,7 @@
 package idealworld.dew.saas.service.ident.domain;
 
 import com.ecfront.dew.common.exception.RTException;
-import idealworld.dew.saas.basic.common.service.domain.SafeEntity;
+import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,36 +17,14 @@ import java.util.Arrays;
  */
 @Entity
 @Table(name = "ident_resource", indexes = {
-        @Index(columnList = "relAppId,identifier,method", unique = true)
+        @Index(columnList = "delFlag,relAppId,identifier,method", unique = true),
+        @Index(columnList = "delFlag")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Resource extends SafeEntity {
-
-    public enum Kind {
-
-        GROUP("GROUP"), URI("URI"), MENU("MENU"), ACTION("ACTION");
-
-        private String code;
-
-        Kind(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        public static Kind parse(String code) {
-            return Arrays.stream(Kind.values())
-                    .filter(item -> item.code.equalsIgnoreCase(code))
-                    .findFirst()
-                    .orElseThrow(() -> new RTException("Resource kind {" + code + "} NOT exist."));
-        }
-    }
+public class Resource extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -77,5 +55,28 @@ public class Resource extends SafeEntity {
     // 为空表示是系统或租户控制台资源
     @Column(nullable = false)
     private Long relTenantId;
+
+    public enum Kind {
+
+        GROUP("GROUP"), URI("URI"), MENU("MENU"), ACTION("ACTION");
+
+        private String code;
+
+        Kind(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String toString() {
+            return code;
+        }
+
+        public static Kind parse(String code) {
+            return Arrays.stream(Kind.values())
+                    .filter(item -> item.code.equalsIgnoreCase(code))
+                    .findFirst()
+                    .orElseThrow(() -> new RTException("Resource kind {" + code + "} NOT exist."));
+        }
+    }
 
 }

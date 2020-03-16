@@ -13,7 +13,7 @@ import java.io.Serializable;
 public class AddPostReq implements Serializable {
 
     @ApiModelProperty(value = "机构Id")
-    private Long relOrganizationId;
+    private String relOrganizationCode;
 
     @ApiModelProperty(value = "职位编码", required = true)
     private String relPositionCode;

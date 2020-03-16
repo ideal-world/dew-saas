@@ -1,17 +1,16 @@
-package idealworld.dew.saas.basic.common.service.domain;
-
+package idealworld.dew.saas.common.service.domain;
 
 import group.idealworld.dew.Dew;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
+import java.util.Date;
 
 /**
  * The type Safe entity.
@@ -23,7 +22,7 @@ import javax.persistence.PreUpdate;
 @SuperBuilder
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public abstract class SafeEntity extends TimestampEntity {
+public abstract class SafeEntity extends IdEntity {
 
     /**
      * The Create user.
@@ -36,6 +35,22 @@ public abstract class SafeEntity extends TimestampEntity {
      */
     @Column(nullable = false)
     protected Long updateUser;
+
+    /**
+     * The Create time.
+     */
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column
+    protected Date createTime;
+
+    /**
+     * The Update time.
+     */
+    @UpdateTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column
+    protected Date updateTime;
 
     @PrePersist
     public void addUser() {

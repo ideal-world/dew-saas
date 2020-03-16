@@ -31,7 +31,4 @@ public class AddAccountCertReq implements Serializable {
     @ApiModelProperty(value = "账号凭证过期时间")
     private Date validTime;
 
-    @ApiModelProperty(value = "账号凭证有效次数")
-    private Long validTimes;
-
 }

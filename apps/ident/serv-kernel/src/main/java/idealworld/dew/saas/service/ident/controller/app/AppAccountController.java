@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.service.ident.controller.console;
+package idealworld.dew.saas.service.ident.controller.app;
 
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
@@ -35,10 +35,10 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台账号管理操作", description = "租户控制台账号管理操作")
-@RequestMapping(value = "/console/account")
+@Api(value = "应用控制台账号管理操作", description = "应用控制台账号管理操作")
+@RequestMapping(value = "/app/account")
 @Validated
-public class ConsoleAccountController extends BasicController {
+public class AppAccountController extends BasicController {
 
     @Autowired
     private AccountService accountService;

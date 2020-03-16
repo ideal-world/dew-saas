@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.service.ident.Constant;
+import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.service.ident.domain.QResource;
 import idealworld.dew.saas.service.ident.domain.Resource;
 import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
@@ -41,6 +41,8 @@ public class ResourceService extends BasicService {
 
     @Autowired
     private AppService appService;
+    @Autowired
+    private PermissionService permissionService;
 
     @Transactional
     public Resp<Long> addResourceGroup(AddResourceGroupReq addResourceGroupReq, Long relAppId, Long relTenantId) {
@@ -65,6 +67,16 @@ public class ResourceService extends BasicService {
     public Resp<Long> addResource(AddResourceReq addResourceReq, Long relAppId, Long relTenantId) {
         if (!appService.checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
+        }
+        var qResource = QResource.resource;
+        if (sqlBuilder.select(qResource.id)
+                .from(qResource)
+                .where(qResource.delFlag.eq(false))
+                .where(qResource.relAppId.eq(relAppId))
+                .where(qResource.identifier.eq(addResourceReq.getIdentifier()))
+                .where(qResource.method.eq(addResourceReq.getMethod()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此资源已存在");
         }
         var resource = Resource.builder()
                 .kind(addResourceReq.getKind())
@@ -128,7 +140,8 @@ public class ResourceService extends BasicService {
                 .from(qResource)
                 .where(qResource.id.eq(resourceId))
                 .where(qResource.relAppId.eq(relAppId))
-                .where(qResource.relTenantId.eq(relTenantId));
+                .where(qResource.relTenantId.eq(relTenantId))
+                .where(qResource.delFlag.eq(false));
         return getDTO(resourceQuery);
     }
 
@@ -147,20 +160,42 @@ public class ResourceService extends BasicService {
                         qResource.relAppId))
                 .from(qResource)
                 .where(qResource.relAppId.eq(relAppId))
-                .where(qResource.relTenantId.eq(relTenantId));
+                .where(qResource.relTenantId.eq(relTenantId))
+                .where(qResource.delFlag.eq(false));
         return findDTOs(resourceQuery);
     }
 
     @Transactional
     public Resp<Void> deleteResource(Long resourceId, Long relAppId, Long relTenantId) {
-        // TODO permission
+        // 级联删除资源
+        var deleteResInfos = findResourceAndGroup(resourceId);
+        deleteResInfos.add(resourceId);
         var qResource = QResource.resource;
-        return deleteEntity(sqlBuilder
-                .delete(qResource)
-                .where(qResource.id.eq(resourceId))
+        var deleteR = updateEntity(sqlBuilder
+                .update(qResource)
+                .set(qResource.delFlag, true)
+                .where(qResource.id.in(deleteResInfos))
                 .where(qResource.relAppId.eq(relAppId))
                 .where(qResource.relTenantId.eq(relTenantId))
         );
+        if (!deleteR.ok()) {
+            return deleteR;
+        }
+        // 删除权限
+        return permissionService.deletePermissionByResourceIds(deleteResInfos, relAppId, relTenantId);
+    }
+
+    private List<Long> findResourceAndGroup(Long resParentId) {
+        var qResource = QResource.resource;
+        return sqlBuilder
+                .select(qResource.id)
+                .from(qResource)
+                .where(qResource.parentId.eq(resParentId))
+                .where(qResource.delFlag.eq(false))
+                .fetch()
+                .stream()
+                .flatMap(resId -> findResourceAndGroup(resId).stream())
+                .collect(Collectors.toList());
     }
 
     protected List<ResourceInfoResp> findResourceByGroup(Long resourceGroupId) {
@@ -178,6 +213,7 @@ public class ResourceService extends BasicService {
                         qResource.relAppId))
                 .from(qResource)
                 .where(qResource.parentId.eq(resourceGroupId))
+                .where(qResource.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .flatMap(res -> {

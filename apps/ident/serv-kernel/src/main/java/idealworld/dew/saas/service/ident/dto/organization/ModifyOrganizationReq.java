@@ -22,6 +22,9 @@ public class ModifyOrganizationReq implements Serializable {
     @ApiModelProperty(value = "机构图标")
     private String icon;
 
+    @ApiModelProperty(value = "机构扩展信息（Json格式）")
+    private String parameters;
+
     @ApiModelProperty(value = "机构显示排序")
     private Integer sort;
 

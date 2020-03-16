@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.controller;
 
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import io.swagger.annotations.Api;
@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "认证操作")
+@Api(value = "认证操作", description = "认证操作")
 @RequestMapping(value = "/auth")
 @Validated
-public class AuthAccountController extends BasicController {
+public class AuthController extends BasicController {
 
     @Autowired
     private AccountService accountService;

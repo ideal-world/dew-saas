@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.service.ident.Constant;
+import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.Post;
 import idealworld.dew.saas.service.ident.domain.QPost;
@@ -29,6 +29,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,6 +42,10 @@ public class PostService extends BasicService {
     private IdentConfig identConfig;
     @Autowired
     private AppService appService;
+    @Autowired
+    private AccountService accountService;
+    @Autowired
+    private PermissionService permissionService;
 
     @Cacheable("cache:post:getTenantPostId")
     public Long getTenantAdminPostId() {
@@ -48,6 +53,7 @@ public class PostService extends BasicService {
         return sqlBuilder.select(qPost.id)
                 .from(qPost)
                 .where(qPost.relPositionCode.eq(identConfig.getSecurity().getTenantAdminPositionCode()))
+                .where(qPost.delFlag.eq(false))
                 .fetchOne();
     }
 
@@ -56,8 +62,19 @@ public class PostService extends BasicService {
         if (!appService.checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        var qPost = QPost.post;
+        if (sqlBuilder.select(qPost.id)
+                .from(qPost)
+                .where(qPost.delFlag.eq(false))
+                .where(qPost.relTenantId.eq(relTenantId))
+                .where(qPost.relAppId.eq(relAppId))
+                .where(qPost.relOrganizationCode.eq(addPostReq.getRelOrganizationCode() != null ? addPostReq.getRelOrganizationCode() : ""))
+                .where(qPost.relPositionCode.eq(addPostReq.getRelPositionCode()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此岗位已存在");
+        }
         var position = Post.builder()
-                .relOrganizationId(addPostReq.getRelOrganizationId() != null ? addPostReq.getRelOrganizationId() : -1L)
+                .relOrganizationCode(addPostReq.getRelOrganizationCode() != null ? addPostReq.getRelOrganizationCode() : "")
                 .relPositionCode(addPostReq.getRelPositionCode())
                 .relAppId(relAppId)
                 .relTenantId(relTenantId)
@@ -70,25 +87,61 @@ public class PostService extends BasicService {
         var postQuery = sqlBuilder
                 .select(Projections.bean(PostInfoResp.class,
                         qPost.id,
-                        qPost.relOrganizationId,
+                        qPost.relOrganizationCode,
                         qPost.relPositionCode,
                         qPost.relAppId))
                 .from(qPost)
                 .where(qPost.relAppId.eq(relAppId))
-                .where(qPost.relTenantId.eq(relTenantId));
+                .where(qPost.relTenantId.eq(relTenantId))
+                .where(qPost.delFlag.eq(false));
         return findDTOs(postQuery);
     }
 
     @Transactional
     public Resp<Void> deletePost(Long postId, Long relAppId, Long relTenantId) {
-        // TODO permission accountPost
-        var qPost = QPost.post;
-        return deleteEntity(sqlBuilder
-                .delete(qPost)
-                .where(qPost.id.eq(postId))
-                .where(qPost.relAppId.eq(relAppId))
-                .where(qPost.relTenantId.eq(relTenantId))
-        );
+        return doDeletePosts(new ArrayList<>() {{
+            add(postId);
+        }}, relAppId, relTenantId);
     }
 
+    @Transactional
+    protected Resp<Void> deletePostByOrgCodes(List<String> deleteOrgCodes, Long relAppId, Long relTenantId) {
+        var qPost = QPost.post;
+        var deletePostIds = sqlBuilder.select(qPost.id)
+                .from(qPost)
+                .where(qPost.relOrganizationCode.in(deleteOrgCodes))
+                .where(qPost.delFlag.eq(false))
+                .fetch();
+        return doDeletePosts(deletePostIds, relAppId, relTenantId);
+    }
+
+    @Transactional
+    protected Resp<Void> deletePostByPositionCode(String deletePositionCode, Long relAppId, Long relTenantId) {
+        var qPost = QPost.post;
+        var deletePostIds = sqlBuilder.select(qPost.id)
+                .from(qPost)
+                .where(qPost.relPositionCode.eq(deletePositionCode))
+                .where(qPost.delFlag.eq(false))
+                .where(qPost.relTenantId.eq(relTenantId))
+                .where(qPost.relAppId.eq(relAppId))
+                .fetch();
+        return doDeletePosts(deletePostIds, relAppId, relTenantId);
+    }
+
+    private Resp<Void> doDeletePosts(List<Long> postIds, Long relAppId, Long relTenantId) {
+        // 删除岗位
+        var qPost = QPost.post;
+        sqlBuilder
+                .update(qPost)
+                .set(qPost.delFlag, true)
+                .where(qPost.id.in(postIds))
+                .where(qPost.relAppId.eq(relAppId))
+                .where(qPost.relTenantId.eq(relTenantId))
+                .execute();
+        // 删除账号岗位
+        accountService.deleteAccountPostByPostIds(postIds);
+        // 删除权限
+        permissionService.deletePermissionByPostIds(postIds, relAppId, relTenantId);
+        return Resp.success(null);
+    }
 }

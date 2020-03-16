@@ -20,8 +20,8 @@ public class PostInfoResp implements Serializable {
     @ApiModelProperty(value = "岗位Id", required = true)
     private Long id;
 
-    @ApiModelProperty(value = "机构Id")
-    private Long relOrganizationId;
+    @ApiModelProperty(value = "机构编码")
+    private String relOrganizationCode;
 
     @ApiModelProperty(value = "职位编码", required = true)
     private String relPositionCode;

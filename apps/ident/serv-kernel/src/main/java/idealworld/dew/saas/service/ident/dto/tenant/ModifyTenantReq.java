@@ -13,9 +13,12 @@ import java.io.Serializable;
 public class ModifyTenantReq implements Serializable {
 
     @ApiModelProperty(value = "租户名称", required = true)
-    private String tenantName;
+    private String name;
 
     @ApiModelProperty(value = "租户图标")
-    private String tenantIcon;
+    private String icon;
+
+    @ApiModelProperty(value = "租户扩展信息（Json格式）")
+    private String parameters;
 
 }

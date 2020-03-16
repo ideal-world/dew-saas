@@ -16,14 +16,12 @@
 
 package idealworld.dew.saas.service.ident;
 
-import idealworld.dew.saas.basic.common.service.DewSAASApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import idealworld.dew.saas.DewSAASApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
 /**
  * The type Dew ident application.
  */
-@SpringBootApplication
 public class DewIdentApplication extends DewSAASApplication {
 
     /**

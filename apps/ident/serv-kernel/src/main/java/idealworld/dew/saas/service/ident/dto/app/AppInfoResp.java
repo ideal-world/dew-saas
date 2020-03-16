@@ -27,11 +27,11 @@ public class AppInfoResp implements Serializable {
     @ApiModelProperty(value = "应用图标")
     private String icon;
 
+    @ApiModelProperty(value = "应用扩展信息（Json格式）")
+    private String parameters;
+
     @ApiModelProperty(value = "应用所属租户", required = true)
     private Long relTenantId;
-
-    @ApiModelProperty(value = "是否删除", required = true)
-    private boolean delFlag;
 
     @ApiModelProperty(value = "创建者", required = true)
     protected String createUserName;

@@ -31,3 +31,5 @@ node_modules/
 
 *-prod.yml
 
+apps/starfk
+

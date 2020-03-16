@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.basic.common.service.domain.SafeEntity;
+import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -18,14 +18,14 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_permission", indexes = {
-        @Index(columnList = "relPostId"),
-        @Index(columnList = "relResourceId")
+        @Index(columnList = "delFlag,relPostId,relResourceId", unique = true),
+        @Index(columnList = "delFlag")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Permission extends SafeEntity {
+public class Permission extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     private Long relPostId;

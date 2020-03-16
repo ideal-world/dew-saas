@@ -35,7 +35,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台资源管理操作")
+@Api(value = "租户控制台资源管理操作", description = "租户控制台资源管理操作")
 @RequestMapping(value = "/console/resource")
 @Validated
 public class ConsoleResourceController extends BasicController {

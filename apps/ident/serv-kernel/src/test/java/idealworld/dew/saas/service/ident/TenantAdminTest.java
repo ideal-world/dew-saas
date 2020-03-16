@@ -18,10 +18,10 @@ package idealworld.dew.saas.service.ident;
 
 import com.ecfront.dew.common.tuple.Tuple3;
 import com.ecfront.dew.common.tuple.Tuple4;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.AccountCert;
 import idealworld.dew.saas.service.ident.domain.Organization;
 import idealworld.dew.saas.service.ident.domain.Resource;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
@@ -43,6 +43,8 @@ import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
 import org.junit.Assert;
 import org.springframework.stereotype.Component;
+
+import java.util.Date;
 
 /**
  * The type tenant test.
@@ -76,8 +78,8 @@ public class TenantAdminTest extends BasicTest {
         setIdentOptInfo(identOptInfo);
         // 修改当前租户信息
         putToEntity("/console/tenant", ModifyTenantReq.builder()
-                .tenantName("测试租户1")
-                .tenantIcon("/xx/xx")
+                .name("测试租户1")
+                .icon("/xx/xx")
                 .build(), Void.class);
         // 获取当前租户信息
         var tenantInfoR = getToEntity("/console/tenant", TenantInfoResp.class);
@@ -127,7 +129,6 @@ public class TenantAdminTest extends BasicTest {
         // 添加当前租户某个应用的凭证
         var appCertId = postToEntity("/console/app/" + appId + "/cert", AddAppCertReq.builder()
                 .note("临时凭证")
-                .validTimes(10L)
                 .build(), Long.class).getBody();
         // 修改当前租户某个应用的某个凭证
         putToEntity("/console/app/" + appId + "/cert/" + appCertId, ModifyAppCertReq.builder()
@@ -137,7 +138,6 @@ public class TenantAdminTest extends BasicTest {
         var appCerts = getToList("/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody();
         Assert.assertEquals(2, appCerts.size());
         Assert.assertEquals("临时凭证1", appCerts.get(1).getNote());
-        Assert.assertEquals(10, appCerts.get(1).getValidTimes().longValue());
         // 删除当前租户某个应用的某个凭证
         delete("/console/app/" + appId + "/cert/" + appCertId);
         // 删除当前租户某个应用的所有凭证
@@ -153,16 +153,19 @@ public class TenantAdminTest extends BasicTest {
         // 添加当前租户某个应用的机构
         var appRootOrgId = postToEntity("/console/organization/" + appId, AddOrganizationReq.builder()
                 .kind(Organization.Kind.VIRTUAL)
+                .code("org_x")
                 .name("x应用")
                 .parentId(-1L)
                 .build(), Long.class).getBody();
         postToEntity("/console/organization/" + appId, AddOrganizationReq.builder()
                 .kind(Organization.Kind.VIRTUAL)
+                .code("org_a")
                 .name("A团队")
                 .parentId(appRootOrgId)
                 .build(), Long.class);
         var leafOrgId = postToEntity("/console/organization/" + appId, AddOrganizationReq.builder()
                 .kind(Organization.Kind.VIRTUAL)
+                .code("org_b")
                 .name("B团队")
                 .parentId(appRootOrgId)
                 .build(), Long.class);
@@ -350,11 +353,11 @@ public class TenantAdminTest extends BasicTest {
                 .build(), Long.class).getBody();
         // 修改当前租户某个账号的某个凭证
         putToEntity("/console/account/" + accountId + "/cert/" + accountCertId, ModifyAccountCertReq.builder()
-                .validTimes(10L)
+                .validTime(new Date(System.currentTimeMillis() + 100000L))
                 .build(), Void.class);
         // 获取当前租户某个账号的凭证列表信息
         var accountCerts = getToList("/console/account/" + accountId + "/cert", AccountCertInfoResp.class).getBody();
-        Assert.assertEquals(1, accountCerts.size());
+        Assert.assertEquals(2, accountCerts.size());
         // 删除当前租户某个账号的某个凭证
         delete("/console/account/" + accountId + "/cert/" + accountCertId);
         // 删除当前租户某个账号的所有凭证

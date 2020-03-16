@@ -27,8 +27,8 @@ public class TenantInfoResp implements Serializable {
     @ApiModelProperty(value = "租户图标")
     private String icon;
 
-    @ApiModelProperty(value = "是否删除", required = true)
-    private boolean delFlag;
+    @ApiModelProperty(value = "租户扩展信息（Json格式）")
+    private String parameters;
 
     @ApiModelProperty(value = "创建者", required = true)
     protected String createUserName;

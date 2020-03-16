@@ -34,7 +34,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台职位管理操作")
+@Api(value = "租户控制台职位管理操作", description = "租户控制台职位管理操作")
 @RequestMapping(value = "/console/position")
 @Validated
 public class ConsolePositionController extends BasicController {
@@ -64,7 +64,7 @@ public class ConsolePositionController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}/{positionId}")
-    @ApiOperation(value = "删除当前租户某个应用应用的某个职位")
+    @ApiOperation(value = "删除当前租户某个应用应用的某个职位", notes = "删除职位，关联的岗位、账号岗位、权限")
     public Resp<Void> deletePosition(@PathVariable Long appId, @PathVariable Long positionId) {
         return positionService.deletePosition(positionId, appId, getCurrentTenantId());
     }

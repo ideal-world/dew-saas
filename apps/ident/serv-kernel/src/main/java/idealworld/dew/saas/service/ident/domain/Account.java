@@ -1,7 +1,7 @@
 package idealworld.dew.saas.service.ident.domain;
 
 import com.ecfront.dew.common.exception.RTException;
-import idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -21,13 +21,28 @@ import java.util.Arrays;
 @Entity
 @Table(name = "ident_account", indexes = {
         @Index(columnList = "relTenantId"),
-        @Index(columnList = "delFlag,name")
+        @Index(columnList = "delFlag")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class Account extends SafeSoftDelEntity {
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String avatar;
+
+    @Column(nullable = false)
+    private String parameters;
+
+    @Column(nullable = false)
+    private Status status;
+
+    @Column(nullable = false)
+    private Long relTenantId;
 
     public enum Status {
 
@@ -51,20 +66,5 @@ public class Account extends SafeSoftDelEntity {
                     .orElseThrow(() -> new RTException("Account status {" + code + "} NOT exist."));
         }
     }
-
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private String avatar;
-
-    @Column(nullable = false)
-    private String parameters;
-
-    @Column(nullable = false)
-    private Status status;
-
-    @Column(nullable = false)
-    private Long relTenantId;
 
 }

@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.basic.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Index;
 import javax.persistence.Table;
 
 /**
@@ -16,7 +17,9 @@ import javax.persistence.Table;
  * @author gudaoxuri
  */
 @Entity
-@Table(name = "ident_tenant")
+@Table(name = "ident_tenant", indexes = {
+        @Index(columnList = "delFlag")
+})
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
@@ -28,5 +31,8 @@ public class Tenant extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     private String icon;
+
+    @Column(nullable = false)
+    private String parameters;
 
 }

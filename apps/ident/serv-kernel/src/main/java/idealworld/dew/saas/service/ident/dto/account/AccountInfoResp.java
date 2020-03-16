@@ -30,9 +30,6 @@ public class AccountInfoResp implements Serializable {
     @ApiModelProperty(value = "账号扩展信息（Json格式）")
     private String parameters;
 
-    @ApiModelProperty(value = "是否删除", required = true)
-    private boolean delFlag;
-
     @ApiModelProperty(value = "创建者", required = true)
     protected String createUserName;
 

@@ -28,7 +28,13 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "ident")
 public class IdentConfig {
 
+    private App app = new App();
     private Security security = new Security();
+
+    @Data
+    public static class App {
+        private String authFieldName = "Authorization";
+    }
 
     @Data
     public static class Security {

@@ -33,7 +33,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台权限管理操作")
+@Api(value = "租户控制台权限管理操作", description = "租户控制台权限管理操作")
 @RequestMapping(value = "/console/permission")
 @Validated
 public class ConsolePermissionController extends BasicController {

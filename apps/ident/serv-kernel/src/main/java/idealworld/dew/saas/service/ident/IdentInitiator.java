@@ -18,8 +18,9 @@ package idealworld.dew.saas.service.ident;
 
 
 import group.idealworld.dew.core.DewContext;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
+import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.BasicService;
 import idealworld.dew.saas.service.ident.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
     private IdentConfig identConfig;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private AppService appService;
 
     /**
      * Init.
@@ -48,6 +51,7 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
         DewContext.setOptInfoClazz(IdentOptInfo.class);
         initPermissionData();
         permissionService.buildUrlAuth();
+        appService.cacheAppCerts();
     }
 
     private void initPermissionData() {
@@ -98,14 +102,14 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
         saveEntity(tenantRes);
 
         var adminPost = Post.builder()
-                .relOrganizationId(-1L)
+                .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getSystemAdminPositionCode())
                 .relAppId(-1L)
                 .relTenantId(-1L)
                 .build();
         saveEntity(adminPost);
         var tenantPost = Post.builder()
-                .relOrganizationId(-1L)
+                .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getTenantAdminPositionCode())
                 .relAppId(-1L)
                 .relTenantId(-1L)

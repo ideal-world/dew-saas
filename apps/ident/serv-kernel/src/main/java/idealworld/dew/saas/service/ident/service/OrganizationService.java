@@ -17,8 +17,9 @@
 package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
+import com.ecfront.dew.common.tuple.Tuple2;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.service.ident.Constant;
+import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.service.ident.domain.Organization;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QOrganization;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author gudaoxuri
@@ -39,16 +41,30 @@ public class OrganizationService extends BasicService {
 
     @Autowired
     private AppService appService;
+    @Autowired
+    private PostService postService;
 
     @Transactional
     public Resp<Long> AddOrganization(AddOrganizationReq addOrganizationReq, Long relAppId, Long relTenantId) {
         if (!appService.checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        var qOrganization = QOrganization.organization;
+        if (sqlBuilder.select(qOrganization.id)
+                .from(qOrganization)
+                .where(qOrganization.delFlag.eq(false))
+                .where(qOrganization.relTenantId.eq(relTenantId))
+                .where(qOrganization.relAppId.eq(relAppId))
+                .where(qOrganization.code.eq(addOrganizationReq.getCode()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此机构编码已存在");
+        }
         var appCert = Organization.builder()
                 .kind(addOrganizationReq.getKind())
+                .code(addOrganizationReq.getCode())
                 .name(addOrganizationReq.getName())
                 .icon(addOrganizationReq.getIcon() != null ? addOrganizationReq.getIcon() : "")
+                .parameters(addOrganizationReq.getParameters() != null ? addOrganizationReq.getParameters() : "{}")
                 .sort(addOrganizationReq.getSort() != null ? addOrganizationReq.getSort() : 0)
                 .parentId(addOrganizationReq.getParentId() != null ? addOrganizationReq.getParentId() : -1L)
                 .relAppId(relAppId)
@@ -65,9 +81,11 @@ public class OrganizationService extends BasicService {
                 .select(Projections.bean(
                         OrganizationInfoResp.class,
                         qOrganization.id,
+                        qOrganization.code,
                         qOrganization.kind,
                         qOrganization.name,
                         qOrganization.icon,
+                        qOrganization.parameters,
                         qOrganization.sort,
                         qOrganization.parentId,
                         qOrganization.relAppId,
@@ -80,7 +98,8 @@ public class OrganizationService extends BasicService {
                 .leftJoin(qAccountCreateUser).on(qOrganization.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qOrganization.updateUser.eq(qAccountUpdateUser.id))
                 .where(qOrganization.relAppId.eq(relAppId))
-                .where(qOrganization.relTenantId.eq(relTenantId));
+                .where(qOrganization.relTenantId.eq(relTenantId))
+                .where(qOrganization.delFlag.eq(false));
         return findDTOs(OrganizationQuery);
     }
 
@@ -101,6 +120,9 @@ public class OrganizationService extends BasicService {
         if (modifyOrganizationReq.getIcon() != null) {
             updateClause.set(qOrganization.icon, modifyOrganizationReq.getIcon());
         }
+        if (modifyOrganizationReq.getParameters() != null) {
+            updateClause.set(qOrganization.parameters, modifyOrganizationReq.getParameters());
+        }
         if (modifyOrganizationReq.getSort() != null) {
             updateClause.set(qOrganization.sort, modifyOrganizationReq.getSort());
         }
@@ -112,14 +134,51 @@ public class OrganizationService extends BasicService {
 
     @Transactional
     public Resp<Void> deleteOrganization(Long organizationId, Long relAppId, Long relTenantId) {
-        // TODO 级联删除机构、岗位、用户岗位关联、权限
         var qOrganization = QOrganization.organization;
-        return deleteEntity(sqlBuilder
-                .delete(qOrganization)
+        var getOrganizationCodeR = getDTO(sqlBuilder.select(qOrganization.code)
+                .from(qOrganization)
                 .where(qOrganization.id.eq(organizationId))
+                .where(qOrganization.delFlag.eq(false)));
+        if (!getOrganizationCodeR.ok()) {
+            // 已经被删除
+            return Resp.error(getOrganizationCodeR);
+        }
+        // 级联删除机构
+        var deleteOrgInfos = findOrganizationIds(organizationId);
+        deleteOrgInfos.add(new Tuple2<>(organizationId, getOrganizationCodeR.getBody()));
+        var deleteR = updateEntity(sqlBuilder
+                .update(qOrganization)
+                .set(qOrganization.delFlag, false)
+                .where(qOrganization.id.in(deleteOrgInfos
+                        .stream()
+                        .map(orgInfoTuple -> orgInfoTuple._0)
+                        .collect(Collectors.toList())))
                 .where(qOrganization.relAppId.eq(relAppId))
                 .where(qOrganization.relTenantId.eq(relTenantId))
         );
+        if (!deleteR.ok()) {
+            return deleteR;
+        }
+        // 删除岗位、账号岗位、权限
+        postService.deletePostByOrgCodes(deleteOrgInfos
+                .stream()
+                .map(orgInfoTuple -> orgInfoTuple._1)
+                .collect(Collectors.toList()), relAppId, relTenantId);
+        return deleteR;
+    }
+
+    private List<Tuple2<Long, String>> findOrganizationIds(Long parentOrgId) {
+        var qOrganization = QOrganization.organization;
+        return sqlBuilder.select(qOrganization.id, qOrganization.code)
+                .from(qOrganization)
+                .where(qOrganization.parentId.eq(parentOrgId))
+                .where(qOrganization.delFlag.eq(false))
+                .fetch()
+                .stream()
+                .map(orgInfo -> new Tuple2<>(orgInfo.get(0, Long.class), orgInfo.get(1, String.class)))
+                .flatMap(orgInfoTuple -> findOrganizationIds(orgInfoTuple._0).stream())
+                .collect(Collectors.toList());
+
     }
 
 }

@@ -18,12 +18,13 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
-import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import idealworld.dew.saas.basic.common.service.domain.IdEntity;
-import idealworld.dew.saas.service.ident.Constant;
+import group.idealworld.dew.Dew;
+import group.idealworld.dew.core.cluster.ClusterElection;
+import idealworld.dew.saas.common.service.Constant;
+import idealworld.dew.saas.common.service.domain.IdEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +36,13 @@ public abstract class BasicService {
 
     protected static final Logger logger = LoggerFactory.getLogger(BasicService.class);
 
+    protected static final ClusterElection ELECTION = Dew.cluster.election.instance("ident");
+
     @Autowired
     protected JPAQueryFactory sqlBuilder;
     @Autowired
     private EntityManager entityManager;
+
 
     protected Resp<Long> saveEntity(IdEntity idEntity) {
         entityManager.persist(idEntity);
@@ -74,15 +78,6 @@ public abstract class BasicService {
                 .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
                 .fetchResults();
         return Resp.success(Page.build(pageNumber, pageSize, obj.getTotal(), obj.getResults()));
-    }
-
-    protected Resp<Void> deleteEntity(JPADeleteClause deleteClause) {
-        var deleteRowNum = deleteClause.execute();
-        if (deleteRowNum == 0) {
-            return Constant.RESP.NOT_FOUNT();
-        } else {
-            return Resp.success(null);
-        }
     }
 
     protected <E> Resp<Long> countQuery(JPAQuery<E> jpaQuery) {

@@ -18,11 +18,11 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QApp;
 import idealworld.dew.saas.service.ident.domain.QTenant;
 import idealworld.dew.saas.service.ident.domain.Tenant;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountPostReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
@@ -67,6 +67,7 @@ public class TenantService extends BasicService {
         var tenant = Tenant.builder()
                 .name(registerTenantReq.getTenantName())
                 .icon("")
+                .parameters("{}")
                 .createUser(addAccountR.getBody())
                 .updateUser(addAccountR.getBody())
                 .build();
@@ -96,6 +97,7 @@ public class TenantService extends BasicService {
                         qTenant.id,
                         qTenant.name,
                         qTenant.icon,
+                        qTenant.parameters,
                         qTenant.delFlag,
                         qTenant.createTime,
                         qTenant.updateTime,
@@ -104,7 +106,8 @@ public class TenantService extends BasicService {
                 .from(qTenant)
                 .leftJoin(qAccountCreateUser).on(qTenant.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qTenant.updateUser.eq(qAccountUpdateUser.id))
-                .where(qTenant.id.eq(tenantId));
+                .where(qTenant.id.eq(tenantId))
+                .where(qTenant.delFlag.eq(false));
         return getDTO(tenantQuery);
     }
 
@@ -113,9 +116,12 @@ public class TenantService extends BasicService {
         var qTenant = QTenant.tenant;
         var updateClause = sqlBuilder.update(qTenant)
                 .where(qTenant.id.eq(tenantId))
-                .set(qTenant.name, modifyTenantReq.getTenantName());
-        if (modifyTenantReq.getTenantIcon() != null) {
-            updateClause.set(qTenant.icon, modifyTenantReq.getTenantIcon());
+                .set(qTenant.name, modifyTenantReq.getName());
+        if (modifyTenantReq.getIcon() != null) {
+            updateClause.set(qTenant.icon, modifyTenantReq.getIcon());
+        }
+        if (modifyTenantReq.getParameters() != null) {
+            updateClause.set(qTenant.parameters, modifyTenantReq.getParameters());
         }
         return updateEntity(updateClause);
     }
@@ -132,16 +138,11 @@ public class TenantService extends BasicService {
             return Resp.conflict("请先删除租户下的所有应用");
         }
         var qTenant = QTenant.tenant;
-        var deleteR = updateEntity(sqlBuilder
+        return updateEntity(sqlBuilder
                 .update(qTenant)
                 .set(qTenant.delFlag, true)
                 .where(qTenant.id.eq(tenantId))
         );
-        if (!deleteR.ok()) {
-            return deleteR;
-        }
-        accountService.deleteAccounts(tenantId);
-        return deleteR;
     }
 
 }

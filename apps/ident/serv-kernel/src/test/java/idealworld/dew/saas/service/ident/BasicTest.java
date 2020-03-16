@@ -19,7 +19,7 @@ package idealworld.dew.saas.service.ident;
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.service.ident.dto.IdentOptInfo;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;

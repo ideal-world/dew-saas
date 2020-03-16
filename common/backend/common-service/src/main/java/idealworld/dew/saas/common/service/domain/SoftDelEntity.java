@@ -1,4 +1,4 @@
-package idealworld.dew.saas.basic.common.service.domain;
+package idealworld.dew.saas.common.service.domain;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

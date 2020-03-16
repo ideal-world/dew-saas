@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.service.ident.dto;
+package idealworld.dew.saas.common.service.dto;
 
 import group.idealworld.dew.core.auth.dto.OptInfo;
 import io.swagger.annotations.ApiModel;

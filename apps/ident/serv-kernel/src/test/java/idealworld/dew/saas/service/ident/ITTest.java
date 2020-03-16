@@ -16,7 +16,6 @@
 
 package idealworld.dew.saas.service.ident;
 
-import idealworld.dew.saas.service.ident.domain.AccountCert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +39,8 @@ public class ITTest extends BasicTest {
 
     @Test
     public void testAll() {
-       var info =  tenantAdminTest.testAll();
-        authTest.testAll(info._0,info._1,info._2,info._3);
+        var info = tenantAdminTest.testAll();
+        authTest.testAll(info._0, info._1, info._2, info._3);
         /*testUser();
         testSystemAdmin();
         testAppConnection();*/

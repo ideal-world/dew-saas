@@ -18,4 +18,7 @@ public class ModifyAppReq implements Serializable {
     @ApiModelProperty(value = "应用图标")
     private String icon;
 
+    @ApiModelProperty(value = "应用扩展信息（Json格式）")
+    private String parameters;
+
 }

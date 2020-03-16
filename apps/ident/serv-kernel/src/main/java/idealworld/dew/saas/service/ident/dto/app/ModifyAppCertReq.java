@@ -19,7 +19,4 @@ public class ModifyAppCertReq implements Serializable {
     @ApiModelProperty(value = "应用凭证过期时间")
     private Date validTime;
 
-    @ApiModelProperty(value = "应用凭证有效次数")
-    private Long validTimes;
-
 }
