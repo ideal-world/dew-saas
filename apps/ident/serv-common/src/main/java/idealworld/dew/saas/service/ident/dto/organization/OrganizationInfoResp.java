@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.organization;
 
-import idealworld.dew.saas.service.ident.domain.Organization;
+import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -23,7 +23,7 @@ public class OrganizationInfoResp implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "机构类型", required = true)
-    private Organization.Kind kind;
+    private OrganizationKind kind;
 
     @ApiModelProperty(value = "机构编码", required = true)
     private String code;

@@ -58,7 +58,7 @@ public class ConsoleResourceController extends BasicController {
     }
 
     @PutMapping(value = "{appId}/{resourceId}")
-    @ApiOperation(value = "修改当前租户某个应用的资源（组）")
+    @ApiOperation(value = "修改当前租户某个应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long appId,
                                      @PathVariable Long resourceId,
                                      @RequestBody ModifyResourceReq modifyResourceReq) {
@@ -66,7 +66,7 @@ public class ConsoleResourceController extends BasicController {
     }
 
     @GetMapping(value = "{appId}/{resourceId}")
-    @ApiOperation(value = "获取当前租户某个应用的资源（组）信息")
+    @ApiOperation(value = "获取当前租户某个应用的某个资源（组）信息")
     public Resp<ResourceInfoResp> getResource(@PathVariable Long appId,
                                               @PathVariable Long resourceId) {
         return resourceService.getResource(resourceId, appId, getCurrentTenantId());
@@ -79,7 +79,7 @@ public class ConsoleResourceController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}/{resourceId}")
-    @ApiOperation(value = "删除当前租户某个应用的资源（组）")
+    @ApiOperation(value = "删除当前租户某个应用的某个资源（组）")
     public Resp<Void> deleteResource(@PathVariable Long appId, @PathVariable Long resourceId) {
         return resourceService.deleteResource(resourceId, appId, getCurrentTenantId());
     }

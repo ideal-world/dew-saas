@@ -1,20 +1,28 @@
 package idealworld.dew.saas.service.ident.dto.resouce;
 
-import idealworld.dew.saas.service.ident.domain.Resource;
+import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
 @Data
 @Builder
-@ApiModel("添加资源请求")
-public class AddResourceReq implements Serializable {
+@ApiModel("资源信息")
+public class ResourceInfoResp implements Serializable {
+
+    @Tolerate
+    public ResourceInfoResp() {
+    }
+
+    @ApiModelProperty(value = "资源（组）Id", required = true)
+    private Long id;
 
     @ApiModelProperty(value = "资源类型", required = true)
-    private Resource.Kind kind;
+    private ResourceKind kind;
 
     @ApiModelProperty(value = "资源标识", required = true)
     private String identifier;
@@ -31,7 +39,10 @@ public class AddResourceReq implements Serializable {
     @ApiModelProperty(value = "资源显示排序")
     private Integer sort;
 
-    @ApiModelProperty(value = "资源所属组", required = true)
+    @ApiModelProperty(value = "资源所属组")
     private Long parentId;
+
+    @ApiModelProperty(value = "资源所属应用", required = true)
+    private Long relAppId;
 
 }

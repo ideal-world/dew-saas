@@ -23,6 +23,7 @@ import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.permission.AddPermissionReq;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoResp;
+import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -49,7 +50,7 @@ public class PermissionService extends BasicService {
     private AppService appService;
 
     public void buildUrlAuth() {
-        Map<String, Map<String, List<String>>> roleAuth = findPermissionInfo(Resource.Kind.URI).stream()
+        Map<String, Map<String, List<String>>> roleAuth = findPermissionInfo(ResourceKind.URI).stream()
                 .collect(Collectors.groupingBy(
                         info -> info.getRelAppId() + ROLE_SPLIT + info.getPositionCode(),
                         Collectors.groupingBy(
@@ -153,7 +154,7 @@ public class PermissionService extends BasicService {
         return Resp.success(null);
     }
 
-    private List<PermissionInfo> findPermissionInfo(Resource.Kind resourceKind) {
+    private List<PermissionInfo> findPermissionInfo(ResourceKind resourceKind) {
         var qResource = QResource.resource;
         var qPost = QPost.post;
         var qPosition = QPosition.position;
@@ -175,12 +176,12 @@ public class PermissionService extends BasicService {
                                 .and(qPost.relAppId.eq(qPosition.relAppId))
                                 .and(qPost.relPositionCode.eq(qPosition.code)))
                 .innerJoin(qResource).on(qPermission.relResourceId.eq(qResource.id).and(qResource.delFlag.eq(false)))
-                .where(qResource.kind.in(resourceKind, Resource.Kind.GROUP))
+                .where(qResource.kind.in(resourceKind, ResourceKind.GROUP))
                 .where(qResource.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .flatMap(info -> {
-                    if (info.resKind == Resource.Kind.GROUP) {
+                    if (info.resKind == ResourceKind.GROUP) {
                         return resourceService.findResourceByGroup(info.getResId())
                                 .stream()
                                 .map(resInfo -> PermissionInfo.builder()
@@ -209,7 +210,7 @@ public class PermissionService extends BasicService {
         public PermissionInfo() {
         }
 
-        private Resource.Kind resKind;
+        private ResourceKind resKind;
         private Long resId;
         private String resIdentifier;
         private String resMethod;

@@ -18,6 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
+import com.ecfront.dew.common.tuple.Tuple2;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.Constant;
@@ -125,7 +126,7 @@ public class AppService extends BasicService {
         }
         var qAppCert = QAppCert.appCert;
         sqlBuilder
-                .select(qAppCert.ak, qAppCert.sk, qAppCert.validTime)
+                .select(qAppCert.ak, qAppCert.sk, qAppCert.relAppId, qAppCert.validTime)
                 .from(qAppCert)
                 .where(qAppCert.delFlag.eq(false))
                 .where(qAppCert.validTime.gt(new Date()))
@@ -133,11 +134,12 @@ public class AppService extends BasicService {
                 .forEach(info -> {
                     var ak = info.get(0, String.class);
                     var sk = info.get(1, String.class);
+                    var relAppId = info.get(2, Date.class);
                     var validTime = info.get(3, Date.class);
                     if (validTime.getTime() == Constant.NEVER_EXPIRE_TIME.getTime()) {
-                        Dew.cluster.cache.set(CACHE_AK + ak, sk);
+                        Dew.cluster.cache.set(CACHE_AK + ak, sk + ":" + relAppId);
                     } else {
-                        Dew.cluster.cache.setex(CACHE_AK + ak, sk,
+                        Dew.cluster.cache.setex(CACHE_AK + ak, sk + ":" + relAppId,
                                 (validTime.getTime() - System.currentTimeMillis()) / 1000);
                     }
                 });
@@ -159,9 +161,9 @@ public class AppService extends BasicService {
         var saveR = saveEntity(appCert);
         if (saveR.ok()) {
             if (addAppCertReq.getValidTime() == null) {
-                Dew.cluster.cache.set(CACHE_AK + appCert.getAk(), appCert.getSk());
+                Dew.cluster.cache.set(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relAppId);
             } else {
-                Dew.cluster.cache.setex(CACHE_AK + appCert.getAk(), appCert.getSk(),
+                Dew.cluster.cache.setex(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relAppId,
                         (appCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
             }
         }
@@ -217,18 +219,19 @@ public class AppService extends BasicService {
             var updateAppCert = sqlBuilder.selectFrom(qAppCert)
                     .where(qAppCert.id.eq(appCertId))
                     .fetchOne();
-            Dew.cluster.cache.setex(CACHE_AK + updateAppCert.getAk(), updateAppCert.getSk(),
+            Dew.cluster.cache.setex(CACHE_AK + updateAppCert.getAk() + ":" + relAppId, updateAppCert.getSk(),
                     (updateAppCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
         }
         return updateR;
     }
 
-    public Resp<String> getAppCertByAk(String ak) {
-        var sk = Dew.cluster.cache.get(CACHE_AK + ak);
-        if (sk == null) {
+    public Resp<Tuple2<String, Long>> getAppCertByAk(String ak) {
+        var skAndAppId = Dew.cluster.cache.get(CACHE_AK + ak);
+        if (skAndAppId == null) {
             return Resp.notFound("");
         }
-        return Resp.success(sk);
+        var skAndAppIdSplit = skAndAppId.split(":");
+        return Resp.success(new Tuple2<>(skAndAppIdSplit[0], Long.valueOf(skAndAppIdSplit[1])));
     }
 
     @Transactional

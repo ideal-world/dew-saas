@@ -1,14 +1,13 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import com.ecfront.dew.common.exception.RTException;
 import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
-import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -30,7 +29,7 @@ public class AccountCert extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Kind kind;
+    private AccountCertKind kind;
 
     @Column(nullable = false)
     private String ak;
@@ -46,28 +45,5 @@ public class AccountCert extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     private Long relTenantId;
-
-    public enum Kind {
-
-        PHONE("PHONE"), USERNAME("USERNAME"), EMAIL("EMAIL"), WECHAT("WECHAT");
-
-        private String code;
-
-        Kind(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        public static Kind parse(String code) {
-            return Arrays.stream(Kind.values())
-                    .filter(item -> item.code.equalsIgnoreCase(code))
-                    .findFirst()
-                    .orElseThrow(() -> new RTException("Cert access key kind {" + code + "} NOT exist."));
-        }
-    }
 
 }

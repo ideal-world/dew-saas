@@ -17,9 +17,9 @@
 package idealworld.dew.saas.service.ident;
 
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.service.ident.domain.AccountCert;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.junit.Assert;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthTest extends BasicTest {
 
-    public void testAll(Long tenantId, AccountCert.Kind certKind, String ak, String sk) {
+    public void testAll(Long tenantId, AccountCertKind certKind, String ak, String sk) {
         // 登录
         var identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
                 .certKind(certKind)

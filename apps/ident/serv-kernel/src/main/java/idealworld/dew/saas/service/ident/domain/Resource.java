@@ -1,14 +1,13 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import com.ecfront.dew.common.exception.RTException;
 import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
-import java.util.Arrays;
 
 /**
  * The type Resource.
@@ -28,7 +27,7 @@ public class Resource extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Kind kind;
+    private ResourceKind kind;
 
     @Column(nullable = false)
     private String identifier;
@@ -55,28 +54,5 @@ public class Resource extends SafeSoftDelEntity {
     // 为空表示是系统或租户控制台资源
     @Column(nullable = false)
     private Long relTenantId;
-
-    public enum Kind {
-
-        GROUP("GROUP"), URI("URI"), MENU("MENU"), ACTION("ACTION");
-
-        private String code;
-
-        Kind(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        public static Kind parse(String code) {
-            return Arrays.stream(Kind.values())
-                    .filter(item -> item.code.equalsIgnoreCase(code))
-                    .findFirst()
-                    .orElseThrow(() -> new RTException("Resource kind {" + code + "} NOT exist."));
-        }
-    }
 
 }

@@ -1,7 +1,7 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import com.ecfront.dew.common.exception.RTException;
 import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
-import java.util.Arrays;
 
 /**
  * The type Account.
@@ -39,32 +38,9 @@ public class Account extends SafeSoftDelEntity {
     private String parameters;
 
     @Column(nullable = false)
-    private Status status;
+    private AccountStatus status;
 
     @Column(nullable = false)
     private Long relTenantId;
-
-    public enum Status {
-
-        DISABLED("DISABLED"), ENABLED("ENABLED");
-
-        private String code;
-
-        Status(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        public static Account.Status parse(String code) {
-            return Arrays.stream(Account.Status.values())
-                    .filter(item -> item.code.equalsIgnoreCase(code))
-                    .findFirst()
-                    .orElseThrow(() -> new RTException("Account status {" + code + "} NOT exist."));
-        }
-    }
 
 }

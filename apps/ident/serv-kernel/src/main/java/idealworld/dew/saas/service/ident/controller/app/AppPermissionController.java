@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.service.ident.controller.console;
+package idealworld.dew.saas.service.ident.controller.app;
 
 import com.ecfront.dew.common.Resp;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.dto.permission.AddPermissionReq;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoResp;
+import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.PermissionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,31 +34,32 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台权限管理操作", description = "租户控制台权限管理操作")
-@RequestMapping(value = "/console/permission")
+@Api(value = "应用控制台权限管理操作", description = "应用控制台权限管理操作")
+@RequestMapping(value = "/app/permission")
 @Validated
-public class ConsolePermissionController extends BasicController {
+public class AppPermissionController extends BasicController {
 
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private AppHandlerInterceptor appHandlerInterceptor;
 
-    @PostMapping(value = "{appId}")
-    @ApiOperation(value = "添加当前租户某个应用的权限")
-    public Resp<Long> addPermission(@PathVariable Long appId,
-                                    @RequestBody AddPermissionReq addPermissionReq) {
-        return permissionService.addPermission(addPermissionReq, appId, getCurrentTenantId());
+    @PostMapping(value = "")
+    @ApiOperation(value = "添加当前应用的权限")
+    public Resp<Long> addPermission(@RequestBody AddPermissionReq addPermissionReq) {
+        return permissionService.addPermission(addPermissionReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
     }
 
-    @GetMapping(value = "{appId}")
-    @ApiOperation(value = "获取当前租户某个应用的权限列表信息")
-    public Resp<List<PermissionInfoResp>> findPermissionInfo(@PathVariable Long appId) {
-        return permissionService.findPermissionInfo(appId, getCurrentTenantId());
+    @GetMapping(value = "")
+    @ApiOperation(value = "获取当前应用的权限列表信息")
+    public Resp<List<PermissionInfoResp>> findPermissionInfo() {
+        return permissionService.findPermissionInfo(appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
     }
 
-    @DeleteMapping(value = "{appId}/{permissionId}")
-    @ApiOperation(value = "删除当前租户某个应用的某个权限")
-    public Resp<Void> deletePermission(@PathVariable Long appId, @PathVariable Long permissionId) {
-        return permissionService.deletePermission(permissionId, appId, getCurrentTenantId());
+    @DeleteMapping(value = "{permissionId}")
+    @ApiOperation(value = "删除当前应用的某个权限")
+    public Resp<Void> deletePermission(@PathVariable Long permissionId) {
+        return permissionService.deletePermission(permissionId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
     }
 
 }

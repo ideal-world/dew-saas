@@ -25,6 +25,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
 import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
+import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +51,7 @@ public class ResourceService extends BasicService {
             return Constant.RESP.NOT_FOUNT();
         }
         var resource = Resource.builder()
-                .kind(Resource.Kind.GROUP)
+                .kind(ResourceKind.GROUP)
                 .identifier("")
                 .method("")
                 .name(addResourceGroupReq.getName() != null ? addResourceGroupReq.getName() : "")
@@ -217,7 +218,7 @@ public class ResourceService extends BasicService {
                 .fetch()
                 .stream()
                 .flatMap(res -> {
-                    if (res.getKind() == Resource.Kind.GROUP) {
+                    if (res.getKind() == ResourceKind.GROUP) {
                         return findResourceByGroup(res.getId()).stream();
                     } else {
                         return new ArrayList<ResourceInfoResp>() {{

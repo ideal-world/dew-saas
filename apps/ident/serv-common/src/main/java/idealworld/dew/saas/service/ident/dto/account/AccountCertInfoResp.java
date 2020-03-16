@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
-import idealworld.dew.saas.service.ident.domain.AccountCert;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -23,7 +23,7 @@ public class AccountCertInfoResp implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "账号凭证类型名称", required = true)
-    private AccountCert.Kind kind;
+    private AccountCertKind kind;
 
     @ApiModelProperty(value = "账号凭证名称", required = true)
     private String ak;

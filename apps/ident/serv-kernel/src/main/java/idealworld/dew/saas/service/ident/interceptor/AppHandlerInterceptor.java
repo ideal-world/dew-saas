@@ -44,6 +44,8 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(group.idealworld.dew.core.web.interceptor.BasicHandlerInterceptor.class);
 
+    private static final ThreadLocal<Long> CONTEXT_APP_ID = new ThreadLocal<>();
+
     @Autowired
     private IdentConfig identConfig;
     @Autowired
@@ -64,8 +66,8 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
         var ak = authorization.split(":")[0];
-        var legalSkR = appService.getAppCertByAk(ak);
-        if (!legalSkR.ok()) {
+        var legalSkAndAppIdR = appService.getAppCertByAk(ak);
+        if (!legalSkAndAppIdR.ok()) {
             ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
                     "认证错误，请检查AK是否合法",
                     AuthException.class.getName());
@@ -75,8 +77,10 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
         var reqMethod = request.getMethod().toLowerCase();
         var reqDate = request.getHeader("Date").toLowerCase();
         var reqUri = request.getRequestURI().toLowerCase();
+        var sk = legalSkAndAppIdR.getBody()._0;
+        var appId = legalSkAndAppIdR.getBody()._1;
         var calcSignature = $.security.encodeStringToBase64(
-                $.security.digest.digest(reqMethod + "\n" + reqDate + "\n" + reqUri, legalSkR.getBody(), "HmacSHA1"),
+                $.security.digest.digest(reqMethod + "\n" + reqDate + "\n" + reqUri, sk, "HmacSHA1"),
                 StandardCharsets.UTF_8);
         if (!reqSignature.equalsIgnoreCase(calcSignature)) {
             ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
@@ -84,7 +88,12 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
                     AuthException.class.getName());
             return false;
         }
+        CONTEXT_APP_ID.set(appId);
         return super.preHandle(request, response, handler);
+    }
+
+    public Long getCurrentAppId() {
+        return CONTEXT_APP_ID.get();
     }
 
 }

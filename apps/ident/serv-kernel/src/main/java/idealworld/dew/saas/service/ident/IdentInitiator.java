@@ -20,6 +20,7 @@ package idealworld.dew.saas.service.ident;
 import group.idealworld.dew.core.DewContext;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
+import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.BasicService;
 import idealworld.dew.saas.service.ident.service.PermissionService;
@@ -77,7 +78,7 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
                 .build());
 
         var adminRes = Resource.builder()
-                .kind(Resource.Kind.URI)
+                .kind(ResourceKind.URI)
                 .identifier("/admin/**")
                 .method("*")
                 .name("")
@@ -89,7 +90,7 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
                 .build();
         saveEntity(adminRes);
         var tenantRes = Resource.builder()
-                .kind(Resource.Kind.URI)
+                .kind(ResourceKind.URI)
                 .identifier("/console/**")
                 .method("*")
                 .name("")

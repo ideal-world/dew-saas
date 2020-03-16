@@ -26,6 +26,8 @@ import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
+import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,7 +115,7 @@ public class AccountService extends BasicService {
                 .name(addAccountReq.getName())
                 .avatar(addAccountReq.getAvatar() != null ? addAccountReq.getAvatar() : "")
                 .parameters(addAccountReq.getParameters() != null ? addAccountReq.getParameters() : "{}")
-                .status(Account.Status.ENABLED)
+                .status(AccountStatus.ENABLED)
                 .relTenantId(relTenantId)
                 .build();
         saveEntity(account);
@@ -418,7 +420,7 @@ public class AccountService extends BasicService {
         Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak, tmpSk, SK_KIND_VCODE_EXPRIE_SEC);
     }
 
-    private Resp<String> certProcessSK(AccountCert.Kind certKind, String ak, String sk, Long tenantId) {
+    private Resp<String> certProcessSK(AccountCertKind certKind, String ak, String sk, Long tenantId) {
         switch (certKind) {
             case EMAIL:
             case PHONE:
@@ -440,7 +442,7 @@ public class AccountService extends BasicService {
         }
     }
 
-    private Resp<Void> validateSK(AccountCert.Kind certKind,
+    private Resp<Void> validateSK(AccountCertKind certKind,
                                   String ak, String inputSk, String storageSk, Long tenantId) {
         switch (certKind) {
             case EMAIL:

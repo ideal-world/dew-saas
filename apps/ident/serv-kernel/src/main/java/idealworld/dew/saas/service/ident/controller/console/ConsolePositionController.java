@@ -56,7 +56,7 @@ public class ConsolePositionController extends BasicController {
     }
 
     @PutMapping(value = "{appId}/{positionId}")
-    @ApiOperation(value = "修改当前租户某个应用应用的某个职位")
+    @ApiOperation(value = "修改当前租户某个应用的某个职位")
     public Resp<Void> modifyPosition(@PathVariable Long appId,
                                      @PathVariable Long positionId,
                                      @RequestBody ModifyPositionReq modifyPositionReq) {
@@ -64,7 +64,7 @@ public class ConsolePositionController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}/{positionId}")
-    @ApiOperation(value = "删除当前租户某个应用应用的某个职位", notes = "删除职位，关联的岗位、账号岗位、权限")
+    @ApiOperation(value = "删除当前租户某个应用的某个职位", notes = "删除职位，关联的岗位、账号岗位、权限")
     public Resp<Void> deletePosition(@PathVariable Long appId, @PathVariable Long positionId) {
         return positionService.deletePosition(positionId, appId, getCurrentTenantId());
     }
