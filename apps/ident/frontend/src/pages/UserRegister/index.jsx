@@ -47,9 +47,10 @@ class UserRegister extends Component {
 
   componentDidUpdate() {
     const { userRegister, form } = this.props;
-    const account = form.getFieldValue('mail');
+    const account = form.getFieldValue('ak');
+    // model中的state
     console.info(userRegister);
-    if (userRegister.code === '200') {
+    if (userRegister.status === '200') {
       message.success('注册成功！');
       router.push({
         pathname: '/user/register-result',
@@ -244,12 +245,12 @@ class UserRegister extends Component {
                     id: 'userregister.ak.required',
                   }),
                 },
-                {
-                  type: 'email',
-                  message: formatMessage({
-                    id: 'userregister.ak.wrong-format',
-                  }),
-                },
+                // {
+                //   pattern: /^\d{11}$/,
+                //   message: formatMessage({
+                //     id: 'userregister.ak.wrong-format',
+                //   }),
+                // },
               ],
             })(
               <Input

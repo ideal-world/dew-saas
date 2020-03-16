@@ -88,6 +88,12 @@ export default {
           path: '/user/register',
           component: './UserRegister',
         },
+        {
+          name: '注册结果页',
+          icon: 'smile',
+          path: '/user/register-result',
+          component: './UserRegisterResult',
+        },
       ],
     },
     {
