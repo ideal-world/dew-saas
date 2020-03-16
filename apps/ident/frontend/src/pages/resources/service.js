@@ -11,7 +11,8 @@ export async function removeResource(params) {
   });
 }
 export async function addResource(params) {
-  return request('/api/rule', {
+  console.info(params);
+  return request('/api/ident/console/resource/'+params.appId, {
     method: 'POST',
     data: { ...params, method: 'post' },
   });

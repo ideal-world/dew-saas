@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import styles from './index.less';
 import {queryResource} from './service';
-import {Button, Form, Input, Select, Tree} from 'antd';
+import {Button,Tree} from 'antd';
 import {PlusOutlined} from '@ant-design/icons';
 import CreateForm from './components/CreateForm'
+
 
 const {DirectoryTree} = Tree;
 
@@ -32,29 +33,7 @@ const build = (result, value) => {
   }
 };
 
-const {Option} = Select;
-const formItemLayout = {
-  labelCol: {
-    span: 6,
-  },
-  wrapperCol: {
-    span: 14,
-  },
-};
 
-const normFile = e => {
-  console.log('Upload event:', e);
-
-  if (Array.isArray(e)) {
-    return e;
-  }
-
-  return e && e.fileList;
-};
-
-const onFinish = values => {
-  console.log('Received values of form: ', values);
-};
 
 
 class Resource extends React.Component {
@@ -75,32 +54,32 @@ class Resource extends React.Component {
       treeData: [
         {
           title: 'parent 0',
-          key: '0-0',
+          key: '1',
           children: [
             {
               title: 'leaf 0-0',
-              key: '0-0-0',
+              key: '2',
               isLeaf: true,
             },
             {
               title: 'leaf 0-1',
-              key: '0-0-1',
+              key: '3',
               isLeaf: true,
             },
           ],
         },
         {
           title: 'parent 1',
-          key: '0-1',
+          key: '4',
           children: [
             {
               title: 'leaf 1-0',
-              key: '0-1-0',
+              key: '5',
               isLeaf: true,
             },
             {
               title: 'leaf 1-1',
-              key: '0-1-1',
+              key: '6',
               isLeaf: true,
             },
           ],
@@ -113,7 +92,7 @@ class Resource extends React.Component {
   }
 
   componentDidMount() {
-    queryResource()
+   queryResource()
       .then(resp => {
         if (resp.code === '200') {
           const data = [
@@ -164,6 +143,7 @@ class Resource extends React.Component {
   }
 
   render() {
+    const formRef = React.createRef();
     return (
       <div className={styles.container}>
         <div id="components-tree-demo-directory">
@@ -180,55 +160,7 @@ class Resource extends React.Component {
             treeData={this.state.treeData}
           />
         </div>
-        <CreateForm onCancel={() => this.handleModalVisible(false)} modalVisible={this.state.createModalVisible}>
-          <Form
-            name="validate_other"
-            onFinish={onFinish}
-            initialValues={{}}
-            onSubmit={async value => {
-              const success = await handleAdd(value);
-
-              if (success) {
-                this.state.handleModalVisible(false);
-
-                if (actionRef.current) {
-                  actionRef.current.reload();
-                }
-              }
-            }}
-          >
-            <Form.Item label="父资源" name="parentId">
-              <span className="ant-form-text">{this.state.createTreeNode.title}</span>
-              <Input type="hidden" value={this.state.createTreeNode.key}/>
-            </Form.Item>
-            <Form.Item
-              name="name"
-              label="名称"
-              rules={[
-                {
-                  required: true,
-                  message: '请输入名称',
-                },
-              ]}>
-              <Input placeholder="请输入名称"/>
-            </Form.Item>
-            <Form.Item
-              name="sort"
-              label="显示排序"
-              rules={[
-                {
-                  max: 1000,
-                  message: '排序数值不能大于1000',
-                },
-              ]}>
-              <Input type='Number' placeholder="请输入排序"/>
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                提交
-              </Button>
-            </Form.Item>
-          </Form>
+        <CreateForm fromRef={formRef} parentNode={this.state.createTreeNode} onCancel={() => this.handleModalVisible(false)} modalVisible={this.state.createModalVisible}>
         </CreateForm>
       </div>
     );
