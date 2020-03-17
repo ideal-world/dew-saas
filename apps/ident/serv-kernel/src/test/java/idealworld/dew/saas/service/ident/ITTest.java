@@ -16,6 +16,11 @@
 
 package idealworld.dew.saas.service.ident;
 
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
+import idealworld.dew.saas.service.ident.dto.app.AppCertInfoResp;
+import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

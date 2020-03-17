@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration =\
+idealworld.dew.saas.service.ident.service.sdk.SDKConfig,\
+idealworld.dew.saas.service.ident.service.sdk.SDKAutoConfiguration

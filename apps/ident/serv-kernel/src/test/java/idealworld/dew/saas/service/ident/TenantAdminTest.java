@@ -323,7 +323,7 @@ public class TenantAdminTest extends BasicTest {
                 .name("测试用户1")
                 .build(), Void.class);
         // 获取当前租户的账号列表信息
-        var accounts = getToPage("/console/account?pageNumber=1&pageSize=2", AccountInfoResp.class).getBody();
+        var accounts = getToPage("/console/account",1L,2, AccountInfoResp.class).getBody();
         Assert.assertEquals(4, accounts.getRecordTotal());
         Assert.assertEquals(2, accounts.getPageTotal());
         Assert.assertEquals("测试用户1", accounts.getObjects().get(1).getName());
@@ -379,6 +379,6 @@ public class TenantAdminTest extends BasicTest {
         // 获取当前租户某个账号的岗位列表信息
         accountPosts = getToList("/console/account/" + accountId + "/post", AccountPostInfoResp.class).getBody();
         Assert.assertEquals(postId, accountPosts.get(0).getRelPostId());
-        return new Tuple3(AccountCertKind.USERNAME, "test", "123");
+        return new Tuple3<>(AccountCertKind.USERNAME, "test", "123");
     }
 }

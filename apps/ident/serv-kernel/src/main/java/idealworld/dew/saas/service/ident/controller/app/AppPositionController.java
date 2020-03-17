@@ -48,26 +48,34 @@ public class AppPositionController extends BasicController {
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的职位")
     public Resp<Long> addPosition(@RequestBody AddPositionReq addPositionReq) {
-        return positionService.addPosition(addPositionReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return positionService.addPosition(addPositionReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的职位列表信息")
     public Resp<List<PositionInfoResp>> findPositionInfo() {
-        return positionService.findPositionInfo(appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return positionService.findPositionInfo(
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @PutMapping(value = "/{positionId}")
     @ApiOperation(value = "修改当前应用的某个职位")
     public Resp<Void> modifyPosition(@PathVariable Long positionId,
                                      @RequestBody ModifyPositionReq modifyPositionReq) {
-        return positionService.modifyPosition(modifyPositionReq, positionId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return positionService.modifyPosition(modifyPositionReq, positionId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "/{positionId}")
     @ApiOperation(value = "删除当前应用的某个职位", notes = "删除职位，关联的岗位、账号岗位、权限")
     public Resp<Void> deletePosition(@PathVariable Long positionId) {
-        return positionService.deletePosition(positionId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return positionService.deletePosition(positionId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }

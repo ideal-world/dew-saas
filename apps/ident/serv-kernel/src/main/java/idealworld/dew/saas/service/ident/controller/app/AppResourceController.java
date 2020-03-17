@@ -49,38 +49,50 @@ public class AppResourceController extends BasicController {
     @PostMapping(value = "group")
     @ApiOperation(value = "添加当前应用的资源组")
     public Resp<Long> addResourceGroup(@RequestBody AddResourceGroupReq addResourceGroupReq) {
-        return resourceService.addResourceGroup(addResourceGroupReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return resourceService.addResourceGroup(addResourceGroupReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的资源")
     public Resp<Long> addResource(@RequestBody AddResourceReq addResourceReq) {
-        return resourceService.addResource(addResourceReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return resourceService.addResource(addResourceReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @PutMapping(value = "{resourceId}")
     @ApiOperation(value = "修改当前应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long resourceId,
                                      @RequestBody ModifyResourceReq modifyResourceReq) {
-        return resourceService.modifyResource(modifyResourceReq, resourceId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return resourceService.modifyResource(modifyResourceReq, resourceId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "{resourceId}")
     @ApiOperation(value = "获取当前应用的某个资源（组）信息")
-    public Resp<ResourceInfoResp> getResource( @PathVariable Long resourceId) {
-        return resourceService.getResource(resourceId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+    public Resp<ResourceInfoResp> getResource(@PathVariable Long resourceId) {
+        return resourceService.getResource(resourceId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的资源（组）列表信息")
     public Resp<List<ResourceInfoResp>> findResources() {
-        return resourceService.findResources(appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return resourceService.findResources(
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{resourceId}")
     @ApiOperation(value = "删除当前应用的某个资源（组）")
     public Resp<Void> deleteResource(@PathVariable Long resourceId) {
-        return resourceService.deleteResource(resourceId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return resourceService.deleteResource(resourceId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }

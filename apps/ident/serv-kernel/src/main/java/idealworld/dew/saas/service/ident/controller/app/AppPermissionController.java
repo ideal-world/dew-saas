@@ -47,19 +47,25 @@ public class AppPermissionController extends BasicController {
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的权限")
     public Resp<Long> addPermission(@RequestBody AddPermissionReq addPermissionReq) {
-        return permissionService.addPermission(addPermissionReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return permissionService.addPermission(addPermissionReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的权限列表信息")
     public Resp<List<PermissionInfoResp>> findPermissionInfo() {
-        return permissionService.findPermissionInfo(appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return permissionService.findPermissionInfo(
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{permissionId}")
     @ApiOperation(value = "删除当前应用的某个权限")
     public Resp<Void> deletePermission(@PathVariable Long permissionId) {
-        return permissionService.deletePermission(permissionId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return permissionService.deletePermission(permissionId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }

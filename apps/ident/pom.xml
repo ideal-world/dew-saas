@@ -42,6 +42,16 @@
                 <artifactId>saas-ident-common</artifactId>
                 <version>${dew-saas.version}</version>
             </dependency>
+            <dependency>
+                <groupId>group.idealworld.dew</groupId>
+                <artifactId>saas-ident-sdk</artifactId>
+                <version>${dew-saas.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>group.idealworld.dew</groupId>
+                <artifactId>saas-ident-sdk-starter</artifactId>
+                <version>${dew-saas.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -49,6 +59,7 @@
         <module>frontend</module>
         <module>serv-common</module>
         <module>serv-sdk</module>
+        <module>serv-sdk-starter</module>
         <module>serv-kernel</module>
     </modules>
 

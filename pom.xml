@@ -71,6 +71,11 @@
             </dependency>
             <dependency>
                 <groupId>group.idealworld.dew</groupId>
+                <artifactId>saas-common-sdk</artifactId>
+                <version>${dew-saas.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>group.idealworld.dew</groupId>
                 <artifactId>saas-common-service</artifactId>
                 <version>${dew-saas.version}</version>
             </dependency>
@@ -80,6 +85,7 @@
     <modules>
         <module>common/frontend</module>
         <module>common/backend/common</module>
+        <module>common/backend/common-sdk</module>
         <module>common/backend/common-service</module>
         <module>apps/ident</module>
         <!--测试项目-->

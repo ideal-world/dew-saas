@@ -20,6 +20,7 @@ import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.dto.account.*;
+import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -42,11 +43,14 @@ public class AppAccountController extends BasicController {
 
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private AppHandlerInterceptor appHandlerInterceptor;
 
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前租户的账号")
     public Resp<Long> addAccount(@RequestBody AddAccountReq addAccountReq) {
-        return accountService.addAccountExt(addAccountReq, getCurrentTenantId());
+        return accountService.addAccountExt(addAccountReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "")
@@ -59,26 +63,30 @@ public class AppAccountController extends BasicController {
             @RequestParam(value = "pageNumber") Long pageNumber,
             @RequestParam(value = "pageSize") Integer pageSize
     ) {
-        return accountService.pageAccountInfo(pageNumber, pageSize, getCurrentTenantId());
+        return accountService.pageAccountInfo(pageNumber, pageSize,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "{accountId}")
     @ApiOperation(value = "获取当前租户的某个账号信息")
     public Resp<AccountInfoResp> getAccountInfo(@PathVariable Long accountId) {
-        return accountService.getAccountInfo(accountId, getCurrentTenantId());
+        return accountService.getAccountInfo(accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @PutMapping(value = "{accountId}")
     @ApiOperation(value = "修改当前租户的某个账号")
     public Resp<Void> modifyAccount(@PathVariable Long accountId,
                                     @RequestBody ModifyAccountReq modifyAccountReq) {
-        return accountService.modifyAccount(modifyAccountReq, accountId, getCurrentTenantId());
+        return accountService.modifyAccount(modifyAccountReq, accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{accountId}")
     @ApiOperation(value = "删除当前租户的某个账号", notes = "删除账号，关联的账号凭证、账号岗位")
     public Resp<Void> deleteAccount(@PathVariable Long accountId) {
-        return accountService.deleteAccount(accountId, getCurrentTenantId());
+        return accountService.deleteAccount(accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     // ========================== Cert ==============================
@@ -87,13 +95,15 @@ public class AppAccountController extends BasicController {
     @ApiOperation(value = "添加当前租户某个账号的凭证")
     public Resp<Long> addAccountCert(@PathVariable Long accountId,
                                      @RequestBody AddAccountCertReq addAccountCertReq) {
-        return accountService.addAccountCert(addAccountCertReq, accountId, getCurrentTenantId());
+        return accountService.addAccountCert(addAccountCertReq, accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "{accountId}/cert")
     @ApiOperation(value = "获取当前租户某个账号的凭证列表信息")
     public Resp<List<AccountCertInfoResp>> findAccountCertInfo(@PathVariable Long accountId) {
-        return accountService.findAccountCertInfo(accountId, getCurrentTenantId());
+        return accountService.findAccountCertInfo(accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @PutMapping(value = "{accountId}/cert/{accountCertId}")
@@ -101,20 +111,23 @@ public class AppAccountController extends BasicController {
     public Resp<Void> modifyAccountCert(@PathVariable Long accountId,
                                         @PathVariable Long accountCertId,
                                         @RequestBody ModifyAccountCertReq modifyAccountCertReq) {
-        return accountService.modifyAccountCert(modifyAccountCertReq, accountCertId, accountId, getCurrentTenantId());
+        return accountService.modifyAccountCert(modifyAccountCertReq, accountCertId, accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{accountId}/cert/{accountCertId}")
     @ApiOperation(value = "删除当前租户某个账号的某个凭证")
     public Resp<Void> deleteAccountCert(@PathVariable Long accountId,
                                         @PathVariable Long accountCertId) {
-        return accountService.deleteAccountCert(accountCertId, accountId, getCurrentTenantId());
+        return accountService.deleteAccountCert(accountCertId, accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{accountId}/cert")
     @ApiOperation(value = "删除当前租户某个账号的所有凭证")
     public Resp<Void> deleteAccountCerts(@PathVariable Long accountId) {
-        return accountService.deleteAccountCerts(accountId, getCurrentTenantId());
+        return accountService.deleteAccountCerts(accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     // ========================== Post ==============================
@@ -123,20 +136,23 @@ public class AppAccountController extends BasicController {
     @ApiOperation(value = "添加当前租户某个账号的岗位")
     public Resp<Long> addAccountPost(@PathVariable Long accountId,
                                      @RequestBody AddAccountPostReq addAccountPostReq) {
-        return accountService.addAccountPost(addAccountPostReq, accountId, getCurrentTenantId());
+        return accountService.addAccountPost(addAccountPostReq, accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "{accountId}/post")
     @ApiOperation(value = "获取当前租户某个账号的岗位列表信息")
     public Resp<List<AccountPostInfoResp>> findAccountPostInfo(@PathVariable Long accountId) {
-        return accountService.findAccountPostInfo(accountId, getCurrentTenantId());
+        return accountService.findAccountPostInfo(accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{accountId}/post/{accountPostId}")
     @ApiOperation(value = "删除当前租户某个账号的某个岗位")
     public Resp<Void> deleteAccountPost(@PathVariable Long accountId,
                                         @PathVariable Long accountPostId) {
-        return accountService.deleteAccountPost(accountPostId, accountId, getCurrentTenantId());
+        return accountService.deleteAccountPost(accountPostId, accountId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }

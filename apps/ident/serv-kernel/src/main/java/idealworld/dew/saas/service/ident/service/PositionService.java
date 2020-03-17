@@ -131,6 +131,7 @@ public class PositionService extends BasicService {
         }
         var positionCode = sqlBuilder
                 .select(qPosition.code)
+                .from(qPosition)
                 .where(qPosition.id.eq(positionId))
                 .where(qPosition.relAppId.eq(relAppId))
                 .where(qPosition.relTenantId.eq(relTenantId))

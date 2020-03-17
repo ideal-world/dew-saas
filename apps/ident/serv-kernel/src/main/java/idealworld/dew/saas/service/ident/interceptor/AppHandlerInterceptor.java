@@ -18,6 +18,7 @@ package idealworld.dew.saas.service.ident.interceptor;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.StandardCode;
+import com.ecfront.dew.common.tuple.Tuple2;
 import group.idealworld.dew.core.web.error.ErrorController;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.service.AppService;
@@ -44,7 +45,7 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(group.idealworld.dew.core.web.interceptor.BasicHandlerInterceptor.class);
 
-    private static final ThreadLocal<Long> CONTEXT_APP_ID = new ThreadLocal<>();
+    private static final ThreadLocal<Tuple2<Long, Long>> CONTEXT_TENANT_AND_APP_ID = new ThreadLocal<>();
 
     @Autowired
     private IdentConfig identConfig;
@@ -74,13 +75,16 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
         var reqSignature = authorization.split(":")[1];
-        var reqMethod = request.getMethod().toLowerCase();
-        var reqDate = request.getHeader("Date").toLowerCase();
-        var reqUri = request.getRequestURI().toLowerCase();
+        var reqMethod = request.getMethod();
+        var reqDate = request.getHeader("X-Date");
+        var reqPath = request.getRequestURI();
+        var reqQuery = request.getQueryString() != null ? request.getQueryString() : "";
         var sk = legalSkAndAppIdR.getBody()._0;
-        var appId = legalSkAndAppIdR.getBody()._1;
+        var tenantId = legalSkAndAppIdR.getBody()._1;
+        var appId = legalSkAndAppIdR.getBody()._2;
         var calcSignature = $.security.encodeStringToBase64(
-                $.security.digest.digest(reqMethod + "\n" + reqDate + "\n" + reqUri, sk, "HmacSHA1"),
+                $.security.digest.digest((reqMethod + "\n" + reqDate + "\n" + reqPath + "\n" + reqQuery).toLowerCase(),
+                        sk, "HmacSHA1"),
                 StandardCharsets.UTF_8);
         if (!reqSignature.equalsIgnoreCase(calcSignature)) {
             ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
@@ -88,12 +92,12 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
                     AuthException.class.getName());
             return false;
         }
-        CONTEXT_APP_ID.set(appId);
+        CONTEXT_TENANT_AND_APP_ID.set(new Tuple2<>(tenantId, appId));
         return super.preHandle(request, response, handler);
     }
 
-    public Long getCurrentAppId() {
-        return CONTEXT_APP_ID.get();
+    public Tuple2<Long, Long> getCurrentTenantAndAppId() {
+        return CONTEXT_TENANT_AND_APP_ID.get();
     }
 
 }

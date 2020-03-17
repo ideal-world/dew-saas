@@ -16,14 +16,14 @@
 
 package idealworld.dew.saas.service.ident.service;
 
-import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
-import com.ecfront.dew.common.tuple.Tuple2;
+import com.ecfront.dew.common.tuple.Tuple3;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
+import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -125,10 +125,13 @@ public class AppService extends BasicService {
             return;
         }
         var qAppCert = QAppCert.appCert;
+        var qApp = QApp.app;
         sqlBuilder
-                .select(qAppCert.ak, qAppCert.sk, qAppCert.relAppId, qAppCert.validTime)
+                .select(qAppCert.ak, qAppCert.sk, qAppCert.relAppId, qAppCert.validTime, qApp.relTenantId)
                 .from(qAppCert)
+                .leftJoin(qApp).on(qApp.id.eq(qAppCert.relAppId))
                 .where(qAppCert.delFlag.eq(false))
+                .where(qApp.delFlag.eq(false))
                 .where(qAppCert.validTime.gt(new Date()))
                 .fetch()
                 .forEach(info -> {
@@ -136,10 +139,11 @@ public class AppService extends BasicService {
                     var sk = info.get(1, String.class);
                     var relAppId = info.get(2, Date.class);
                     var validTime = info.get(3, Date.class);
+                    var relTenantId = info.get(4, Long.class);
                     if (validTime.getTime() == Constant.NEVER_EXPIRE_TIME.getTime()) {
-                        Dew.cluster.cache.set(CACHE_AK + ak, sk + ":" + relAppId);
+                        Dew.cluster.cache.set(CACHE_AK + ak, sk + ":" + relTenantId + ":" + relAppId);
                     } else {
-                        Dew.cluster.cache.setex(CACHE_AK + ak, sk + ":" + relAppId,
+                        Dew.cluster.cache.setex(CACHE_AK + ak, sk + ":" + relTenantId + ":" + relAppId,
                                 (validTime.getTime() - System.currentTimeMillis()) / 1000);
                     }
                 });
@@ -150,20 +154,21 @@ public class AppService extends BasicService {
         if (!checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        var ak = KeyHelper.generateAK();
+        var sk = KeyHelper.generateSK(ak);
         var appCert = AppCert.builder()
                 .note(addAppCertReq.getNote())
-                // TODO 生成模型
-                .ak($.field.createShortUUID())
-                .sk($.field.createUUID())
+                .ak(ak)
+                .sk(sk)
                 .validTime(addAppCertReq.getValidTime() != null ? addAppCertReq.getValidTime() : Constant.NEVER_EXPIRE_TIME)
                 .relAppId(relAppId)
                 .build();
         var saveR = saveEntity(appCert);
         if (saveR.ok()) {
             if (addAppCertReq.getValidTime() == null) {
-                Dew.cluster.cache.set(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relAppId);
+                Dew.cluster.cache.set(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relTenantId + ":" + relAppId);
             } else {
-                Dew.cluster.cache.setex(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relAppId,
+                Dew.cluster.cache.setex(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relTenantId + ":" + relAppId,
                         (appCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
             }
         }
@@ -216,22 +221,23 @@ public class AppService extends BasicService {
         }
         var updateR = updateEntity(updateClause);
         if (updateR.ok() && modifyAppCertReq.getValidTime() != null) {
+            var qApp = QApp.app;
             var updateAppCert = sqlBuilder.selectFrom(qAppCert)
                     .where(qAppCert.id.eq(appCertId))
                     .fetchOne();
-            Dew.cluster.cache.setex(CACHE_AK + updateAppCert.getAk() + ":" + relAppId, updateAppCert.getSk(),
+            Dew.cluster.cache.setex(CACHE_AK + updateAppCert.getAk() + ":" + relTenantId + ":" + relAppId, updateAppCert.getSk(),
                     (updateAppCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
         }
         return updateR;
     }
 
-    public Resp<Tuple2<String, Long>> getAppCertByAk(String ak) {
-        var skAndAppId = Dew.cluster.cache.get(CACHE_AK + ak);
-        if (skAndAppId == null) {
+    public Resp<Tuple3<String, Long, Long>> getAppCertByAk(String ak) {
+        var skAndTenantAndAppId = Dew.cluster.cache.get(CACHE_AK + ak);
+        if (skAndTenantAndAppId == null) {
             return Resp.notFound("");
         }
-        var skAndAppIdSplit = skAndAppId.split(":");
-        return Resp.success(new Tuple2<>(skAndAppIdSplit[0], Long.valueOf(skAndAppIdSplit[1])));
+        var skAndAppIdSplit = skAndTenantAndAppId.split(":");
+        return Resp.success(new Tuple3<>(skAndAppIdSplit[0], Long.valueOf(skAndAppIdSplit[1]), Long.valueOf(skAndAppIdSplit[2])));
     }
 
     @Transactional

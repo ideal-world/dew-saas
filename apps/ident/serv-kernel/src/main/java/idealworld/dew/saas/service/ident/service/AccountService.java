@@ -26,8 +26,9 @@ import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
-import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
+import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,7 +75,7 @@ public class AccountService extends BasicService {
             return Resp.error(validateR);
         }
         logger.info("Login Success:  [" + relTenantId + "][" + loginReq.getAk() + "]");
-        String token = $.field.createUUID();
+        String token = KeyHelper.generateToken();
         var optInfo = new IdentOptInfo()
                 // 转成String避免转化成Integer
                 .setAccountCode(accountId + "")

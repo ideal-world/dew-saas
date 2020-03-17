@@ -37,16 +37,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.ecfront.dew</groupId>
-            <artifactId>common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>group.idealworld.dew</groupId>
+            <artifactId>saas-common</artifactId>
         </dependency>
     </dependencies>
 

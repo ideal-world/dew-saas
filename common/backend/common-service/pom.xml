@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>saas-common-service</artifactId>
-    <name>2.3 Dew SAAS Basics Common Service</name>
+    <name>2.4 Dew SAAS Common Service</name>
     <packaging>jar</packaging>
     <version>2.1.0-SNAPSHOT</version>
 

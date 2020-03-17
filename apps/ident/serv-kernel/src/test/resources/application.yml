@@ -1,6 +1,7 @@
 dew:
   cluster:
     cache: redis
+    election: redis
   basic:
     format:
       auto-trim-from-req: true

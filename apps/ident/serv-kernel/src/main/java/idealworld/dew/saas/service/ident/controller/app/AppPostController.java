@@ -47,19 +47,25 @@ public class AppPostController extends BasicController {
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的岗位")
     public Resp<Long> addPost(@RequestBody AddPostReq addPostReq) {
-        return postService.addPost(addPostReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return postService.addPost(addPostReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的岗位列表信息")
     public Resp<List<PostInfoResp>> findPostInfo() {
-        return postService.findPostInfo(appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return postService.findPostInfo(
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "/{postId}")
     @ApiOperation(value = "删除当前应用的某个岗位", notes = "删除岗位，关联账号岗位、权限")
     public Resp<Void> deletePost(@PathVariable Long postId) {
-        return postService.deletePost(postId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return postService.deletePost(postId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }

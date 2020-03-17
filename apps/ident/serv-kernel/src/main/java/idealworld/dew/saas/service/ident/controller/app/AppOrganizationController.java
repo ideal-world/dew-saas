@@ -48,13 +48,17 @@ public class AppOrganizationController extends BasicController {
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的机构")
     public Resp<Long> addOrganization(@RequestBody AddOrganizationReq addOrganizationReq) {
-        return organizationService.AddOrganization(addOrganizationReq, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return organizationService.AddOrganization(addOrganizationReq,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的机构列表信息")
     public Resp<List<OrganizationInfoResp>> findOrganizationInfo() {
-        return organizationService.findOrganizationInfo(appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return organizationService.findOrganizationInfo(
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @PutMapping(value = "{organizationId}")
@@ -62,13 +66,17 @@ public class AppOrganizationController extends BasicController {
     public Resp<Void> modifyOrganization(@PathVariable Long organizationId,
                                          @RequestBody ModifyOrganizationReq modifyOrganizationReq) {
         return organizationService.modifyOrganization(modifyOrganizationReq,
-                organizationId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+                organizationId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     @DeleteMapping(value = "{organizationId}")
     @ApiOperation(value = "删除当前应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
     public Resp<Void> deleteOrganization(@PathVariable Long organizationId) {
-        return organizationService.deleteOrganization(organizationId, appHandlerInterceptor.getCurrentAppId(), getCurrentTenantId());
+        return organizationService.deleteOrganization(organizationId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }
