@@ -57,7 +57,7 @@ public class ResourceService extends BasicService {
                 .name(addResourceGroupReq.getName() != null ? addResourceGroupReq.getName() : "")
                 .icon(addResourceGroupReq.getIcon() != null ? addResourceGroupReq.getIcon() : "")
                 .sort(addResourceGroupReq.getSort() != null ? addResourceGroupReq.getSort() : 0)
-                .parentId(addResourceGroupReq.getParentId() != null ? addResourceGroupReq.getParentId() : -1L)
+                .parentId(addResourceGroupReq.getParentId() != null ? addResourceGroupReq.getParentId() : Constant.OBJECT_UNDEFINED)
                 .relAppId(relAppId)
                 .relTenantId(relTenantId)
                 .build();

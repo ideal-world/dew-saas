@@ -503,9 +503,15 @@ public class AccountService extends BasicService {
                 .map(info -> {
                     var positionCode = info.get(0, String.class);
                     var orgCode = info.get(1, String.class);
+                    if (orgCode.isEmpty()) {
+                        orgCode = Constant.OBJECT_UNDEFINED + "";
+                    }
                     var relAppId = info.get(2, Long.class);
                     var positionName = info.get(3, String.class);
                     var orgName = info.get(4, String.class);
+                    if (orgName == null) {
+                        orgName = "";
+                    }
                     return new OptInfo.RoleInfo()
                             .setCode(relAppId + Constant.ROLE_SPLIT + orgCode + Constant.ROLE_SPLIT + positionCode)
                             .setName(orgName + " " + positionName);

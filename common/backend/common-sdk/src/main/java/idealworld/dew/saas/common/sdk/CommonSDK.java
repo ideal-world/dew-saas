@@ -14,10 +14,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcessor {
 
     protected static final Logger logger = LoggerFactory.getLogger(CommonSDK.class);
+
+    private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     private HttpHelper httpHelper;
     protected String baseUrl;
@@ -36,10 +39,21 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
         return config;
     }
 
-    public void init() {
+    public boolean isInitialized() {
+        return INITIALIZED.get();
+    }
+
+    public synchronized void init() {
+        if (INITIALIZED.get()) {
+            return;
+        }
         if (serviceUrl == null
                 || serviceUrl.isBlank()) {
             throw new RTException("参数错误：缺少服务地址");
+        }
+        if (config.getBasic().getTenantId() == null
+                || config.getBasic().getTenantId() < 1) {
+            throw new RTException("参数错误：缺少[basic.tenantId]");
         }
         if (config.getBasic().getAppAk() == null
                 || config.getBasic().getAppAk().isBlank()) {
@@ -55,6 +69,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
                 config.getPerf().getDefaultSocketTimeoutMS(),
                 true, false, HttpHelperFactory.BACKEND.APACHE);
         baseUrl = serviceUrl;
+        INITIALIZED.set(true);
     }
 
     @Override
@@ -84,7 +99,9 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
         header.put(config.getBasic().getAuthFieldName(),
                 config.getBasic().getAppAk() + ":" + signature);
 
-        var result = httpHelper.request(method, formatUrl(uri), body, header,
+        uri = formatUrl(uri);
+        logger.trace("Request: [" + method + "] " + uri);
+        var result = httpHelper.request(method, uri, body, header,
                 null, null,
                 config.getPerf().getDefaultConnectTimeoutMS(),
                 config.getPerf().getDefaultSocketTimeoutMS()).result;

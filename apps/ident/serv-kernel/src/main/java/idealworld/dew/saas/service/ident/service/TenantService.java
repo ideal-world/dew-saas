@@ -19,6 +19,7 @@ package idealworld.dew.saas.service.ident.service;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QApp;
 import idealworld.dew.saas.service.ident.domain.QTenant;
@@ -60,7 +61,7 @@ public class TenantService extends BasicService {
                 .postReq(AddAccountPostReq.builder()
                         .relPostId(tenantAdminPostId)
                         .build())
-                .build(), -1L);
+                .build(), Constant.OBJECT_UNDEFINED);
         if (!addAccountR.ok()) {
             return Resp.error(addAccountR);
         }

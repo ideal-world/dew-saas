@@ -41,12 +41,6 @@ public class ConsoleTenantController extends BasicController {
     @Autowired
     private TenantService tenantService;
 
-    @PostMapping(value = "")
-    @ApiOperation(value = "注册租户")
-    public Resp<IdentOptInfo> registerTenant(@RequestBody RegisterTenantReq registerTenantReq) {
-        return tenantService.registerTenant(registerTenantReq);
-    }
-
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前的租户信息")
     public Resp<TenantInfoResp> getTenant() {

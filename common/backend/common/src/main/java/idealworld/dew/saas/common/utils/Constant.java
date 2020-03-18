@@ -29,6 +29,7 @@ public class Constant {
 
     public static Date NEVER_EXPIRE_TIME;
     public static final String ROLE_SPLIT = "-";
+    public static final Long OBJECT_UNDEFINED = 0L;
 
     static {
         try {

@@ -23,6 +23,7 @@ public class CommonConfig {
     @AllArgsConstructor
     public static class Basic {
 
+        private Long tenantId;
         private String appAk = "";
         private String appSk = "";
         @Builder.Default

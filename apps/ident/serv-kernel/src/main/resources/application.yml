@@ -10,10 +10,10 @@ dew:
     router:
       enabled: true
       roleAuth:
-        -1-${dew.saas.ident.system-admin-position-code}:
+        0-0-SYSTEM_ADMIN:
           all: ["/admin/**"]
-        -1-${dew.saas.ident.tenant-admin-position-code}:
-          get: ["/console/**"]
+        0-0-TENANT_ADMIN:
+          all: ["/console/**"]
 spring:
   profiles:
     active: test

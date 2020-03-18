@@ -1,10 +1,4 @@
 dew:
-  cluster:
-    cache: redis
-    election: redis
-  basic:
-    format:
-      auto-trim-from-req: true
   saas:
     sdk:
       lazy-init: true
@@ -12,9 +6,6 @@ dew:
         url: http://127.0.0.1:8080
 
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
   redis:
     host: 127.0.0.1
     port: 6379
@@ -25,6 +16,7 @@ spring:
 
 logging:
   level:
+    idealworld: trace
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql: trace
 

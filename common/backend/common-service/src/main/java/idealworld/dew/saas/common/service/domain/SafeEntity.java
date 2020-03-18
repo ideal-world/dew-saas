@@ -1,6 +1,7 @@
 package idealworld.dew.saas.common.service.domain;
 
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.utils.Constant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -63,10 +64,10 @@ public abstract class SafeEntity extends IdEntity {
             }
         });
         if (StringUtils.isEmpty(this.getCreateUser())) {
-            this.setCreateUser(-1L);
+            this.setCreateUser(Constant.OBJECT_UNDEFINED);
         }
         if (StringUtils.isEmpty(this.getUpdateUser())) {
-            this.setUpdateUser(-1L);
+            this.setUpdateUser(Constant.OBJECT_UNDEFINED);
         }
     }
 
@@ -78,7 +79,7 @@ public abstract class SafeEntity extends IdEntity {
             }
         });
         if (StringUtils.isEmpty(this.getUpdateUser())) {
-            this.setUpdateUser(-1L);
+            this.setUpdateUser(Constant.OBJECT_UNDEFINED);
         }
     }
 

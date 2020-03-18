@@ -205,7 +205,8 @@ public class PermissionService extends BasicService {
                         qResource.identifier.as("resIdentifier"),
                         qResource.method.as("resMethod"),
                         qPost.relPositionCode.as("positionCode"),
-                        qPost.relOrganizationCode.as("organizationCode")))
+                        qPost.relOrganizationCode.as("organizationCode"),
+                        qPost.relAppId))
                 .from(qPermission)
                 .innerJoin(qPost).on(qPermission.relPostId.eq(qPost.id).and(qPost.delFlag.eq(false)))
                 .innerJoin(qResource).on(qPermission.relResourceId.eq(qResource.id).and(qResource.delFlag.eq(false)));
@@ -234,6 +235,12 @@ public class PermissionService extends BasicService {
                             add(info);
                         }}.stream();
                     }
+                })
+                .map(info -> {
+                    if (info.getOrganizationCode() == null || info.getOrganizationCode().isEmpty()) {
+                        info.setOrganizationCode(Constant.OBJECT_UNDEFINED + "");
+                    }
+                    return info;
                 })
                 .collect(Collectors.toList());
     }

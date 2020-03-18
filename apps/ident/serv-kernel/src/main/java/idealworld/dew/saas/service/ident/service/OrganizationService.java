@@ -66,7 +66,7 @@ public class OrganizationService extends BasicService {
                 .icon(addOrganizationReq.getIcon() != null ? addOrganizationReq.getIcon() : "")
                 .parameters(addOrganizationReq.getParameters() != null ? addOrganizationReq.getParameters() : "{}")
                 .sort(addOrganizationReq.getSort() != null ? addOrganizationReq.getSort() : 0)
-                .parentId(addOrganizationReq.getParentId() != null ? addOrganizationReq.getParentId() : -1L)
+                .parentId(addOrganizationReq.getParentId() != null ? addOrganizationReq.getParentId() : Constant.OBJECT_UNDEFINED)
                 .relAppId(relAppId)
                 .relTenantId(relTenantId)
                 .build();

@@ -16,7 +16,9 @@
 
 package idealworld.dew.saas.service.ident;
 
+import com.ecfront.dew.common.tuple.Tuple3;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
 import idealworld.dew.saas.service.ident.dto.app.AppCertInfoResp;
@@ -33,6 +35,7 @@ import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
+import idealworld.dew.saas.service.ident.service.sdk.AuthProcessor;
 import idealworld.dew.saas.service.ident.service.sdk.IdentSDK;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,10 +58,13 @@ public class SDKTest extends BasicTest {
     @Autowired
     private IdentSDK sdk;
 
+    @Autowired
+    private AuthProcessor authProcessor;
+
     @Test
     public void testSDK() {
         // 租户注册
-        var identOptInfo = postToEntity("/console/tenant", RegisterTenantReq.builder()
+        var identOptInfo = postToEntity("/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
                 .certKind(AccountCertKind.USERNAME)
                 .ak("gudaoxuri")
@@ -73,16 +79,20 @@ public class SDKTest extends BasicTest {
         var appCert = getToList("/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody().get(0);
         System.out.println("=====================\nAK:" + appCert.getAk() + "\nSK:" + appCert.getSk() + "\n=====================");
 
+        sdk.getConfig().getBasic().setTenantId(identOptInfo.getRelTenantId());
         sdk.getConfig().getBasic().setAppAk(appCert.getAk());
         sdk.getConfig().getBasic().setAppSk(appCert.getSk());
         sdk.init();
+        authProcessor.doSub();
 
         var orgId = testOrganization();
         var positionCode = testPosition();
         var postId = testPost(positionCode);
         var resId = testResource();
         var permissionId = testPermission(postId, resId);
-        testAccount(postId);
+        var certInfo = testAccount(postId);
+
+        testAuth(identOptInfo.getRelTenantId(), certInfo._0, certInfo._1, certInfo._2);
     }
 
     private Long testOrganization() {
@@ -91,7 +101,7 @@ public class SDKTest extends BasicTest {
                 .kind(OrganizationKind.VIRTUAL)
                 .code("org_x")
                 .name("x应用")
-                .parentId(-1L)
+                .parentId(Constant.OBJECT_UNDEFINED)
                 .build()).getBody();
         sdk.organization.addOrganization(AddOrganizationReq.builder()
                 .kind(OrganizationKind.VIRTUAL)
@@ -168,13 +178,13 @@ public class SDKTest extends BasicTest {
         var mgrResId = sdk.resource.addResource(AddResourceReq.builder()
                 .kind(ResourceKind.URI)
                 .identifier("/mgr/account/**")
-                .method("")
+                .method("*")
                 .name("账号管理")
                 .parentId(groupId)
                 .build()).getBody();
         var resId = sdk.resource.addResource(AddResourceReq.builder()
                 .kind(ResourceKind.URI)
-                .identifier("/mgr/tenant")
+                .identifier("/mgr/tenant/**")
                 .method("GET")
                 .name("租户列表")
                 .parentId(groupId)
@@ -218,7 +228,7 @@ public class SDKTest extends BasicTest {
         return permissionId;
     }
 
-    private void testAccount(Long postId) {
+    private Tuple3<AccountCertKind, String, String> testAccount(Long postId) {
         // 添加当前租户的账号
         var accountId = sdk.account.addAccount(AddAccountReq.builder()
                 .name("测试用户")
@@ -314,6 +324,26 @@ public class SDKTest extends BasicTest {
         // 获取当前租户某个账号的岗位列表信息
         accountPosts = sdk.account.findAccountPostInfo(accountId).getBody();
         Assert.assertEquals(postId, accountPosts.get(0).getRelPostId());
+
+        return new Tuple3<>(AccountCertKind.USERNAME, "test", "123");
+    }
+
+    public void testAuth(Long tenantId, AccountCertKind certKind, String ak, String sk) {
+        var requestR = getToEntity("/mgr/account", Void.class);
+        Assert.assertFalse(requestR.ok());
+        // 登录
+        var identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
+                .certKind(certKind)
+                .ak(ak)
+                .sk(sk)
+                .build(), IdentOptInfo.class).getBody();
+        setIdentOptInfo(identOptInfo);
+
+        requestR = getToEntity("/mgr/account", Void.class);
+        Assert.assertTrue(requestR.ok());
+        requestR = getToEntity("/mgr/account/11", Void.class);
+        Assert.assertTrue(requestR.ok());
+
     }
 
 }

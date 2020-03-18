@@ -20,7 +20,9 @@ import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
+import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.service.AccountService;
+import idealworld.dew.saas.service.ident.service.TenantService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,22 +33,30 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "认证操作", description = "认证操作")
-@RequestMapping(value = "/auth")
+@Api(value = "公共操作", description = "公共操作")
 @Validated
-public class AuthController extends BasicController {
+public class CommonController extends BasicController {
+
+    @Autowired
+    private TenantService tenantService;
 
     @Autowired
     private AccountService accountService;
 
-    @PostMapping(value = "{tenantId}/login")
+    @PostMapping(value = "/tenant/register")
+    @ApiOperation(value = "注册租户")
+    public Resp<IdentOptInfo> registerTenant(@RequestBody RegisterTenantReq registerTenantReq) {
+        return tenantService.registerTenant(registerTenantReq);
+    }
+
+    @PostMapping(value = "/auth/{tenantId}/login")
     @ApiOperation(value = "用户登录")
     public Resp<IdentOptInfo> login(@PathVariable Long tenantId,
                                     @RequestBody LoginReq loginReq) {
         return accountService.login(loginReq, tenantId);
     }
 
-    @DeleteMapping(value = "{tenantId}/logout")
+    @DeleteMapping(value = "/auth/{tenantId}/logout")
     @ApiOperation(value = "注销登录")
     public Resp<Void> logout() {
         Dew.auth.getOptInfo().ifPresent(info -> {

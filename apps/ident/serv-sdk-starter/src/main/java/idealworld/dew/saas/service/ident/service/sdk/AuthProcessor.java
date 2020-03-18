@@ -7,6 +7,8 @@ import group.idealworld.dew.core.web.interceptor.BasicHandlerInterceptor;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionExtInfo;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoSub;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import static idealworld.dew.saas.common.utils.Constant.ROLE_SPLIT;
 @Component
 public class AuthProcessor {
 
+    protected static final Logger logger = LoggerFactory.getLogger(AuthProcessor.class);
+
     @Autowired
     private IdentSDK identSDK;
     @Autowired
@@ -29,15 +33,20 @@ public class AuthProcessor {
 
     @PostConstruct
     public void sub() {
+        doSub();
         $.timer.periodic(identConfig.getIdent().getFetchSec(), true, this::doSub);
     }
 
-    private void doSub() {
+    public void doSub() {
+        if(!identSDK.isInitialized()){
+            return;
+        }
         var subPermissionR = identSDK.auth.subPermissions();
         if (!subPermissionR.ok()) {
             throw new RTException("权限订阅错误 [" + subPermissionR.getCode() + "]" + subPermissionR.getMessage());
         }
         Dew.cluster.mq.subscribe(subPermissionR.getBody(), messageWrap -> {
+            logger.trace("Received a message :" + messageWrap.getBody());
             var permissionInfoSub = $.json.toObject(messageWrap.getBody(), PermissionInfoSub.class);
             if (permissionInfoSub.getChangedPermissions() != null
                     && !permissionInfoSub.getChangedPermissions().isEmpty()) {

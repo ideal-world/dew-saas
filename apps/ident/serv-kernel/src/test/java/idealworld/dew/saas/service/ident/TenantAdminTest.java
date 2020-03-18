@@ -19,6 +19,7 @@ package idealworld.dew.saas.service.ident;
 import com.ecfront.dew.common.tuple.Tuple3;
 import com.ecfront.dew.common.tuple.Tuple4;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
@@ -68,7 +69,7 @@ public class TenantAdminTest extends BasicTest {
 
     private Long testTenant() {
         // 租户注册
-        var identOptInfo = postToEntity("/console/tenant", RegisterTenantReq.builder()
+        var identOptInfo = postToEntity("/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
                 .certKind(AccountCertKind.USERNAME)
                 .ak("gudaoxuri")
@@ -87,7 +88,7 @@ public class TenantAdminTest extends BasicTest {
         // 注销当前租户
         Assert.assertTrue(delete("/console/tenant").ok());
         // 重新注册租户
-        postToEntity("/console/tenant", RegisterTenantReq.builder()
+        postToEntity("/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
                 .certKind(AccountCertKind.USERNAME)
                 .ak("gudaoxuri")
@@ -155,7 +156,7 @@ public class TenantAdminTest extends BasicTest {
                 .kind(OrganizationKind.VIRTUAL)
                 .code("org_x")
                 .name("x应用")
-                .parentId(-1L)
+                .parentId(Constant.OBJECT_UNDEFINED)
                 .build(), Long.class).getBody();
         postToEntity("/console/organization/" + appId, AddOrganizationReq.builder()
                 .kind(OrganizationKind.VIRTUAL)
@@ -232,7 +233,7 @@ public class TenantAdminTest extends BasicTest {
         var mgrResId = postToEntity("/console/resource/" + appId, AddResourceReq.builder()
                 .kind(ResourceKind.URI)
                 .identifier("/mgr/account/**")
-                .method("")
+                .method("*")
                 .name("账号管理")
                 .parentId(groupId)
                 .build(), Long.class).getBody();
