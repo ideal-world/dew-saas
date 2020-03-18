@@ -19,7 +19,7 @@ package idealworld.dew.saas.service.ident.service;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple2;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.service.Constant;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.domain.Organization;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QOrganization;

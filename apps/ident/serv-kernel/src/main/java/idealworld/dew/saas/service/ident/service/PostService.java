@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.service.Constant;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.Post;
 import idealworld.dew.saas.service.ident.domain.QPost;

@@ -12,7 +12,11 @@ public class SDKAutoConfiguration {
 
     @Bean
     public IdentSDK identSDK() {
-        return IdentSDK.builder(sdkConfig);
+        var identSdk = IdentSDK.builder(sdkConfig);
+        if (!sdkConfig.isLazyInit()) {
+            identSdk.init();
+        }
+        return identSdk;
     }
 
 }

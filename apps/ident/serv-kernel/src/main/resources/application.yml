@@ -1,10 +1,19 @@
 dew:
   cluster:
     cache: redis
+    mq: redis
     election: redis
   basic:
     format:
       auto-trim-from-req: true
+  security:
+    router:
+      enabled: true
+      roleAuth:
+        -1-${dew.saas.ident.system-admin-position-code}:
+          all: ["/admin/**"]
+        -1-${dew.saas.ident.tenant-admin-position-code}:
+          get: ["/console/**"]
 spring:
   profiles:
     active: test

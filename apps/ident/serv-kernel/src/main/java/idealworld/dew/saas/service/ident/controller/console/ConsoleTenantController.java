@@ -53,7 +53,7 @@ public class ConsoleTenantController extends BasicController {
         return tenantService.getTenantInfo(getCurrentTenantId());
     }
 
-    @PutMapping(value = "")
+    @PatchMapping(value = "")
     @ApiOperation(value = "修改当前的租户")
     public Resp<Void> modifyTenant(@RequestBody ModifyTenantReq modifyTenantReq) {
         return tenantService.modifyTenant(modifyTenantReq, getCurrentTenantId());

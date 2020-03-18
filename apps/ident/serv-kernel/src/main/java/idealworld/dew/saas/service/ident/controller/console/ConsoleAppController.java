@@ -52,7 +52,7 @@ public class ConsoleAppController extends BasicController {
         return appService.findAppInfo(getCurrentTenantId());
     }
 
-    @PutMapping(value = "{appId}")
+    @PatchMapping(value = "{appId}")
     @ApiOperation(value = "修改当前租户的某个应用")
     public Resp<Void> modifyApp(@PathVariable Long appId,
                                 @RequestBody ModifyAppReq modifyAppReq) {
@@ -80,7 +80,7 @@ public class ConsoleAppController extends BasicController {
         return appService.findAppCertInfo(appId, getCurrentTenantId());
     }
 
-    @PutMapping(value = "{appId}/cert/{appCertId}")
+    @PatchMapping(value = "{appId}/cert/{appCertId}")
     @ApiOperation(value = "修改当前租户某个应用的某个凭证")
     public Resp<Void> modifyAppCert(@PathVariable Long appId,
                                     @PathVariable Long appCertId,

@@ -23,7 +23,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.cluster.ClusterElection;
-import idealworld.dew.saas.common.service.Constant;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.common.service.domain.IdEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

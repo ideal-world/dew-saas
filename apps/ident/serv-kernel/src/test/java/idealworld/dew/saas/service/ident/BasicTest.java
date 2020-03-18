@@ -30,7 +30,7 @@ import java.util.Map;
 
 public abstract class BasicTest extends ResponseProcessor {
 
-    @Autowired
+    @Autowired(required = false)
     protected TestRestTemplate restTemplate;
 
     private IdentOptInfo identOptInfo;

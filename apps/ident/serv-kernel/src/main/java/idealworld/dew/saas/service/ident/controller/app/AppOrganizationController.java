@@ -61,7 +61,7 @@ public class AppOrganizationController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @PutMapping(value = "{organizationId}")
+    @PatchMapping(value = "{organizationId}")
     @ApiOperation(value = "修改当前应用的某个机构")
     public Resp<Void> modifyOrganization(@PathVariable Long organizationId,
                                          @RequestBody ModifyOrganizationReq modifyOrganizationReq) {

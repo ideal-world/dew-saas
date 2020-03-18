@@ -22,8 +22,21 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
     private HttpHelper httpHelper;
     protected String baseUrl;
     protected E config;
+    private String serviceUrl;
 
-    public void init(E config, String serviceUrl) {
+    public void setConfig(E config) {
+        this.config = config;
+    }
+
+    public void setServiceUrl(String serviceUrl) {
+        this.serviceUrl = serviceUrl;
+    }
+
+    public E getConfig() {
+        return config;
+    }
+
+    public void init() {
         if (serviceUrl == null
                 || serviceUrl.isBlank()) {
             throw new RTException("参数错误：缺少服务地址");
@@ -40,8 +53,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
                 config.getPerf().getMaxPerRoute(),
                 config.getPerf().getDefaultConnectTimeoutMS(),
                 config.getPerf().getDefaultSocketTimeoutMS(),
-                true, false, HttpHelperFactory.BACKEND.JDK);
-        this.config = config;
+                true, false, HttpHelperFactory.BACKEND.APACHE);
         baseUrl = serviceUrl;
     }
 
@@ -56,7 +68,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
         var sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
         var date = sdf.format(new Date());
-        header.put("X-Date", date);
+        header.put("Dew-Date", date);
 
         URL url = null;
         try {

@@ -5,6 +5,11 @@ dew:
   basic:
     format:
       auto-trim-from-req: true
+  saas:
+    sdk:
+      lazy-init: true
+      ident:
+        url: http://127.0.0.1:8080
 
 spring:
   jpa:

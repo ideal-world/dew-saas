@@ -62,7 +62,7 @@ public class AppResourceController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @PutMapping(value = "{resourceId}")
+    @PatchMapping(value = "{resourceId}")
     @ApiOperation(value = "修改当前应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long resourceId,
                                      @RequestBody ModifyResourceReq modifyResourceReq) {

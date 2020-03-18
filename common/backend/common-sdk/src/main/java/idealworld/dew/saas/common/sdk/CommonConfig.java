@@ -4,9 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommonConfig {
@@ -22,13 +23,10 @@ public class CommonConfig {
     @AllArgsConstructor
     public static class Basic {
 
-        private String identUrl = "";
         private String appAk = "";
         private String appSk = "";
         @Builder.Default
         private String authFieldName = "Authorization";
-        @Builder.Default
-        private boolean enabledApiCache = false;
 
     }
 

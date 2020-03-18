@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.common.service;
+package idealworld.dew.saas.common.utils;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
@@ -28,6 +28,7 @@ import java.util.Date;
 public class Constant {
 
     public static Date NEVER_EXPIRE_TIME;
+    public static final String ROLE_SPLIT = "-";
 
     static {
         try {
@@ -46,6 +47,11 @@ public class Constant {
         public static <E> Resp<E> NOT_FOUNT(String objName) {
             return Resp.notFound("找不到操作的" + objName + ",请检查权限");
         }
+
+    }
+
+    public static class MQ {
+
 
     }
 

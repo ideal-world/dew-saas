@@ -32,23 +32,23 @@ public abstract class ResponseProcessor {
         return Resp.genericPage(response, responseClazz);
     }
 
-    public Resp<Void> put(String url, Object body) {
-        var response = exchange("PUT", url, body, new HashMap<>());
+    public Resp<Void> patch(String url, Object body) {
+        var response = exchange("PATCH", url, body, new HashMap<>());
         return Resp.generic(response, Void.class);
     }
 
-    public <E> Resp<E> putToEntity(String url, Object body, Class<E> responseClazz) {
-        var response = exchange("PUT", url, body, new HashMap<>());
+    public <E> Resp<E> patchToEntity(String url, Object body, Class<E> responseClazz) {
+        var response = exchange("PATCH", url, body, new HashMap<>());
         return Resp.generic(response, responseClazz);
     }
 
-    public <E> Resp<List<E>> putToList(String url, Object body, Class<E> responseClazz) {
-        var response = exchange("PUT", url, body, new HashMap<>());
+    public <E> Resp<List<E>> patchToList(String url, Object body, Class<E> responseClazz) {
+        var response = exchange("PATCH", url, body, new HashMap<>());
         return Resp.genericList(response, responseClazz);
     }
 
-    public <E> Resp<Page<E>> putToPage(String url, Object body, Class<E> responseClazz) {
-        var response = exchange("PUT", url, body, new HashMap<>());
+    public <E> Resp<Page<E>> patchToPage(String url, Object body, Class<E> responseClazz) {
+        var response = exchange("PATCH", url, body, new HashMap<>());
         return Resp.genericPage(response, responseClazz);
     }
 

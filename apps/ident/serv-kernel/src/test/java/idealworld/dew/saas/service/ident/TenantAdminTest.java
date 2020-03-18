@@ -77,7 +77,7 @@ public class TenantAdminTest extends BasicTest {
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
         // 修改当前租户信息
-        putToEntity("/console/tenant", ModifyTenantReq.builder()
+        patchToEntity("/console/tenant", ModifyTenantReq.builder()
                 .name("测试租户1")
                 .icon("/xx/xx")
                 .build(), Void.class);
@@ -111,7 +111,7 @@ public class TenantAdminTest extends BasicTest {
                 .build(), Long.class);
         Assert.assertFalse(addAppR.ok());
         // 修改当前租户的某个应用信息
-        putToEntity("/console/app/" + appId, ModifyAppReq.builder()
+        patchToEntity("/console/app/" + appId, ModifyAppReq.builder()
                 .name("测试应用1")
                 .icon("xxx")
                 .build(), Void.class);
@@ -131,7 +131,7 @@ public class TenantAdminTest extends BasicTest {
                 .note("临时凭证")
                 .build(), Long.class).getBody();
         // 修改当前租户某个应用的某个凭证
-        putToEntity("/console/app/" + appId + "/cert/" + appCertId, ModifyAppCertReq.builder()
+        patchToEntity("/console/app/" + appId + "/cert/" + appCertId, ModifyAppCertReq.builder()
                 .note("临时凭证1")
                 .build(), Void.class);
         // 获取当前租户某个应用的凭证列表信息
@@ -170,7 +170,7 @@ public class TenantAdminTest extends BasicTest {
                 .parentId(appRootOrgId)
                 .build(), Long.class);
         // 修改当前租户某个应用的某个机构
-        putToEntity("/console/organization/" + appId + "/" + appRootOrgId, ModifyOrganizationReq.builder()
+        patchToEntity("/console/organization/" + appId + "/" + appRootOrgId, ModifyOrganizationReq.builder()
                 .kind(OrganizationKind.VIRTUAL)
                 .name("测试应用")
                 .build(), Void.class);
@@ -190,7 +190,7 @@ public class TenantAdminTest extends BasicTest {
                 .name("普通用户")
                 .build(), Long.class).getBody();
         // 修改当前租户某个应用应用的某个职位
-        putToEntity("/console/position/" + appId + "/" + positionId, ModifyPositionReq.builder()
+        patchToEntity("/console/position/" + appId + "/" + positionId, ModifyPositionReq.builder()
                 .name("用户角色")
                 .build(), Void.class);
         // 获取当前租户某个应用的职位列表信息
@@ -244,7 +244,7 @@ public class TenantAdminTest extends BasicTest {
                 .parentId(groupId)
                 .build(), Long.class).getBody();
         // 修改当前租户某个应用的资源（组）
-        putToEntity("/console/resource/" + appId + "/" + resId, ModifyResourceReq.builder()
+        patchToEntity("/console/resource/" + appId + "/" + resId, ModifyResourceReq.builder()
                 .name("获取租户列表")
                 .build(), Void.class);
         // 获取当前租户某个应用的资源（组）列表信息
@@ -319,7 +319,7 @@ public class TenantAdminTest extends BasicTest {
                         .build())
                 .build(), Long.class).getBody();
         // 修改当前租户的某个账号
-        putToEntity("/console/account/" + accountId, ModifyAccountReq.builder()
+        patchToEntity("/console/account/" + accountId, ModifyAccountReq.builder()
                 .name("测试用户1")
                 .build(), Void.class);
         // 获取当前租户的账号列表信息
@@ -352,7 +352,7 @@ public class TenantAdminTest extends BasicTest {
                 .sk("123")
                 .build(), Long.class).getBody();
         // 修改当前租户某个账号的某个凭证
-        putToEntity("/console/account/" + accountId + "/cert/" + accountCertId, ModifyAccountCertReq.builder()
+        patchToEntity("/console/account/" + accountId + "/cert/" + accountCertId, ModifyAccountCertReq.builder()
                 .validTime(new Date(System.currentTimeMillis() + 100000L))
                 .build(), Void.class);
         // 获取当前租户某个账号的凭证列表信息

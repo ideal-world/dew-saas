@@ -89,7 +89,7 @@
         <module>common/backend/common-service</module>
         <module>apps/ident</module>
         <!--测试项目-->
-        <module>apps/starfk</module>
+      <!--  <module>apps/starfk</module>-->
     </modules>
 
     <repositories>

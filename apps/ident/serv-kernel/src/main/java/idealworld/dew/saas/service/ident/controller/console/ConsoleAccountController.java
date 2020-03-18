@@ -68,7 +68,7 @@ public class ConsoleAccountController extends BasicController {
         return accountService.getAccountInfo(accountId, getCurrentTenantId());
     }
 
-    @PutMapping(value = "{accountId}")
+    @PatchMapping(value = "{accountId}")
     @ApiOperation(value = "修改当前租户的某个账号")
     public Resp<Void> modifyAccount(@PathVariable Long accountId,
                                     @RequestBody ModifyAccountReq modifyAccountReq) {
@@ -96,7 +96,7 @@ public class ConsoleAccountController extends BasicController {
         return accountService.findAccountCertInfo(accountId, getCurrentTenantId());
     }
 
-    @PutMapping(value = "{accountId}/cert/{accountCertId}")
+    @PatchMapping(value = "{accountId}/cert/{accountCertId}")
     @ApiOperation(value = "修改当前租户某个账号的某个凭证")
     public Resp<Void> modifyAccountCert(@PathVariable Long accountId,
                                         @PathVariable Long accountCertId,

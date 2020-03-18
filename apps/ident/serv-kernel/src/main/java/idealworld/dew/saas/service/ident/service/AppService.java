@@ -20,7 +20,7 @@ import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple3;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.common.service.Constant;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
@@ -137,7 +137,7 @@ public class AppService extends BasicService {
                 .forEach(info -> {
                     var ak = info.get(0, String.class);
                     var sk = info.get(1, String.class);
-                    var relAppId = info.get(2, Date.class);
+                    var relAppId = info.get(2, Long.class);
                     var validTime = info.get(3, Date.class);
                     var relTenantId = info.get(4, Long.class);
                     if (validTime.getTime() == Constant.NEVER_EXPIRE_TIME.getTime()) {

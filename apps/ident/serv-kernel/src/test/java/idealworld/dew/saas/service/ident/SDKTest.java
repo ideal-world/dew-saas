@@ -16,7 +16,6 @@
 
 package idealworld.dew.saas.service.ident;
 
-import idealworld.dew.saas.common.sdk.CommonConfig;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
@@ -53,6 +52,7 @@ import java.util.Date;
 @SpringBootTest(classes = DewIdentApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class SDKTest extends BasicTest {
 
+    @Autowired
     private IdentSDK sdk;
 
     @Test
@@ -73,13 +73,9 @@ public class SDKTest extends BasicTest {
         var appCert = getToList("/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody().get(0);
         System.out.println("=====================\nAK:" + appCert.getAk() + "\nSK:" + appCert.getSk() + "\n=====================");
 
-        sdk = IdentSDK.builder(CommonConfig.builder()
-                .basic(CommonConfig.Basic.builder()
-                        .identUrl("http://127.0.0.1:8080")
-                        .appAk(appCert.getAk())
-                        .appSk(appCert.getSk())
-                        .build())
-                .build());
+        sdk.getConfig().getBasic().setAppAk(appCert.getAk());
+        sdk.getConfig().getBasic().setAppSk(appCert.getSk());
+        sdk.init();
 
         var orgId = testOrganization();
         var positionCode = testPosition();

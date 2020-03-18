@@ -22,8 +22,8 @@ import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.auth.dto.OptInfo;
-import idealworld.dew.saas.common.service.Constant;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.common.utils.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
@@ -483,7 +483,7 @@ public class AccountService extends BasicService {
         var qPost = QPost.post;
         var qPosition = QPosition.position;
         var qOrganization = QOrganization.organization;
-        return sqlBuilder.select(qPosition.code, qPosition.relAppId, qPosition.name, qOrganization.name)
+        return sqlBuilder.select(qPost.relPositionCode, qPost.relOrganizationCode, qPost.relAppId, qPosition.name, qOrganization.name)
                 .from(qAccountPost)
                 .leftJoin(qPost).on(qAccountPost.relPostId.eq(qPost.id).and(qPost.delFlag.eq(false)))
                 .leftJoin(qPosition).on(
@@ -502,11 +502,12 @@ public class AccountService extends BasicService {
                 .stream()
                 .map(info -> {
                     var positionCode = info.get(0, String.class);
-                    var positionRelAppId = info.get(1, Long.class);
-                    var positionName = info.get(2, String.class);
-                    var orgName = info.get(3, String.class);
+                    var orgCode = info.get(1, String.class);
+                    var relAppId = info.get(2, Long.class);
+                    var positionName = info.get(3, String.class);
+                    var orgName = info.get(4, String.class);
                     return new OptInfo.RoleInfo()
-                            .setCode(positionRelAppId + PermissionService.ROLE_SPLIT + positionCode)
+                            .setCode(relAppId + Constant.ROLE_SPLIT + orgCode + Constant.ROLE_SPLIT + positionCode)
                             .setName(orgName + " " + positionName);
                 })
                 .collect(Collectors.toSet());

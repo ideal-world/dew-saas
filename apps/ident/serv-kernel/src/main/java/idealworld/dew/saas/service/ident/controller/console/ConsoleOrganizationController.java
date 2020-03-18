@@ -55,7 +55,7 @@ public class ConsoleOrganizationController extends BasicController {
         return organizationService.findOrganizationInfo(appId, getCurrentTenantId());
     }
 
-    @PutMapping(value = "{appId}/{organizationId}")
+    @PatchMapping(value = "{appId}/{organizationId}")
     @ApiOperation(value = "修改当前租户某个应用的某个机构")
     public Resp<Void> modifyOrganization(@PathVariable Long appId,
                                          @PathVariable Long organizationId,

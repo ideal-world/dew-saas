@@ -61,7 +61,7 @@ public class AppPositionController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @PutMapping(value = "/{positionId}")
+    @PatchMapping(value = "/{positionId}")
     @ApiOperation(value = "修改当前应用的某个职位")
     public Resp<Void> modifyPosition(@PathVariable Long positionId,
                                      @RequestBody ModifyPositionReq modifyPositionReq) {

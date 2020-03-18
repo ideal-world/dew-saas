@@ -44,18 +44,6 @@
                     <groupId>org.mindrot</groupId>
                     <artifactId>jbcrypt</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpmime</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jooq</groupId>
-                    <artifactId>joox</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

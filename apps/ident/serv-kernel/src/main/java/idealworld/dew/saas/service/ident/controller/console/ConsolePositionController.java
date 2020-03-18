@@ -55,7 +55,7 @@ public class ConsolePositionController extends BasicController {
         return positionService.findPositionInfo(appId, getCurrentTenantId());
     }
 
-    @PutMapping(value = "{appId}/{positionId}")
+    @PatchMapping(value = "{appId}/{positionId}")
     @ApiOperation(value = "修改当前租户某个应用的某个职位")
     public Resp<Void> modifyPosition(@PathVariable Long appId,
                                      @PathVariable Long positionId,

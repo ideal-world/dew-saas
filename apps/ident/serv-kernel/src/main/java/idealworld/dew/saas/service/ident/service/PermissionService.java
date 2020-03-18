@@ -16,24 +16,27 @@
 
 package idealworld.dew.saas.service.ident.service;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import group.idealworld.dew.core.web.interceptor.BasicHandlerInterceptor;
-import idealworld.dew.saas.common.service.Constant;
-import idealworld.dew.saas.service.ident.domain.*;
+import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.service.ident.domain.Permission;
+import idealworld.dew.saas.service.ident.domain.QPermission;
+import idealworld.dew.saas.service.ident.domain.QPost;
+import idealworld.dew.saas.service.ident.domain.QResource;
 import idealworld.dew.saas.service.ident.dto.permission.AddPermissionReq;
+import idealworld.dew.saas.service.ident.dto.permission.PermissionExtInfo;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoResp;
+import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoSub;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.Tolerate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -42,24 +45,13 @@ import java.util.stream.Collectors;
 @Service
 public class PermissionService extends BasicService {
 
-    public static final String ROLE_SPLIT = "-";
+    public static final String IDENT_PERMISSION_SUB_LIST = "cache:ident:permission:app:";
+    public static final String IDENT_PERMISSION_SUB_APPS = "mq:ident:permission:app:";
 
     @Autowired
     private ResourceService resourceService;
     @Autowired
     private AppService appService;
-
-    public void buildUrlAuth() {
-        Map<String, Map<String, List<String>>> roleAuth = findPermissionInfo(ResourceKind.URI).stream()
-                .collect(Collectors.groupingBy(
-                        info -> info.getRelAppId() + ROLE_SPLIT + info.getPositionCode(),
-                        Collectors.groupingBy(
-                                PermissionInfo::getResMethod,
-                                Collectors.mapping(PermissionInfo::getResIdentifier, Collectors.toList())
-                        )
-                ));
-        BasicHandlerInterceptor.fillAuthInfo(null, roleAuth);
-    }
 
     @Transactional
     public Resp<Long> addPermission(AddPermissionReq addPermissionReq, Long relAppId, Long relTenantId) {
@@ -83,7 +75,9 @@ public class PermissionService extends BasicService {
                 .build();
         var saveR = saveEntity(permission);
         if (saveR.ok()) {
-            buildUrlAuth();
+            onPermissionChanged(new ArrayList<>() {{
+                add(permission.getId());
+            }}, relAppId, false);
         }
         return saveR;
     }
@@ -112,7 +106,9 @@ public class PermissionService extends BasicService {
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
                 .execute();
-        buildUrlAuth();
+        onPermissionChanged(new ArrayList<>() {{
+            add(permissionId);
+        }}, relAppId, true);
         return Resp.success(null);
     }
 
@@ -131,7 +127,7 @@ public class PermissionService extends BasicService {
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
                 .execute();
-        buildUrlAuth();
+        onPermissionChanged(deletePermissionIds, relAppId, true);
         return Resp.success(null);
     }
 
@@ -150,73 +146,96 @@ public class PermissionService extends BasicService {
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
                 .execute();
-        buildUrlAuth();
+        onPermissionChanged(deletePermissionIds, relAppId, true);
         return Resp.success(null);
     }
 
-    private List<PermissionInfo> findPermissionInfo(ResourceKind resourceKind) {
+    public Resp<String> subPermissions(Long appId, Long expireSec) {
+        // TODO 配置化
+        Dew.cluster.cache.setex(IDENT_PERMISSION_SUB_LIST + appId, IDENT_PERMISSION_SUB_APPS + appId, expireSec + 600);
+        var permissionExtInfo = findPermissionExtInfo(appId, Optional.empty());
+        var permissionInfoSub = PermissionInfoSub.builder()
+                .changedPermissions(permissionExtInfo)
+                .build();
+        Dew.cluster.mq.publish(IDENT_PERMISSION_SUB_APPS + appId,
+                $.json.toJsonString(permissionInfoSub));
+        return Resp.success(IDENT_PERMISSION_SUB_APPS + appId);
+    }
+
+    @Transactional
+    public Resp<Void> unSubPermission(Long appId) {
+        Dew.cluster.cache.del(IDENT_PERMISSION_SUB_LIST + appId);
+        return Resp.success(null);
+    }
+
+    private void onPermissionChanged(List<Long> changedPermissionIds, Long relAppId, Boolean isDel) {
+        if (!ELECTION.isLeader()) {
+            return;
+        }
+        if (!Dew.cluster.cache.exists(IDENT_PERMISSION_SUB_LIST + relAppId)) {
+            return;
+        }
+        if (isDel) {
+            var permissionInfoSub = PermissionInfoSub.builder()
+                    .removedPermissionIds(changedPermissionIds)
+                    .build();
+            Dew.cluster.mq.publish(IDENT_PERMISSION_SUB_APPS + relAppId,
+                    $.json.toJsonString(permissionInfoSub));
+        } else {
+            var permissionExtInfo = findPermissionExtInfo(relAppId, Optional.of(changedPermissionIds));
+            var permissionInfoSub = PermissionInfoSub.builder()
+                    .changedPermissions(permissionExtInfo)
+                    .build();
+            Dew.cluster.mq.publish(IDENT_PERMISSION_SUB_APPS + relAppId,
+                    $.json.toJsonString(permissionInfoSub));
+        }
+    }
+
+    private List<PermissionExtInfo> findPermissionExtInfo(Long relAppId,
+                                                          Optional<List<Long>> permissionIdsOpt) {
         var qResource = QResource.resource;
         var qPost = QPost.post;
-        var qPosition = QPosition.position;
         var qPermission = QPermission.permission;
-        return sqlBuilder
+        var permissionQuery = sqlBuilder
                 .select(Projections.bean(
-                        PermissionInfo.class,
+                        PermissionExtInfo.class,
+                        qPermission.id.as("permissionId"),
                         qResource.kind.as("resKind"),
                         qResource.id.as("resId"),
                         qResource.identifier.as("resIdentifier"),
                         qResource.method.as("resMethod"),
-                        qPosition.code.as("positionCode"),
-                        qPosition.relAppId))
+                        qPost.relPositionCode.as("positionCode"),
+                        qPost.relOrganizationCode.as("organizationCode")))
                 .from(qPermission)
                 .innerJoin(qPost).on(qPermission.relPostId.eq(qPost.id).and(qPost.delFlag.eq(false)))
-                .innerJoin(qPosition).on(
-                        qPosition.delFlag.eq(false)
-                                .and(qPost.relTenantId.eq(qPosition.relTenantId))
-                                .and(qPost.relAppId.eq(qPosition.relAppId))
-                                .and(qPost.relPositionCode.eq(qPosition.code)))
-                .innerJoin(qResource).on(qPermission.relResourceId.eq(qResource.id).and(qResource.delFlag.eq(false)))
-                .where(qResource.kind.in(resourceKind, ResourceKind.GROUP))
-                .where(qResource.delFlag.eq(false))
+                .innerJoin(qResource).on(qPermission.relResourceId.eq(qResource.id).and(qResource.delFlag.eq(false)));
+        permissionIdsOpt.ifPresent(ids -> permissionQuery.where(qPermission.id.in(ids)));
+        return permissionQuery.where(qPermission.relAppId.eq(relAppId))
+                .where(qPermission.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .flatMap(info -> {
-                    if (info.resKind == ResourceKind.GROUP) {
+                    if (info.getResKind() == ResourceKind.GROUP) {
                         return resourceService.findResourceByGroup(info.getResId())
                                 .stream()
-                                .map(resInfo -> PermissionInfo.builder()
+                                .map(resInfo -> PermissionExtInfo.builder()
+                                        .permissionId(info.getPermissionId())
                                         .resKind(resInfo.getKind())
                                         .resId(resInfo.getId())
                                         .resIdentifier(resInfo.getIdentifier())
                                         .resMethod(resInfo.getMethod())
-                                        .positionCode(info.positionCode)
-                                        .relAppId(info.relAppId)
+                                        .positionCode(info.getPositionCode())
+                                        .organizationCode(info.getOrganizationCode())
+                                        .relAppId(info.getRelAppId())
                                         .build()
                                 );
                     } else {
-                        return new ArrayList<PermissionInfo>() {{
+                        return new ArrayList<PermissionExtInfo>() {{
                             add(info);
                         }}.stream();
                     }
                 })
                 .collect(Collectors.toList());
-    }
-
-    @Data
-    @Builder
-    public static class PermissionInfo {
-
-        @Tolerate
-        public PermissionInfo() {
-        }
-
-        private ResourceKind resKind;
-        private Long resId;
-        private String resIdentifier;
-        private String resMethod;
-        private String positionCode;
-        private Long relAppId;
-
     }
 
 }

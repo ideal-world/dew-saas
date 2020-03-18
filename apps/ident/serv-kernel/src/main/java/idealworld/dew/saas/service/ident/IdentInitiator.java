@@ -23,7 +23,6 @@ import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.BasicService;
-import idealworld.dew.saas.service.ident.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -39,8 +38,6 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
     @Autowired
     private IdentConfig identConfig;
     @Autowired
-    private PermissionService permissionService;
-    @Autowired
     private AppService appService;
 
     /**
@@ -51,7 +48,6 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         DewContext.setOptInfoClazz(IdentOptInfo.class);
         initPermissionData();
-        permissionService.buildUrlAuth();
         appService.cacheAppCerts();
     }
 
@@ -77,31 +73,6 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
                 .relTenantId(-1L)
                 .build());
 
-        var adminRes = Resource.builder()
-                .kind(ResourceKind.URI)
-                .identifier("/admin/**")
-                .method("*")
-                .name("")
-                .icon("")
-                .sort(0)
-                .parentId(-1L)
-                .relAppId(-1L)
-                .relTenantId(-1L)
-                .build();
-        saveEntity(adminRes);
-        var tenantRes = Resource.builder()
-                .kind(ResourceKind.URI)
-                .identifier("/console/**")
-                .method("*")
-                .name("")
-                .icon("")
-                .sort(0)
-                .parentId(-1L)
-                .relAppId(-1L)
-                .relTenantId(-1L)
-                .build();
-        saveEntity(tenantRes);
-
         var adminPost = Post.builder()
                 .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getSystemAdminPositionCode())
@@ -116,18 +87,5 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
                 .relTenantId(-1L)
                 .build();
         saveEntity(tenantPost);
-
-        saveEntity(Permission.builder()
-                .relPostId(adminPost.getId())
-                .relResourceId(adminRes.getId())
-                .relAppId(-1L)
-                .relTenantId(-1L)
-                .build());
-        saveEntity(Permission.builder()
-                .relPostId(tenantPost.getId())
-                .relResourceId(tenantRes.getId())
-                .relAppId(-1L)
-                .relTenantId(-1L)
-                .build());
     }
 }

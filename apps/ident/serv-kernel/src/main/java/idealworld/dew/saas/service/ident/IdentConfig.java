@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Data
-@ConfigurationProperties(prefix = "ident")
+@ConfigurationProperties(prefix = "dew.saas.ident")
 public class IdentConfig {
 
     private App app = new App();

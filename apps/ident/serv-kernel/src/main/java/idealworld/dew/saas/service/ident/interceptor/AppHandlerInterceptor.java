@@ -76,7 +76,7 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
         }
         var reqSignature = authorization.split(":")[1];
         var reqMethod = request.getMethod();
-        var reqDate = request.getHeader("X-Date");
+        var reqDate = request.getHeader("Dew-Date");
         var reqPath = request.getRequestURI();
         var reqQuery = request.getQueryString() != null ? request.getQueryString() : "";
         var sk = legalSkAndAppIdR.getBody()._0;

@@ -2,7 +2,6 @@ package idealworld.dew.saas.service.ident.service.sdk;
 
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
-import idealworld.dew.saas.common.sdk.CommonConfig;
 import idealworld.dew.saas.common.sdk.CommonSDK;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
@@ -25,10 +24,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class IdentSDK extends CommonSDK<CommonConfig> {
+public class IdentSDK extends CommonSDK<IdentConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(IdentSDK.class);
 
+    public Auth auth = new Auth();
     public Account account = new Account();
     public Organization organization = new Organization();
     public Permission permission = new Permission();
@@ -36,12 +36,42 @@ public class IdentSDK extends CommonSDK<CommonConfig> {
     public Post post = new Post();
     public Resource resource = new Resource();
 
-    public static IdentSDK builder(CommonConfig config) {
+    public static IdentSDK builder(IdentConfig config) {
         var identSDK = new IdentSDK();
-        identSDK.init(config, config.getBasic().getIdentUrl());
+        identSDK.setServiceUrl(config.getIdent().getUrl());
+        identSDK.setConfig(config);
         return identSDK;
     }
 
+    public class Auth {
+
+        /**
+         * 添加当前租户的账号.
+         *
+         * @param addAccountReq 添加账号请求
+         * @return 账号Id
+         */
+        public Resp<Long> addAccount(AddAccountReq addAccountReq) {
+            return post("app/account", addAccountReq);
+        }
+
+
+        /**
+         * 订阅当前应用的权限信息
+         */
+        public Resp<String> subPermissions() {
+            return getToEntity("app/auth/permission/sub?expireSec=" + getConfig().getIdent().getFetchSec(), String.class);
+        }
+
+        /**
+         * 取消当前应用的订阅权限信息
+         * <p>
+         * 此操作会取消当前应用的所有实例订阅，在多实例场景下慎用
+         */
+        public Resp<Void> unSubPermission() {
+            return delete("app/auth/permission/sub");
+        }
+    }
 
     public class Account {
 
@@ -80,7 +110,7 @@ public class IdentSDK extends CommonSDK<CommonConfig> {
          */
         public Resp<Void> modifyAccount(Long accountId,
                                         ModifyAccountReq modifyAccountReq) {
-            return put("app/account/" + accountId, modifyAccountReq);
+            return patch("app/account/" + accountId, modifyAccountReq);
         }
 
         /**
@@ -115,7 +145,7 @@ public class IdentSDK extends CommonSDK<CommonConfig> {
         public Resp<Void> modifyAccountCert(Long accountId,
                                             Long accountCertId,
                                             ModifyAccountCertReq modifyAccountCertReq) {
-            return put("app/account/" + accountId + "/cert/" + accountCertId, modifyAccountCertReq);
+            return patch("app/account/" + accountId + "/cert/" + accountCertId, modifyAccountCertReq);
         }
 
         /**
@@ -186,7 +216,7 @@ public class IdentSDK extends CommonSDK<CommonConfig> {
          */
         public Resp<Void> modifyOrganization(Long organizationId,
                                              ModifyOrganizationReq modifyOrganizationReq) {
-            return put("/app/organization/" + organizationId, modifyOrganizationReq);
+            return patch("/app/organization/" + organizationId, modifyOrganizationReq);
         }
 
         /**
@@ -257,7 +287,7 @@ public class IdentSDK extends CommonSDK<CommonConfig> {
          */
         public Resp<Void> modifyPosition(Long positionId,
                                          ModifyPositionReq modifyPositionReq) {
-            return put("/app/position/" + positionId, modifyPositionReq);
+            return patch("/app/position/" + positionId, modifyPositionReq);
         }
 
         /**
@@ -320,7 +350,7 @@ public class IdentSDK extends CommonSDK<CommonConfig> {
          */
         public Resp<Void> modifyResource(Long resourceId,
                                          ModifyResourceReq modifyResourceReq) {
-            return put("/app/resource/" + resourceId, modifyResourceReq);
+            return patch("/app/resource/" + resourceId, modifyResourceReq);
         }
 
         /**

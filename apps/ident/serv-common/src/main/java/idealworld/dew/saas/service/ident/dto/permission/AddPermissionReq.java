@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @Data
 @Builder
-@ApiModel("添加权限请求")
+@ApiModel("权限请求")
 public class AddPermissionReq implements Serializable {
 
     @ApiModelProperty(value = "关联岗位", required = true)

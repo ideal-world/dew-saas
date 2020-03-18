@@ -57,7 +57,7 @@ public class ConsoleResourceController extends BasicController {
         return resourceService.addResource(addResourceReq, appId, getCurrentTenantId());
     }
 
-    @PutMapping(value = "{appId}/{resourceId}")
+    @PatchMapping(value = "{appId}/{resourceId}")
     @ApiOperation(value = "修改当前租户某个应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long appId,
                                      @PathVariable Long resourceId,
