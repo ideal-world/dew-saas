@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static idealworld.dew.saas.common.utils.Constant.ROLE_SPLIT;
+import static idealworld.dew.saas.common.Constant.ROLE_SPLIT;
 
 @Component
 public class AuthProcessor {

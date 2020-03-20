@@ -20,7 +20,7 @@ import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple3;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;

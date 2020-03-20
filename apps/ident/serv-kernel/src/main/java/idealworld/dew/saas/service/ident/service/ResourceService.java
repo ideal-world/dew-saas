@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.QResource;
 import idealworld.dew.saas.service.ident.domain.Resource;
 import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;

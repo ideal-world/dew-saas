@@ -23,7 +23,7 @@ import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.auth.dto.OptInfo;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;

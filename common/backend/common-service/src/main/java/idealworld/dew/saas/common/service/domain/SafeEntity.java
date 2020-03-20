@@ -1,7 +1,7 @@
 package idealworld.dew.saas.common.service.domain;
 
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

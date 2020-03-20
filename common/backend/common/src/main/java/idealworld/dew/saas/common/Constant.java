@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.common.utils;
+package idealworld.dew.saas.common;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;

@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident;
 
 import com.ecfront.dew.common.tuple.Tuple3;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
 import idealworld.dew.saas.service.ident.dto.app.AppCertInfoResp;

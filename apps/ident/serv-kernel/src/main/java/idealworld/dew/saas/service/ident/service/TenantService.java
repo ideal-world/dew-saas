@@ -19,7 +19,7 @@ package idealworld.dew.saas.service.ident.service;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountPostReq;

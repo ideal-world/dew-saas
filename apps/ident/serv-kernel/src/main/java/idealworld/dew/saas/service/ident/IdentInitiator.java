@@ -19,9 +19,8 @@ package idealworld.dew.saas.service.ident;
 
 import group.idealworld.dew.core.DewContext;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
-import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.BasicService;
 import org.springframework.beans.factory.annotation.Autowired;

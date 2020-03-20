@@ -20,7 +20,7 @@ import com.ecfront.dew.common.StandardCode;
 import com.ecfront.dew.common.tuple.Tuple3;
 import com.ecfront.dew.common.tuple.Tuple4;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;

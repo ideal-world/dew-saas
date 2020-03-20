@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.utils.Constant;
+import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.Position;
 import idealworld.dew.saas.service.ident.domain.QPosition;
 import idealworld.dew.saas.service.ident.dto.position.AddPositionReq;
