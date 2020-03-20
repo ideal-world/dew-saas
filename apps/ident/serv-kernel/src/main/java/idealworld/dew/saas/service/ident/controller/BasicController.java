@@ -28,4 +28,11 @@ public abstract class BasicController {
                 .orElseThrow(() -> new RTException("用户未登录"));
     }
 
+    protected Long getCurrentAccountId() {
+        return Dew.auth.getOptInfo()
+                .map(info -> Long.valueOf((String) info.getAccountCode()))
+                .orElseThrow(() -> new RTException("用户未登录"));
+    }
+
+
 }

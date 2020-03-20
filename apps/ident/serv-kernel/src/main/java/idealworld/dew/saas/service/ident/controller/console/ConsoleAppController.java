@@ -20,6 +20,7 @@ import com.ecfront.dew.common.Resp;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.service.AppService;
+import idealworld.dew.saas.service.ident.service.oauth.OAuthService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,14 @@ public class ConsoleAppController extends BasicController {
 
     @Autowired
     private AppService appService;
+    @Autowired
+    private OAuthService oAuthService;
+
+    @GetMapping(value = "oauth/{oauthKind}/access-token")
+    @ApiOperation(value = "获取OAuth的AccessToken")
+    public Resp<String> oauthGetAccessToken(@PathVariable String oauthKind) {
+        return oAuthService.getAccessToken(oauthKind, getCurrentTenantId());
+    }
 
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前租户的应用")

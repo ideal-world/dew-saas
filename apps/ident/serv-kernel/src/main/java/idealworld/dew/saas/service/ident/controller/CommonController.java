@@ -20,9 +20,11 @@ import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
+import idealworld.dew.saas.service.ident.dto.account.OAuthReq;
 import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.TenantService;
+import idealworld.dew.saas.service.ident.service.oauth.OAuthService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +41,10 @@ public class CommonController extends BasicController {
 
     @Autowired
     private TenantService tenantService;
-
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private OAuthService oAuthService;
 
     @PostMapping(value = "/tenant/register")
     @ApiOperation(value = "注册租户")
@@ -54,6 +57,13 @@ public class CommonController extends BasicController {
     public Resp<IdentOptInfo> login(@PathVariable Long tenantId,
                                     @RequestBody LoginReq loginReq) {
         return accountService.login(loginReq, tenantId);
+    }
+
+    @PostMapping(value = "/oauth/{tenantId}/login")
+    @ApiOperation(value = "OAuth用户注册/登录")
+    public Resp<IdentOptInfo> oauthLogin(@PathVariable Long tenantId,
+                                         @RequestBody OAuthReq oAuthReq) {
+        return oAuthService.login(oAuthReq, tenantId);
     }
 
     @DeleteMapping(value = "/auth/{tenantId}/logout")

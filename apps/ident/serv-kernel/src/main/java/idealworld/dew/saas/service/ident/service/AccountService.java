@@ -467,9 +467,6 @@ public class AccountService extends BasicService {
                     return Resp.badRequest("验证码错误");
                 }
                 return Resp.success("");
-            case WECHAT:
-                // TODO
-                return Resp.success("");
             case USERNAME:
                 return Resp.success($.security.digest.digest(ak + sk, "SHA-512"));
             default:
@@ -498,9 +495,6 @@ public class AccountService extends BasicService {
                 Dew.cluster.cache.del(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 Dew.cluster.cache.del(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak);
                 return Resp.success(null);
-            case WECHAT:
-                // TODO
-                return Resp.success(null);
             case USERNAME:
                 if (!$.security.digest.validate(ak + inputSk, storageSk, "SHA-512")) {
                     return Resp.badRequest("密码错误");
@@ -512,7 +506,7 @@ public class AccountService extends BasicService {
         }
     }
 
-    private Set<OptInfo.RoleInfo> findRoleInfo(Long accountId) {
+    public Set<OptInfo.RoleInfo> findRoleInfo(Long accountId) {
         var qAccountPost = QAccountPost.accountPost;
         var qPost = QPost.post;
         var qPosition = QPosition.position;
@@ -553,4 +547,5 @@ public class AccountService extends BasicService {
                 .collect(Collectors.toSet());
 
     }
+
 }
