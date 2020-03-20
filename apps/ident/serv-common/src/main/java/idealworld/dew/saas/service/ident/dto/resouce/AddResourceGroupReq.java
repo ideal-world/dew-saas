@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("添加资源组请求")
 public class AddResourceGroupReq implements Serializable {
+
+    @Tolerate
+    public AddResourceGroupReq() {
+    }
 
     @ApiModelProperty(value = "资源组名称", required = true)
     private String name;

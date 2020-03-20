@@ -29,6 +29,7 @@ import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,14 +50,21 @@ public class AccountService extends BasicService {
     private static final int SK_KIND_VCODE_EXPRIE_SEC = 60 * 5;
     private static final int SK_KIND_VCODE_MAX_ERROR_TIMES = 5;
 
+    @Autowired
+    private TenantService tenantService;
+
     @Transactional
     public Resp<IdentOptInfo> login(LoginReq loginReq, Long relTenantId) {
         var qAccount = QAccount.account;
         var qAccountCert = QAccountCert.accountCert;
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
         var accountInfo = sqlBuilder
                 .select(qAccountCert.sk, qAccount.id)
                 .from(qAccountCert)
+                .innerJoin(qTenantCertConfig).on(qAccountCert.relTenantId.eq(qTenantCertConfig.relTenantId)
+                        .and(qTenantCertConfig.delFlag.eq(false)))
                 .leftJoin(qAccount).on(qAccountCert.relAccountId.eq(qAccount.id).and(qAccountCert.delFlag.eq(false)))
+                .where(qTenantCertConfig.kind.eq(loginReq.getCertKind()))
                 .where(qAccountCert.kind.eq(loginReq.getCertKind()))
                 .where(qAccountCert.ak.eq(loginReq.getAk()))
                 .where(qAccountCert.validTime.after(new Date()))
@@ -95,6 +103,11 @@ public class AccountService extends BasicService {
 
     @Transactional
     public Resp<Long> addAccountExt(AddAccountReq addAccountReq, Long relTenantId) {
+        var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountReq.getCertReq().getKind(),
+                addAccountReq.getCertReq().getSk(), relTenantId);
+        if (!checkValidRuleAndReturnValidTimeR.ok()) {
+            return Resp.error(checkValidRuleAndReturnValidTimeR);
+        }
         var processR = certProcessSK(addAccountReq.getCertReq().getKind(),
                 addAccountReq.getCertReq().getAk(),
                 addAccountReq.getCertReq().getSk(),
@@ -120,7 +133,7 @@ public class AccountService extends BasicService {
                 .relTenantId(relTenantId)
                 .build();
         saveEntity(account);
-        doAddAccountCert(addAccountReq.getCertReq(), processR.getBody(), account.getId(), relTenantId);
+        doAddAccountCert(addAccountReq.getCertReq(), processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), account.getId(), relTenantId);
         addAccountPost(addAccountReq.getPostReq(), account.getId(), relTenantId);
         return Resp.success(account.getId());
     }
@@ -227,6 +240,11 @@ public class AccountService extends BasicService {
         if (!checkAccountMembership(relAccountId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountCertReq.getKind(),
+                addAccountCertReq.getSk(), relTenantId);
+        if (!checkValidRuleAndReturnValidTimeR.ok()) {
+            return Resp.error(checkValidRuleAndReturnValidTimeR);
+        }
         var qAccountCert = QAccountCert.accountCert;
         if (sqlBuilder.select(qAccountCert.id)
                 .from(qAccountCert)
@@ -244,15 +262,16 @@ public class AccountService extends BasicService {
         if (!processR.ok()) {
             return Resp.error(processR);
         }
-        return doAddAccountCert(addAccountCertReq, processR.getBody(), relAccountId, relTenantId);
+        return doAddAccountCert(addAccountCertReq, processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), relAccountId, relTenantId);
     }
 
-    private Resp<Long> doAddAccountCert(AddAccountCertReq addAccountCertReq, String processedSk, Long relAccountId, Long relTenantId) {
+    private Resp<Long> doAddAccountCert(AddAccountCertReq addAccountCertReq, String processedSk, Date validTime,
+                                        Long relAccountId, Long relTenantId) {
         var accountCert = AccountCert.builder()
                 .kind(addAccountCertReq.getKind())
                 .ak(addAccountCertReq.getAk())
                 .sk(processedSk)
-                .validTime(addAccountCertReq.getValidTime() != null ? addAccountCertReq.getValidTime() : Constant.NEVER_EXPIRE_TIME)
+                .validTime(validTime)
                 .relAccountId(relAccountId)
                 .relTenantId(relTenantId)
                 .build();
@@ -416,6 +435,21 @@ public class AccountService extends BasicService {
 
     // ========================== Others ==============================
 
+    protected void updateAccountTenant(Long accountId, Long newTenantId) {
+        var qAccount = QAccount.account;
+        updateEntity(sqlBuilder
+                .update(qAccount)
+                .set(qAccount.relTenantId, newTenantId)
+                .where(qAccount.id.eq(accountId))
+        );
+        var qAccountCert = QAccountCert.accountCert;
+        updateEntity(sqlBuilder
+                .update(qAccountCert)
+                .set(qAccountCert.relTenantId, newTenantId)
+                .where(qAccountCert.relAccountId.eq(accountId))
+        );
+    }
+
     public void certSendVC(String ak, Long tenantId) {
         String tmpSk = (int) ((Math.random() * 9 + 1) * 1000) + "";
         Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak, tmpSk, SK_KIND_VCODE_EXPRIE_SEC);
@@ -503,7 +537,7 @@ public class AccountService extends BasicService {
                 .map(info -> {
                     var positionCode = info.get(0, String.class);
                     var orgCode = info.get(1, String.class);
-                    if (orgCode.isEmpty()) {
+                    if (orgCode == null || orgCode.isEmpty()) {
                         orgCode = Constant.OBJECT_UNDEFINED + "";
                     }
                     var relAppId = info.get(2, Long.class);

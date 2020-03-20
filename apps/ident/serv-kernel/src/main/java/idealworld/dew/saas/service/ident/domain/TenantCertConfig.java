@@ -8,40 +8,35 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
-import java.util.Date;
 
 /**
- * The type Cert Account.
+ * The type Tenant.
  *
  * @author gudaoxuri
  */
 @Entity
-@Table(name = "ident_account_cert", indexes = {
-        @Index(columnList = "delFlag,relTenantId,kind,ak"),
-        @Index(columnList = "delFlag"),
-        @Index(columnList = "delFlag,relAccountId,kind")
+@Table(name = "ident_tenant_cert_cfg", indexes = {
+        @Index(columnList = "delFlag,relTenantId,kind"),
+        @Index(columnList = "delFlag")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class AccountCert extends SafeSoftDelEntity {
+public class TenantCertConfig extends SafeSoftDelEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AccountCertKind kind;
 
     @Column(nullable = false)
-    private String ak;
+    private String validRuleNote;
 
     @Column(nullable = false)
-    private String sk;
+    private String validRule;
 
     @Column(nullable = false)
-    private Date validTime;
-
-    @Column(nullable = false)
-    private Long relAccountId;
+    private Long validTimeSec;
 
     @Column(nullable = false)
     private Long relTenantId;

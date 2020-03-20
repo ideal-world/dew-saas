@@ -18,7 +18,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_post", indexes = {
-        @Index(columnList = "delFlag,relTenantId,relAppId,relOrganizationCode,relPositionCode", unique = true),
+        @Index(columnList = "delFlag,relTenantId,relAppId,relOrganizationCode,relPositionCode"),
         @Index(columnList = "delFlag")
 })
 @Data

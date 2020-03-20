@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,6 +13,10 @@ import java.util.Date;
 @Builder
 @ApiModel("修改账号凭证请求")
 public class ModifyAccountCertReq implements Serializable {
+
+    @Tolerate
+    public ModifyAccountCertReq() {
+    }
 
     @ApiModelProperty(value = "账号凭证过期时间")
     private Date validTime;

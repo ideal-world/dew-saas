@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -12,6 +13,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("修改机构请求")
 public class ModifyOrganizationReq implements Serializable {
+
+    @Tolerate
+    public ModifyOrganizationReq() {
+    }
 
     @ApiModelProperty(value = "机构类型")
     private OrganizationKind kind;

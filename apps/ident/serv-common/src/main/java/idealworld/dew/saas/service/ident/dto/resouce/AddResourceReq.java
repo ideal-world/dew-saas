@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -12,6 +13,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("添加资源请求")
 public class AddResourceReq implements Serializable {
+
+    @Tolerate
+    public AddResourceReq() {
+    }
 
     @ApiModelProperty(value = "资源类型", required = true)
     private ResourceKind kind;

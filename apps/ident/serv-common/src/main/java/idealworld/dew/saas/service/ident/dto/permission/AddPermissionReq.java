@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("权限请求")
 public class AddPermissionReq implements Serializable {
+
+    @Tolerate
+    public AddPermissionReq() {
+    }
 
     @ApiModelProperty(value = "关联岗位", required = true)
     private Long relPostId;

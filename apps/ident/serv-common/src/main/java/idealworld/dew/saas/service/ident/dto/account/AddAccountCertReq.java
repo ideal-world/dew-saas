@@ -28,7 +28,4 @@ public class AddAccountCertReq implements Serializable {
     @ApiModelProperty(value = "账号凭证密钥", notes = "手机、邮件的凭证类型对应的sk为验证码", required = true)
     private String sk;
 
-    @ApiModelProperty(value = "账号凭证过期时间")
-    private Date validTime;
-
 }

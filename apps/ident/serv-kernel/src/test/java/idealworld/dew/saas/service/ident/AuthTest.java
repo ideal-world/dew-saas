@@ -32,19 +32,34 @@ import org.springframework.stereotype.Component;
 public class AuthTest extends BasicTest {
 
     public void testAll(Long tenantId, AccountCertKind certKind, String ak, String sk) {
-        // 登录
+        // 登录为普通用户
         var identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
                 .certKind(certKind)
                 .ak(ak)
                 .sk(sk)
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
-        // 测试：添加当前租户的应用：成功
+        // 测试：添加当前租户的应用：失败
         var addAppR = postToEntity("/console/app", AddAppReq.builder()
                 .name("测试app1")
                 .icon("")
                 .build(), Long.class);
+        Assert.assertFalse(addAppR.ok());
+
+        // 登录为租户管理员
+         identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
+                .certKind(certKind)
+                .ak("gudaoxuri")
+                .sk("pwd123")
+                .build(), IdentOptInfo.class).getBody();
+        setIdentOptInfo(identOptInfo);
+        // 测试：添加当前租户的应用：成功
+         addAppR = postToEntity("/console/app", AddAppReq.builder()
+                .name("测试app1")
+                .icon("")
+                .build(), Long.class);
         Assert.assertTrue(addAppR.ok());
+
         // 注销
         delete("/auth/" + tenantId + "/logout");
         // 测试：添加当前租户的应用：失败

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("修改应用请求")
 public class ModifyAppReq implements Serializable {
+
+    @Tolerate
+    public ModifyAppReq() {
+    }
 
     @ApiModelProperty(value = "应用名称")
     private String name;

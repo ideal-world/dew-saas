@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("修改账号请求")
 public class ModifyAccountReq implements Serializable {
+
+    @Tolerate
+    public ModifyAccountReq() {
+    }
 
     @ApiModelProperty(value = "账号名称")
     private String name;

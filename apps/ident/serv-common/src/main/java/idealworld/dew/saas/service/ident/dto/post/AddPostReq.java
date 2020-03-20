@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("添加岗位请求")
 public class AddPostReq implements Serializable {
+
+    @Tolerate
+    public AddPostReq() {
+    }
 
     @ApiModelProperty(value = "机构Id")
     private String relOrganizationCode;

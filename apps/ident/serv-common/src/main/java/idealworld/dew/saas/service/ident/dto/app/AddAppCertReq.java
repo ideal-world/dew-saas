@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,6 +13,10 @@ import java.util.Date;
 @Builder
 @ApiModel("添加应用凭证请求")
 public class AddAppCertReq implements Serializable {
+
+    @Tolerate
+    public AddAppCertReq() {
+    }
 
     @ApiModelProperty(value = "应用凭证用途", required = true)
     private String note;

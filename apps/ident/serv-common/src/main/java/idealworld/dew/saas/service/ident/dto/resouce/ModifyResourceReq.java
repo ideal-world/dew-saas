@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.Tolerate;
 
 import java.io.Serializable;
 
@@ -11,6 +12,10 @@ import java.io.Serializable;
 @Builder
 @ApiModel("修改资源（组）请求")
 public class ModifyResourceReq implements Serializable {
+
+    @Tolerate
+    public ModifyResourceReq() {
+    }
 
     @ApiModelProperty(value = "资源标识")
     private String identifier;

@@ -18,7 +18,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_permission", indexes = {
-        @Index(columnList = "delFlag,relPostId,relResourceId", unique = true),
+        @Index(columnList = "delFlag,relPostId,relResourceId"),
         @Index(columnList = "delFlag")
 })
 @Data

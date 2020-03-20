@@ -20,20 +20,22 @@ import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.utils.Constant;
-import idealworld.dew.saas.service.ident.domain.QAccount;
-import idealworld.dew.saas.service.ident.domain.QApp;
-import idealworld.dew.saas.service.ident.domain.QTenant;
-import idealworld.dew.saas.service.ident.domain.Tenant;
+import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountPostReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
-import idealworld.dew.saas.service.ident.dto.tenant.ModifyTenantReq;
-import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
-import idealworld.dew.saas.service.ident.dto.tenant.TenantInfoResp;
+import idealworld.dew.saas.service.ident.dto.tenant.*;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * @author gudaoxuri
@@ -41,10 +43,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TenantService extends BasicService {
 
+    private static final Map<String, Pattern> VALID_RULES = new ConcurrentHashMap<>();
+
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private AppService appService;
     @Autowired
     private PostService postService;
 
@@ -73,12 +75,10 @@ public class TenantService extends BasicService {
                 .updateUser(addAccountR.getBody())
                 .build();
         saveEntity(tenant);
-        var qAccount = QAccount.account;
-        updateEntity(sqlBuilder
-                .update(qAccount)
-                .set(qAccount.relTenantId, tenant.getId())
-                .where(qAccount.id.eq(addAccountR.getBody()))
-        );
+        accountService.updateAccountTenant(addAccountR.getBody(), tenant.getId());
+        addTenantCertConfig(AddTenantCertConfigReq.builder()
+                .kind(registerTenantReq.getCertKind())
+                .build(), tenant.getId());
         // Auto login
         return accountService.login(
                 LoginReq.builder()
@@ -139,11 +139,136 @@ public class TenantService extends BasicService {
             return Resp.conflict("请先删除租户下的所有应用");
         }
         var qTenant = QTenant.tenant;
-        return updateEntity(sqlBuilder
+        var deleteR = updateEntity(sqlBuilder
                 .update(qTenant)
                 .set(qTenant.delFlag, true)
                 .where(qTenant.id.eq(tenantId))
         );
+        deleteTenantCertConfig(tenantId);
+        return deleteR;
+    }
+
+    // ========================== Cert ==============================
+
+    @Transactional
+    public Resp<Long> addTenantCertConfig(AddTenantCertConfigReq addTenantCertConfigReq,
+                                          Long relTenantId) {
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        if (sqlBuilder.select(qTenantCertConfig.id)
+                .from(qTenantCertConfig)
+                .where(qTenantCertConfig.delFlag.eq(false))
+                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
+                .where(qTenantCertConfig.kind.eq(addTenantCertConfigReq.getKind()))
+                .fetchCount() != 0) {
+            return Resp.conflict("此凭证配置已存在");
+        }
+        var tenantCertConfig = TenantCertConfig.builder()
+                .kind(addTenantCertConfigReq.getKind())
+                .validRuleNote(addTenantCertConfigReq.getValidRuleNote() != null ? addTenantCertConfigReq.getValidRuleNote() : "")
+                .validRule(addTenantCertConfigReq.getValidRule() != null ? addTenantCertConfigReq.getValidRule() : "")
+                .validTimeSec(addTenantCertConfigReq.getValidTimeSec() != null
+                        ? addTenantCertConfigReq.getValidTimeSec() : Constant.OBJECT_UNDEFINED)
+                .relTenantId(relTenantId)
+                .build();
+        return saveEntity(tenantCertConfig);
+    }
+
+    public Resp<List<TenantCertConfigInfoResp>> findTenantCertConfigInfo(Long relTenantId) {
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        var qAccountCreateUser = QAccount.account;
+        var qAccountUpdateUser = QAccount.account;
+        var query = sqlBuilder
+                .select(Projections.bean(
+                        TenantCertConfigInfoResp.class,
+                        qTenantCertConfig.id,
+                        qTenantCertConfig.kind,
+                        qTenantCertConfig.validRuleNote,
+                        qTenantCertConfig.validRule,
+                        qTenantCertConfig.validTimeSec,
+                        qTenantCertConfig.delFlag,
+                        qTenantCertConfig.createTime,
+                        qTenantCertConfig.updateTime,
+                        qAccountCreateUser.name.as("createUserName"),
+                        qAccountUpdateUser.name.as("updateUserName")))
+                .from(qTenantCertConfig)
+                .leftJoin(qAccountCreateUser).on(qTenantCertConfig.createUser.eq(qAccountCreateUser.id))
+                .leftJoin(qAccountUpdateUser).on(qTenantCertConfig.updateUser.eq(qAccountUpdateUser.id))
+                .where(qTenantCertConfig.delFlag.eq(false));
+        return findDTOs(query);
+    }
+
+    @Transactional
+    public Resp<Void> modifyTenantCertConfig(ModifyTenantCertConfigReq modifyTenantCertConfigReq, Long tenantCertConfigId,
+                                             Long relTenantId) {
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        var updateClause = sqlBuilder.update(qTenantCertConfig)
+                .where(qTenantCertConfig.id.eq(tenantCertConfigId))
+                .where(qTenantCertConfig.relTenantId.eq(relTenantId));
+        if (modifyTenantCertConfigReq.getValidRule() != null) {
+            updateClause.set(qTenantCertConfig.validRule, modifyTenantCertConfigReq.getValidRule());
+        }
+        if (modifyTenantCertConfigReq.getValidRuleNote() != null) {
+            updateClause.set(qTenantCertConfig.validRuleNote, modifyTenantCertConfigReq.getValidRuleNote());
+        }
+        if (modifyTenantCertConfigReq.getValidTimeSec() != null) {
+            updateClause.set(qTenantCertConfig.validTimeSec, modifyTenantCertConfigReq.getValidTimeSec());
+        }
+        return updateEntity(updateClause);
+    }
+
+    @Transactional
+    public Resp<Void> deleteTenantCertConfig(Long relTenantId) {
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        sqlBuilder
+                .update(qTenantCertConfig)
+                .set(qTenantCertConfig.delFlag, true)
+                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
+                .execute();
+        return Resp.success(null);
+    }
+
+    @Transactional
+    public Resp<Void> deleteTenantCertConfig(Long tenantCertConfigId, Long relTenantId) {
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        sqlBuilder
+                .update(qTenantCertConfig)
+                .set(qTenantCertConfig.delFlag, true)
+                .where(qTenantCertConfig.id.eq(tenantCertConfigId))
+                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
+                .execute();
+        return Resp.success(null);
+    }
+
+    protected Resp<Date> checkValidRuleAndReturnValidTime(AccountCertKind kind, String sk, Long relTenantId) {
+        if (relTenantId.equals(Constant.OBJECT_UNDEFINED)) {
+            // 表示租户管理员注册时临时分配的虚拟租户号
+            return Resp.success(Constant.NEVER_EXPIRE_TIME);
+        }
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        var tenantCertConfig = sqlBuilder
+                .select(qTenantCertConfig.validRule,
+                        qTenantCertConfig.validTimeSec)
+                .from(qTenantCertConfig)
+                .where(qTenantCertConfig.delFlag.eq(false))
+                .where(qTenantCertConfig.kind.eq(kind))
+                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
+                .fetchOne();
+        if (tenantCertConfig == null) {
+            return Resp.badRequest("凭证不存在");
+        }
+        var validRule = tenantCertConfig.get(0, String.class);
+        var validTimeSec = tenantCertConfig.get(1, Long.class);
+        if (validRule != null) {
+            if (!VALID_RULES.containsKey(validRule)) {
+                VALID_RULES.put(validRule, Pattern.compile(validRule));
+            }
+            if (!VALID_RULES.get(validRule).matcher(sk).matches()) {
+                return Resp.badRequest("凭证密钥规则不合法");
+            }
+        }
+        return Resp.success(validTimeSec == null || validTimeSec.equals(Constant.OBJECT_UNDEFINED)
+                ? Constant.NEVER_EXPIRE_TIME
+                : new Date(System.currentTimeMillis() + validTimeSec * 1000));
     }
 
 }
