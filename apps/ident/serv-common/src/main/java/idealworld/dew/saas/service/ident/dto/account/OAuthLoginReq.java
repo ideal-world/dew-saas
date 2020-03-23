@@ -12,10 +12,10 @@ import java.io.Serializable;
 @Data
 @Builder
 @ApiModel("OAuth注册/登录请求")
-public class OAuthReq implements Serializable {
+public class OAuthLoginReq implements Serializable {
 
     @Tolerate
-    public OAuthReq() {
+    public OAuthLoginReq() {
     }
 
     @ApiModelProperty(value = "凭证类型", notes = "只能是OAuth类型的凭证", required = true)

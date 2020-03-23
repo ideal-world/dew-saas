@@ -29,7 +29,7 @@ public class AddAccountReq implements Serializable {
     @ApiModelProperty(value = "账号凭证", required = true)
     private AddAccountCertReq certReq;
 
-    @ApiModelProperty(value = "账号岗位", required = true)
+    @ApiModelProperty(value = "账号岗位")
     private AddAccountPostReq postReq;
 
 }

@@ -1,5 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
+import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -25,5 +26,8 @@ public class ModifyAccountReq implements Serializable {
 
     @ApiModelProperty(value = "账号扩展信息（Json格式）")
     private String parameters;
+
+    @ApiModelProperty(value = "账号状态")
+    private AccountStatus status;
 
 }

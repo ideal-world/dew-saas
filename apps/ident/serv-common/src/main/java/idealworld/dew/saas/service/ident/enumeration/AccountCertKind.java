@@ -9,7 +9,7 @@ import java.util.Arrays;
  */
 public enum AccountCertKind {
 
-    PHONE("PHONE"), USERNAME("USERNAME"), EMAIL("EMAIL"), WECHAT("WECHAT");
+    PHONE("PHONE"), USERNAME("USERNAME"), EMAIL("EMAIL"), WECHAT_MP("WECHAT_MP");
 
     private String code;
 

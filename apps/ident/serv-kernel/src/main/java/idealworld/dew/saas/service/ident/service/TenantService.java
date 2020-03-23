@@ -18,8 +18,8 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountPostReq;
@@ -79,7 +79,7 @@ public class TenantService extends BasicService {
         addTenantCertConfig(AddTenantCertConfigReq.builder()
                 .kind(registerTenantReq.getCertKind())
                 .build(), tenant.getId());
-        // Auto login
+        // 自动登录
         return accountService.login(
                 LoginReq.builder()
                         .certKind(registerTenantReq.getCertKind())
@@ -168,6 +168,8 @@ public class TenantService extends BasicService {
                 .validRule(addTenantCertConfigReq.getValidRule() != null ? addTenantCertConfigReq.getValidRule() : "")
                 .validTimeSec(addTenantCertConfigReq.getValidTimeSec() != null
                         ? addTenantCertConfigReq.getValidTimeSec() : Constant.OBJECT_UNDEFINED)
+                .oauthAk(addTenantCertConfigReq.getOauthAk() != null ? addTenantCertConfigReq.getOauthAk() : "")
+                .oauthSk(addTenantCertConfigReq.getOauthSk() != null ? addTenantCertConfigReq.getOauthSk() : "")
                 .relTenantId(relTenantId)
                 .build();
         return saveEntity(tenantCertConfig);
@@ -185,6 +187,8 @@ public class TenantService extends BasicService {
                         qTenantCertConfig.validRuleNote,
                         qTenantCertConfig.validRule,
                         qTenantCertConfig.validTimeSec,
+                        qTenantCertConfig.oauthAk,
+                        qTenantCertConfig.oauthSk,
                         qTenantCertConfig.delFlag,
                         qTenantCertConfig.createTime,
                         qTenantCertConfig.updateTime,
@@ -212,6 +216,12 @@ public class TenantService extends BasicService {
         }
         if (modifyTenantCertConfigReq.getValidTimeSec() != null) {
             updateClause.set(qTenantCertConfig.validTimeSec, modifyTenantCertConfigReq.getValidTimeSec());
+        }
+        if (modifyTenantCertConfigReq.getOauthAk() != null) {
+            updateClause.set(qTenantCertConfig.oauthAk, modifyTenantCertConfigReq.getOauthAk());
+        }
+        if (modifyTenantCertConfigReq.getOauthSk() != null) {
+            updateClause.set(qTenantCertConfig.oauthSk, modifyTenantCertConfigReq.getOauthSk());
         }
         return updateEntity(updateClause);
     }
@@ -269,6 +279,15 @@ public class TenantService extends BasicService {
         return Resp.success(validTimeSec == null || validTimeSec.equals(Constant.OBJECT_UNDEFINED)
                 ? Constant.NEVER_EXPIRE_TIME
                 : new Date(System.currentTimeMillis() + validTimeSec * 1000));
+    }
+
+    public Resp<TenantCertConfig> getTenantCertConfig(AccountCertKind kind, Long relTenantId) {
+        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        return getDTO(sqlBuilder
+                .selectFrom(qTenantCertConfig)
+                .where(qTenantCertConfig.delFlag.eq(false))
+                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
+                .where(qTenantCertConfig.kind.eq(kind)));
     }
 
 }

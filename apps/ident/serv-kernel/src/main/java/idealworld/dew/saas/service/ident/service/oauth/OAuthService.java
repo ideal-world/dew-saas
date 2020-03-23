@@ -18,13 +18,17 @@ package idealworld.dew.saas.service.ident.service.oauth;
 
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
-import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QAccountCert;
-import idealworld.dew.saas.service.ident.dto.account.*;
+import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
+import idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
+import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.BasicService;
+import idealworld.dew.saas.service.ident.service.TenantService;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.Builder;
 import lombok.Data;
@@ -40,17 +44,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class OAuthService extends BasicService {
 
     @Autowired
+    private TenantService tenantService;
+    @Autowired
     private AccountService accountService;
     @Autowired
-    private WechatPlatformAPI wechatService;
+    private WechatMPAPI wechatService;
 
     @Transactional
-    public Resp<IdentOptInfo> login(OAuthReq oAuthReq, Long tenantId) {
+    public Resp<IdentOptInfo> login(OAuthLoginReq oAuthLoginReq, Long tenantId) {
         Resp<OAuthUserInfo> oAuthUserInfoR;
-        switch (oAuthReq.getCertKind()) {
-            case WECHAT:
-                // TODO
-                oAuthUserInfoR = wechatService.getUserInfo(oAuthReq.getCode(), "", "");
+        var tenantCertConfigR = tenantService.getTenantCertConfig(oAuthLoginReq.getCertKind(), tenantId);
+        if (!tenantCertConfigR.ok()) {
+            return Resp.error(tenantCertConfigR);
+        }
+        var oauthAk = tenantCertConfigR.getBody().getOauthAk();
+        var oauthSk = tenantCertConfigR.getBody().getOauthSk();
+        switch (oAuthLoginReq.getCertKind()) {
+            case WECHAT_MP:
+                oAuthUserInfoR = wechatService.getUserInfo(oAuthLoginReq.getCode(), oauthAk, oauthSk);
                 break;
             default:
                 return Resp.notFound("凭证类型不合法");
@@ -62,21 +73,30 @@ public class OAuthService extends BasicService {
         var accountId = sqlBuilder.select(qAccountCert.relAccountId)
                 .from(qAccountCert)
                 .where(qAccountCert.delFlag.eq(false))
-                .where(qAccountCert.kind.eq(oAuthReq.getCertKind()))
-                .where(qAccountCert.ak.eq(oAuthUserInfoR.getBody().getUnionid()))
+                .where(qAccountCert.kind.eq(oAuthLoginReq.getCertKind()))
+                .where(qAccountCert.ak.eq(oAuthUserInfoR.getBody().getOpenid()))
                 .fetchOne();
         if (accountId == null) {
             accountId = accountService.addAccountExt(AddAccountReq.builder()
                     .name("")
                     .certReq(AddAccountCertReq.builder()
-                            .kind(AccountCertKind.WECHAT)
-                            .ak(oAuthUserInfoR.getBody().getUnionid())
+                            .kind(AccountCertKind.WECHAT_MP)
+                            .ak(oAuthUserInfoR.getBody().getOpenid())
                             .sk("").build())
-                    .postReq(AddAccountPostReq.builder()
-                            .relPostId(Constant.OBJECT_UNDEFINED).build())
                     .build(), tenantId).getBody();
+        } else {
+            var qAccount = QAccount.account;
+            var exist = sqlBuilder.select(qAccount.id)
+                    .from(qAccount)
+                    .where(qAccount.id.eq(accountId))
+                    .where(qAccount.status.eq(AccountStatus.ENABLED))
+                    .where(qAccount.delFlag.eq(false))
+                    .fetchOne() != null;
+            if (!exist) {
+                return Resp.badRequest("用户状态异常");
+            }
         }
-        logger.info("Login Success:  [" + tenantId + "][" + oAuthUserInfoR.getBody().getUnionid() + "]");
+        logger.info("Login Success:  [" + tenantId + "][" + oAuthUserInfoR.getBody().getOpenid() + "]");
         String token = KeyHelper.generateToken();
         var optInfo = new IdentOptInfo()
                 // 转成String避免转化成Integer
@@ -85,22 +105,25 @@ public class OAuthService extends BasicService {
                 .setRoleInfo(accountService.findRoleInfo(accountId));
         optInfo.setRelTenantId(tenantId);
         Dew.auth.setOptInfo(optInfo);
-        accountService.login(LoginReq.builder()
-                .certKind(AccountCertKind.WECHAT).build(), tenantId);
         return Resp.success(optInfo);
     }
 
     public Resp<String> getAccessToken(String oauthKind, Long tenantId) {
-        if (oauthKind.equalsIgnoreCase(AccountCertKind.WECHAT.toString())) {
-            // TODO
-            return wechatService.getAccessToken("", "");
+        var tenantCertConfigR = tenantService.getTenantCertConfig(AccountCertKind.parse(oauthKind), tenantId);
+        if (!tenantCertConfigR.ok()) {
+            return Resp.error(tenantCertConfigR);
+        }
+        var oauthAk = tenantCertConfigR.getBody().getOauthAk();
+        var oauthSk = tenantCertConfigR.getBody().getOauthSk();
+        if (oauthKind.equalsIgnoreCase(AccountCertKind.WECHAT_MP.toString())) {
+            return wechatService.getAccessToken(oauthAk, oauthSk);
         }
         return Resp.notFound("凭证类型不合法");
     }
 
     @Data
     @Builder
-    public class OAuthUserInfo {
+    public static class OAuthUserInfo {
 
         @Tolerate
         public OAuthUserInfo() {

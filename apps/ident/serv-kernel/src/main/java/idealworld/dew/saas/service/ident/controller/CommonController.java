@@ -20,7 +20,7 @@ import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
-import idealworld.dew.saas.service.ident.dto.account.OAuthReq;
+import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.TenantService;
@@ -62,8 +62,8 @@ public class CommonController extends BasicController {
     @PostMapping(value = "/oauth/{tenantId}/login")
     @ApiOperation(value = "OAuth用户注册/登录")
     public Resp<IdentOptInfo> oauthLogin(@PathVariable Long tenantId,
-                                         @RequestBody OAuthReq oAuthReq) {
-        return oAuthService.login(oAuthReq, tenantId);
+                                         @RequestBody OAuthLoginReq oAuthLoginReq) {
+        return oAuthService.login(oAuthLoginReq, tenantId);
     }
 
     @DeleteMapping(value = "/auth/{tenantId}/logout")

@@ -39,6 +39,12 @@ public class TenantCertConfig extends SafeSoftDelEntity {
     private Long validTimeSec;
 
     @Column(nullable = false)
+    private String oauthAk;
+
+    @Column(nullable = false)
+    private String oauthSk;
+
+    @Column(nullable = false)
     private Long relTenantId;
 
 }

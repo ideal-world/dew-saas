@@ -8,17 +8,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Service;
 
 /**
- * The type Wechat service.
+ * The type Wechat mini program service.
  *
  * @author gudaoxuri
  */
 
 @Service
-public class WechatPlatformAPI extends PlatformAPI {
+public class WechatMPAPI extends PlatformAPI {
 
     @Override
     String getPlatformFlag() {
-        return "wechat";
+        return "wechat-mp";
     }
 
     @Override
@@ -32,10 +32,11 @@ public class WechatPlatformAPI extends PlatformAPI {
         if (response.statusCode != 200) {
             return Resp.custom(String.valueOf(response.statusCode), "微信接口调用异常");
         }
-        logger.info("微信返回数据:{}", response.result);
+        logger.trace("微信返回数据:{}", response.result);
         var userInfoResp = $.json.toJson(response.result);
         // 0成功，-1系统繁忙，40029 code无效，45011 访问次数限制（100次/分钟）
-        if (!userInfoResp.get("errcode").asText().equalsIgnoreCase("0")) {
+        if (userInfoResp.has("errcode")
+                && !userInfoResp.get("errcode").asText().equalsIgnoreCase("0")) {
             return Resp.custom(userInfoResp.get("errcode").asText(), userInfoResp.get("errmsg").asText());
         }
         return Resp.success($.json.toObject(response.result, OAuthService.OAuthUserInfo.class));

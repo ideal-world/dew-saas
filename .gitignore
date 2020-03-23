@@ -30,6 +30,6 @@ out/
 node_modules/
 
 *-prod.yml
-
+*.secret
 apps/starfk
 

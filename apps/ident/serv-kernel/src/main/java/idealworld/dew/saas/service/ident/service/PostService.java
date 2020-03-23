@@ -47,12 +47,22 @@ public class PostService extends BasicService {
     @Autowired
     private PermissionService permissionService;
 
-    @Cacheable("cache:post:getTenantPostId")
+    @Cacheable("cache:post:getTenantAdminPostId")
     public Long getTenantAdminPostId() {
         var qPost = QPost.post;
         return sqlBuilder.select(qPost.id)
                 .from(qPost)
                 .where(qPost.relPositionCode.eq(identConfig.getSecurity().getTenantAdminPositionCode()))
+                .where(qPost.delFlag.eq(false))
+                .fetchOne();
+    }
+
+    @Cacheable("cache:post:getDefaultPostId")
+    public Long getDefaultPostId() {
+        var qPost = QPost.post;
+        return sqlBuilder.select(qPost.id)
+                .from(qPost)
+                .where(qPost.relPositionCode.eq(identConfig.getSecurity().getDefaultPositionCode()))
                 .where(qPost.delFlag.eq(false))
                 .fetchOne();
     }

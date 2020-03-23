@@ -44,8 +44,8 @@ public class ITTest extends BasicTest {
 
     @Test
     public void testAll() {
-        var info = tenantAdminTest.testAll();
-        authTest.testAll(info._0, info._1, info._2, info._3);
+        var tenantId = tenantAdminTest.testAll();
+        authTest.testAll(tenantId);
         /*testUser();
         testSystemAdmin();
         testAppConnection();*/

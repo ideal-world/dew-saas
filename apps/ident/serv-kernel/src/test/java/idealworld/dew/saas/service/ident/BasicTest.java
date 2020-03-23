@@ -20,6 +20,7 @@ import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.utils.ResponseProcessor;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
@@ -29,6 +30,13 @@ import org.springframework.http.HttpMethod;
 import java.util.Map;
 
 public abstract class BasicTest extends ResponseProcessor {
+
+    protected AccountCertKind globalTenantAdminCertKind = AccountCertKind.USERNAME;
+    protected String globalTenantAdminAk = "gudaoxuri";
+    protected String globalTenantAdminSk = "pwd123";
+    protected AccountCertKind globalUserCertKind = AccountCertKind.USERNAME;
+    protected String globalUserAk = "test";
+    protected String globalUserSk = "Aa10#";
 
     @Autowired
     protected TestRestTemplate restTemplate;

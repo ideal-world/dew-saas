@@ -18,9 +18,11 @@ package idealworld.dew.saas.service.ident;
 
 
 import group.idealworld.dew.core.DewContext;
-import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.Constant;
-import idealworld.dew.saas.service.ident.domain.*;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.service.ident.domain.Position;
+import idealworld.dew.saas.service.ident.domain.Post;
+import idealworld.dew.saas.service.ident.domain.QPosition;
 import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.BasicService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,20 +74,31 @@ public class IdentInitiator extends BasicService implements ApplicationListener<
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
+        saveEntity(Position.builder()
+                .code(identConfig.getSecurity().getDefaultPositionCode())
+                .name(identConfig.getSecurity().getDefaultPositionName())
+                .icon("")
+                .relAppId(Constant.OBJECT_UNDEFINED)
+                .relTenantId(Constant.OBJECT_UNDEFINED)
+                .build());
 
-        var adminPost = Post.builder()
+        saveEntity(Post.builder()
                 .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getSystemAdminPositionCode())
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
-                .build();
-        saveEntity(adminPost);
-        var tenantPost = Post.builder()
+                .build());
+        saveEntity(Post.builder()
                 .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getTenantAdminPositionCode())
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
-                .build();
-        saveEntity(tenantPost);
+                .build());
+        saveEntity(Post.builder()
+                .relOrganizationCode("")
+                .relPositionCode(identConfig.getSecurity().getDefaultPositionCode())
+                .relAppId(Constant.OBJECT_UNDEFINED)
+                .relTenantId(Constant.OBJECT_UNDEFINED)
+                .build());
     }
 }

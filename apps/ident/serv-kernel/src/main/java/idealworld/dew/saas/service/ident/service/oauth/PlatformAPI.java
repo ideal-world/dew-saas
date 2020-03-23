@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public abstract class PlatformAPI {
 
-    protected static final Logger logger = LoggerFactory.getLogger(WechatPlatformAPI.class);
+    protected static final Logger logger = LoggerFactory.getLogger(WechatMPAPI.class);
 
     protected static final String ACCESS_TOKEN_FLAG = "oauth:access-token:";
 

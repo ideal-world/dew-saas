@@ -17,10 +17,8 @@
 package idealworld.dew.saas.service.ident;
 
 import com.ecfront.dew.common.StandardCode;
-import com.ecfront.dew.common.tuple.Tuple3;
-import com.ecfront.dew.common.tuple.Tuple4;
-import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
@@ -54,7 +52,7 @@ import java.util.Date;
 @Component
 public class TenantAdminTest extends BasicTest {
 
-    public Tuple4<Long, AccountCertKind, String, String> testAll() {
+    public Long testAll() {
         var tenantId = testTenant();
         var appId = testApp();
         var orgId = testOrganization(appId);
@@ -62,17 +60,17 @@ public class TenantAdminTest extends BasicTest {
         var postId = testPost(appId, positionCode);
         var resId = testResource(appId);
         var permissionId = testPermission(appId, postId, resId);
-        var certInfo = testAccount(appId, postId);
-        return new Tuple4(tenantId, certInfo._0, certInfo._1, certInfo._2);
+        testAccount(postId);
+        return tenantId;
     }
 
     private Long testTenant() {
         // 租户注册
         var identOptInfo = postToEntity("/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
-                .certKind(AccountCertKind.USERNAME)
-                .ak("gudaoxuri")
-                .sk("pwd123")
+                .certKind(globalTenantAdminCertKind)
+                .ak(globalTenantAdminAk)
+                .sk(globalTenantAdminSk)
                 .tenantName("测试租户")
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
@@ -100,7 +98,7 @@ public class TenantAdminTest extends BasicTest {
         var tenantCertConfigId = postToEntity("/console/tenant/cert-config", AddTenantCertConfigReq.builder()
                 .kind(AccountCertKind.PHONE)
                 .build(), Long.class).getBody();
-        // 获取当前租户某个应用的凭证列表信息
+        // 获取当前租户的凭证列表信息
         var tenantCertConfig = getToList("/console/tenant/cert-config", TenantCertConfigInfoResp.class).getBody();
         Assert.assertEquals(2, tenantCertConfig.size());
         Assert.assertEquals(AccountCertKind.USERNAME, tenantCertConfig.get(0).getKind());
@@ -300,7 +298,7 @@ public class TenantAdminTest extends BasicTest {
         return permissionId;
     }
 
-    private Tuple3<AccountCertKind, String, String> testAccount(Long appId, Long postId) {
+    private void testAccount(Long postId) {
         // 添加当前租户的账号
         var addAccountR = postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户")
@@ -394,8 +392,8 @@ public class TenantAdminTest extends BasicTest {
         // 重新添加当前租户某个账号的凭证
         accountCertId = postToEntity("/console/account/" + accountId + "/cert", AddAccountCertReq.builder()
                 .kind(AccountCertKind.USERNAME)
-                .ak("test")
-                .sk("Aa10#")
+                .ak(globalUserAk)
+                .sk(globalUserSk)
                 .build(), Long.class).getBody();
         // 获取当前租户某个账号的岗位列表信息
         var accountPosts = getToList("/console/account/" + accountId + "/post", AccountPostInfoResp.class).getBody();
@@ -408,6 +406,5 @@ public class TenantAdminTest extends BasicTest {
         // 获取当前租户某个账号的岗位列表信息
         accountPosts = getToList("/console/account/" + accountId + "/post", AccountPostInfoResp.class).getBody();
         Assert.assertEquals(postId, accountPosts.get(0).getRelPostId());
-        return new Tuple3<>(AccountCertKind.USERNAME, "test", "Aa10#");
     }
 }

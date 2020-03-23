@@ -26,4 +26,10 @@ public class ModifyTenantCertConfigReq implements Serializable {
     @ApiModelProperty(value = "租户凭证过期时间")
     private Long validTimeSec;
 
+    @ApiModelProperty(value = "OAuth下的应用密钥ID或是AppId")
+    private String oauthAk;
+
+    @ApiModelProperty(value = "OAuth下的应用密钥")
+    private String oauthSk;
+
 }

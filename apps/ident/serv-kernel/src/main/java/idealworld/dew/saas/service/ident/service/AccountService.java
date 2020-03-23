@@ -22,8 +22,8 @@ import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.auth.dto.OptInfo;
-import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
@@ -52,6 +52,8 @@ public class AccountService extends BasicService {
 
     @Autowired
     private TenantService tenantService;
+    @Autowired
+    private PostService postService;
 
     @Transactional
     public Resp<IdentOptInfo> login(LoginReq loginReq, Long relTenantId) {
@@ -69,6 +71,7 @@ public class AccountService extends BasicService {
                 .where(qAccountCert.ak.eq(loginReq.getAk()))
                 .where(qAccountCert.validTime.after(new Date()))
                 .where(qAccount.relTenantId.eq(relTenantId))
+                .where(qAccount.status.eq(AccountStatus.ENABLED))
                 .where(qAccount.delFlag.eq(false))
                 .fetchOne();
         if (accountInfo == null) {
@@ -134,7 +137,14 @@ public class AccountService extends BasicService {
                 .build();
         saveEntity(account);
         doAddAccountCert(addAccountReq.getCertReq(), processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), account.getId(), relTenantId);
+        if (addAccountReq.getPostReq() == null) {
+            addAccountReq.setPostReq(AddAccountPostReq.builder()
+                    .relPostId(postService.getDefaultPostId())
+                    .build());
+        }
         addAccountPost(addAccountReq.getPostReq(), account.getId(), relTenantId);
+
+
         return Resp.success(account.getId());
     }
 
@@ -149,6 +159,7 @@ public class AccountService extends BasicService {
                         qAccount.name,
                         qAccount.avatar,
                         qAccount.parameters,
+                        qAccount.status,
                         qAccount.delFlag,
                         qAccount.createTime,
                         qAccount.updateTime,
@@ -174,6 +185,7 @@ public class AccountService extends BasicService {
                         qAccount.name,
                         qAccount.avatar,
                         qAccount.parameters,
+                        qAccount.status,
                         qAccount.delFlag,
                         qAccount.createTime,
                         qAccount.updateTime,
@@ -201,6 +213,9 @@ public class AccountService extends BasicService {
         }
         if (modifyAccountReq.getParameters() != null) {
             updateClause.set(qAccount.parameters, modifyAccountReq.getParameters());
+        }
+        if (modifyAccountReq.getStatus() != null) {
+            updateClause.set(qAccount.status, modifyAccountReq.getStatus());
         }
         return updateEntity(updateClause);
     }
@@ -470,7 +485,7 @@ public class AccountService extends BasicService {
             case USERNAME:
                 return Resp.success($.security.digest.digest(ak + sk, "SHA-512"));
             default:
-                return Resp.notFound("凭证类型不合法");
+                return Resp.success("");
         }
     }
 
@@ -502,7 +517,7 @@ public class AccountService extends BasicService {
                     return Resp.success(null);
                 }
             default:
-                return Resp.notFound("凭证类型不合法");
+                return Resp.success(null);
         }
     }
 

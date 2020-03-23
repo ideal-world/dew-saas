@@ -42,6 +42,8 @@ public class IdentConfig {
         private String systemAdminPositionName = "系统管理员";
         private String tenantAdminPositionCode = "TENANT_ADMIN";
         private String tenantAdminPositionName = "租户管理员";
+        private String defaultPositionCode = "DEFAULT_ROLE";
+        private String defaultPositionName = "默认角色";
     }
 
 }
