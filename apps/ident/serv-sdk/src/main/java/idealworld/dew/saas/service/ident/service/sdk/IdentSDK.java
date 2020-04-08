@@ -21,6 +21,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -44,6 +45,17 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
     }
 
     public class Auth {
+
+        /**
+         * 获取当前登录用户.
+         *
+         * @return 账号Id
+         */
+        public <E> Resp<E> getOptInfo(String token, Class<E> optInfoClazz) {
+            return getToEntity("app/auth/optinfo", new HashMap<>() {{
+                put(IdentSDK.super.config.getIdent().getTokenFlag(), token);
+            }}, optInfoClazz);
+        }
 
         /**
          * 添加当前租户的账号.

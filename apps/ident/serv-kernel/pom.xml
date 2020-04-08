@@ -51,11 +51,6 @@
         </dependency>
         <dependency>
             <groupId>group.idealworld.dew</groupId>
-            <artifactId>saas-ident-sdk-starter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>group.idealworld.dew</groupId>
             <artifactId>test-starter</artifactId>
         </dependency>
     </dependencies>

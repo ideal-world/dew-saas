@@ -28,13 +28,6 @@ import java.util.Map;
 
 public abstract class BasicTest extends ResponseProcessor {
 
-    protected AccountCertKind globalTenantAdminCertKind = AccountCertKind.USERNAME;
-    protected String globalTenantAdminAk = "gudaoxuri";
-    protected String globalTenantAdminSk = "pwd123";
-    protected AccountCertKind globalUserCertKind = AccountCertKind.USERNAME;
-    protected String globalUserAk = "test";
-    protected String globalUserSk = "Aa10#";
-
     @Value("${server.port:8080}")
     private int serverPort;
 

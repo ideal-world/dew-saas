@@ -20,9 +20,8 @@ import java.util.Date;
 @Entity
 @Table(name = "ident_app_cert", indexes = {
         @Index(columnList = "delFlag,ak", unique = true),
-        @Index(columnList = "delFlag"),
-        @Index(columnList = "relAppId"),
-        @Index(columnList = "delFlag, ak")
+        @Index(columnList = "delFlag,relAppId,validTime"),
+        @Index(columnList = "relAppId")
 })
 @Data
 @SuperBuilder

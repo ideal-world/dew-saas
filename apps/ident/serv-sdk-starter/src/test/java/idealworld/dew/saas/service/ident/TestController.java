@@ -17,7 +17,6 @@
 package idealworld.dew.saas.service.ident;
 
 import com.ecfront.dew.common.Resp;
-import idealworld.dew.saas.service.ident.controller.BasicController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping(value = "/mgr")
-public class TestController extends BasicController {
+public class TestController {
 
     @GetMapping(value = "account")
     public Resp<Void> testPermission1() {

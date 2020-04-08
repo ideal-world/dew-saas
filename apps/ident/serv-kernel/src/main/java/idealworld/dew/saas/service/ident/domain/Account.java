@@ -19,8 +19,8 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_account", indexes = {
-        @Index(columnList = "relTenantId"),
-        @Index(columnList = "delFlag")
+        @Index(columnList = "delFlag,relTenantId,status"),
+        @Index(columnList = "relTenantId")
 })
 @Data
 @SuperBuilder

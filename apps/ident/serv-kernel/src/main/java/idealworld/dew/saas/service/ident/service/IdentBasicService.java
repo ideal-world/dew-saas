@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.common.service.dto;
+package idealworld.dew.saas.service.ident.service;
 
-import group.idealworld.dew.core.auth.dto.OptInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
+import group.idealworld.dew.Dew;
+import group.idealworld.dew.core.cluster.ClusterElection;
+import idealworld.dew.saas.common.service.BasicService;
 
-import java.util.Map;
+public abstract class IdentBasicService extends BasicService {
 
-/**
- * @author gudaoxuri
- */
-@Data
-@ApiModel(value = "操作用户信息")
-public class IdentOptInfo extends OptInfo<IdentOptInfo> {
-
-    @ApiModelProperty(value = "关联租户Id", required = true)
-    private Long relTenantId;
-
-    @ApiModelProperty(value = "账号扩展信息", required = true)
-    private Map<String,Object> parameters;
+    protected static final ClusterElection ELECTION = Dew.cluster.election.instance("ident");
 
 }

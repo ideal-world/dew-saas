@@ -30,6 +30,7 @@ import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
  * @author gudaoxuri
  */
 @Service
-public class TenantService extends BasicService {
+public class TenantService extends IdentBasicService {
 
     private static final Map<String, Pattern> VALID_RULES = new ConcurrentHashMap<>();
 
@@ -268,7 +269,7 @@ public class TenantService extends BasicService {
         }
         var validRule = tenantCertConfig.get(0, String.class);
         var validTimeSec = tenantCertConfig.get(1, Long.class);
-        if (validRule != null) {
+        if (!StringUtils.isEmpty(validRule)) {
             if (!VALID_RULES.containsKey(validRule)) {
                 VALID_RULES.put(validRule, Pattern.compile(validRule));
             }

@@ -36,7 +36,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @Service
-public class PostService extends BasicService {
+public class PostService extends IdentBasicService {
 
     @Autowired
     private IdentConfig identConfig;

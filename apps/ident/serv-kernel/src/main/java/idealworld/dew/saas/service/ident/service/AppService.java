@@ -34,7 +34,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @Service
-public class AppService extends BasicService {
+public class AppService extends IdentBasicService {
 
     private static final String CACHE_AK = "app:ak:";
 

@@ -57,6 +57,11 @@ public abstract class ResponseProcessor {
         return Resp.generic(response, responseClazz);
     }
 
+    public <E> Resp<E> getToEntity(String url, Map<String, String> header, Class<E> responseClazz) {
+        var response = exchange("GET", url, null, header);
+        return Resp.generic(response, responseClazz);
+    }
+
     public <E> Resp<List<E>> getToList(String url, Class<E> responseClazz) {
         var response = exchange("GET", url, null, new HashMap<>());
         return Resp.genericList(response, responseClazz);

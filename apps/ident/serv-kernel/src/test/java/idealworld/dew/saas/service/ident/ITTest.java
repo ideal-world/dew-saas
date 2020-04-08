@@ -33,7 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author gudaoxuri
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DewIdentApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = DewIdentApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class ITTest extends BasicTest {
 
     @Autowired

@@ -34,7 +34,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @Service
-public class PositionService extends BasicService {
+public class PositionService extends IdentBasicService {
 
     @Autowired
     private AppService appService;

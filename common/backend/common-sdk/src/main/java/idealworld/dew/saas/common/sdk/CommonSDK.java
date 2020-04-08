@@ -92,10 +92,14 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
             e.printStackTrace();
         }
 
+        // 使用Base64 + HmacSHA1 签名
+        var digestText = (method + "\n" + date + "\n" + url.getPath() + "\n" + (url.getQuery() != null ? url.getQuery() : "")).toLowerCase();
+        var secretKey = config.getBasic().getAppSk();
         var signature = $.security.encodeStringToBase64(
-                $.security.digest.digest((method + "\n" + date + "\n" + url.getPath() + "\n" + (url.getQuery() != null ? url.getQuery() : "")).toLowerCase(),
-                        config.getBasic().getAppSk(), "HmacSHA1"),
-                StandardCharsets.UTF_8);
+                $.security.digest.digest(digestText,secretKey,"HmacSHA1"),
+                StandardCharsets.UTF_8
+        );
+
         header.put(config.getBasic().getAuthFieldName(),
                 config.getBasic().getAppAk() + ":" + signature);
 
@@ -118,7 +122,6 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
         } else {
             url = baseUrl + "/" + uri;
         }
-        logger.trace("请求完整URL地址：{}", url);
         return url;
     }
 

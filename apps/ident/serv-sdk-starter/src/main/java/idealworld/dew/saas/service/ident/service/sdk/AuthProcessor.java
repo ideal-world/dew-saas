@@ -28,17 +28,24 @@ public class AuthProcessor {
     private IdentSDK identSDK;
     @Autowired
     private IdentConfig identConfig;
+    @Autowired
+    private IdentAuthAdapter identAuthAdapter;
 
     private static final Map<Long, PermissionExtInfo> PERMISSIONS = new HashMap<>();
 
     @PostConstruct
-    public void sub() {
+    public void auth() {
+        Dew.auth = identAuthAdapter;
+        if (!identConfig.getIdent().isSubscribe()) {
+            logger.info("使用本地配置权限，关闭权限订阅");
+            return;
+        }
         doSub();
         $.timer.periodic(identConfig.getIdent().getFetchSec(), true, this::doSub);
     }
 
     public void doSub() {
-        if(!identSDK.isInitialized()){
+        if (!identSDK.isInitialized()) {
             return;
         }
         var subPermissionR = identSDK.auth.subPermissions();

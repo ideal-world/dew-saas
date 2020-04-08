@@ -46,6 +46,7 @@ public class AuthTest extends BasicTest {
                 .ak(globalUserAk)
                 .sk(globalUserSk)
                 .build(), IdentOptInfo.class).getBody();
+        Assert.assertTrue(identOptInfo.getParameters().isEmpty());
         setIdentOptInfo(identOptInfo);
         // 测试：添加当前租户的应用：失败
         var addAppR = postToEntity("/console/app", AddAppReq.builder()

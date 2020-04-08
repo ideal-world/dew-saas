@@ -17,6 +17,8 @@
 package idealworld.dew.saas.service.ident.controller.app;
 
 import com.ecfront.dew.common.Resp;
+import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.PermissionService;
@@ -41,6 +43,12 @@ public class AppAuthController extends BasicController {
     private PermissionService permissionService;
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;
+
+    @GetMapping(value = "optinfo")
+    @ApiOperation(value = "获取当前登录用户")
+    public Resp<IdentOptInfo> getOptInfo() {
+        return Resp.success((IdentOptInfo) Dew.auth.getOptInfo().get());
+    }
 
     @GetMapping(value = "permission/sub")
     @ApiOperation(value = "订阅当前应用的权限信息")

@@ -26,7 +26,6 @@
         <version>2.1.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>group.idealworld.dew</groupId>
     <artifactId>saas-parent</artifactId>
     <name>1 Dew SAAS Parent</name>
     <packaging>pom</packaging>
@@ -79,6 +78,11 @@
                 <artifactId>saas-common-service</artifactId>
                 <version>${dew-saas.version}</version>
             </dependency>
+            <dependency>
+                <groupId>group.idealworld.dew</groupId>
+                <artifactId>saas-ident-sdk-starter</artifactId>
+                <version>${dew-saas.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -89,7 +93,7 @@
         <module>common/backend/common-service</module>
         <module>apps/ident</module>
         <!--测试项目-->
-        <module>apps/starfk</module>
+        <module>apps/date</module>
     </modules>
 
     <repositories>

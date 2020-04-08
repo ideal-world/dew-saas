@@ -24,7 +24,7 @@ import idealworld.dew.saas.service.ident.domain.Position;
 import idealworld.dew.saas.service.ident.domain.Post;
 import idealworld.dew.saas.service.ident.domain.QPosition;
 import idealworld.dew.saas.service.ident.service.AppService;
-import idealworld.dew.saas.service.ident.service.BasicService;
+import idealworld.dew.saas.service.ident.service.IdentBasicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author gudaoxuri
  */
 @Service
-public class IdentInitiator extends BasicService implements ApplicationListener<ContextRefreshedEvent> {
+public class IdentInitiator extends IdentBasicService implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
     private IdentConfig identConfig;

@@ -32,6 +32,7 @@ import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
  * @author gudaoxuri
  */
 @Service
-public class AccountService extends BasicService {
+public class AccountService extends IdentBasicService {
 
     private static final String SK_KIND_VCODE_TMP_REL = "sk-kind:vocde:tmp-rel:";
     private static final String SK_KIND_VCODE_ERROR_TIMES = "sk-kind:vocde:error-times:";
@@ -61,7 +62,7 @@ public class AccountService extends BasicService {
         var qAccountCert = QAccountCert.accountCert;
         var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
         var accountInfo = sqlBuilder
-                .select(qAccountCert.sk, qAccount.id)
+                .select(qAccountCert.sk, qAccount.id, qAccount.parameters)
                 .from(qAccountCert)
                 .innerJoin(qTenantCertConfig).on(qAccountCert.relTenantId.eq(qTenantCertConfig.relTenantId)
                         .and(qTenantCertConfig.delFlag.eq(false)))
@@ -80,6 +81,7 @@ public class AccountService extends BasicService {
         }
         var certSk = accountInfo.get(0, String.class);
         var accountId = accountInfo.get(1, Long.class);
+        var parameters = accountInfo.get(2, String.class);
         var validateR = validateSK(loginReq.getCertKind(), loginReq.getAk(), loginReq.getSk(), certSk, relTenantId);
         if (!validateR.ok()) {
             logger.warn("Login Fail: [" + relTenantId + "][" + loginReq.getAk() + "] SK un-match");
@@ -93,6 +95,10 @@ public class AccountService extends BasicService {
                 .setToken(token)
                 .setRoleInfo(findRoleInfo(accountId));
         optInfo.setRelTenantId(relTenantId);
+        if (StringUtils.isEmpty(parameters)) {
+            parameters = "{}";
+        }
+        optInfo.setParameters($.json.toMap(parameters, String.class, Object.class));
         Dew.auth.setOptInfo(optInfo);
         return Resp.success(optInfo);
     }
@@ -143,8 +149,6 @@ public class AccountService extends BasicService {
                     .build());
         }
         addAccountPost(addAccountReq.getPostReq(), account.getId(), relTenantId);
-
-
         return Resp.success(account.getId());
     }
 
@@ -538,7 +542,7 @@ public class AccountService extends BasicService {
                         qOrganization.delFlag.eq(false)
                                 .and(qPost.relTenantId.eq(qOrganization.relTenantId))
                                 .and(qPost.relAppId.eq(qOrganization.relAppId))
-                                .and(qPost.relPositionCode.eq(qOrganization.code)))
+                                .and(qPost.relOrganizationCode.eq(qOrganization.code)))
                 .where(qAccountPost.relAccountId.eq(accountId))
                 .where(qAccountPost.delFlag.eq(false))
                 .fetch()

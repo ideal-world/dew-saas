@@ -17,8 +17,8 @@
 package idealworld.dew.saas.service.ident;
 
 import com.ecfront.dew.common.tuple.Tuple3;
-import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
 import idealworld.dew.saas.service.ident.dto.app.AppCertInfoResp;
@@ -52,7 +52,7 @@ import java.util.Date;
  * @author gudaoxuri
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = DewIdentApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = TestIdentSDKApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 public class SDKTest extends BasicTest {
 
     @Autowired
@@ -62,9 +62,9 @@ public class SDKTest extends BasicTest {
     private AuthProcessor authProcessor;
 
     @Test
-    public void testSDK() {
+    public void testSDK() throws InterruptedException {
         // 租户注册
-        var identOptInfo = postToEntity("/tenant/register", RegisterTenantReq.builder()
+        var identOptInfo = postToEntity(sdk.getConfig().getIdent().getUrl() + "/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
                 .certKind(AccountCertKind.USERNAME)
                 .ak("gudaoxuri")
@@ -72,11 +72,11 @@ public class SDKTest extends BasicTest {
                 .tenantName("测试租户")
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
-        var appId = postToEntity("/console/app", AddAppReq.builder()
+        var appId = postToEntity(sdk.getConfig().getIdent().getUrl() +"/console/app", AddAppReq.builder()
                 .name("测试应用")
                 .icon("")
                 .build(), Long.class).getBody();
-        var appCert = getToList("/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody().get(0);
+        var appCert = getToList(sdk.getConfig().getIdent().getUrl() +"/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody().get(0);
         System.out.println("=====================\nAK:" + appCert.getAk() + "\nSK:" + appCert.getSk() + "\n=====================");
 
         sdk.getConfig().getBasic().setTenantId(identOptInfo.getRelTenantId());
@@ -91,7 +91,7 @@ public class SDKTest extends BasicTest {
         var resId = testResource();
         var permissionId = testPermission(postId, resId);
         var certInfo = testAccount(postId);
-
+        Thread.sleep(1000);
         testAuth(identOptInfo.getRelTenantId(), certInfo._0, certInfo._1, certInfo._2);
     }
 

@@ -16,8 +16,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "ident_tenant_cert_cfg", indexes = {
-        @Index(columnList = "delFlag,relTenantId,kind"),
-        @Index(columnList = "delFlag")
+        @Index(columnList = "delFlag,relTenantId,kind")
 })
 @Data
 @SuperBuilder

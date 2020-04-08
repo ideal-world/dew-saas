@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.service.ident.service;
+package idealworld.dew.saas.common.service;
 
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import group.idealworld.dew.Dew;
-import group.idealworld.dew.core.cluster.ClusterElection;
 import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.common.service.domain.IdEntity;
 import org.slf4j.Logger;
@@ -35,8 +33,6 @@ import java.util.List;
 public abstract class BasicService {
 
     protected static final Logger logger = LoggerFactory.getLogger(BasicService.class);
-
-    protected static final ClusterElection ELECTION = Dew.cluster.election.instance("ident");
 
     @Autowired
     protected JPAQueryFactory sqlBuilder;

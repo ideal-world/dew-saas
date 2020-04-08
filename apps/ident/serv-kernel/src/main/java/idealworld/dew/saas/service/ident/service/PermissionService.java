@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * @author gudaoxuri
  */
 @Service
-public class PermissionService extends BasicService {
+public class PermissionService extends IdentBasicService {
 
     public static final String IDENT_PERMISSION_SUB_LIST = "cache:ident:permission:app:";
     public static final String IDENT_PERMISSION_SUB_APPS = "mq:ident:permission:app:";

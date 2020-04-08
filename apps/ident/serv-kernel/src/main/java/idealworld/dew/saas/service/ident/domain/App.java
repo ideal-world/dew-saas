@@ -19,7 +19,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ident_app", indexes = {
         @Index(columnList = "delFlag,relTenantId,name", unique = true),
-        @Index(columnList = "delFlag"),
         @Index(columnList = "relTenantId")
 })
 @Data

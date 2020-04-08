@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.common.service.dto;
+package idealworld.dew.saas.service.ident;
 
-import group.idealworld.dew.core.auth.dto.OptInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-
-import java.util.Map;
+import idealworld.dew.saas.DewSAASApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
 /**
- * @author gudaoxuri
+ * The type Dew ident application.
  */
-@Data
-@ApiModel(value = "操作用户信息")
-public class IdentOptInfo extends OptInfo<IdentOptInfo> {
+public class TestIdentSDKApplication extends DewSAASApplication {
 
-    @ApiModelProperty(value = "关联租户Id", required = true)
-    private Long relTenantId;
-
-    @ApiModelProperty(value = "账号扩展信息", required = true)
-    private Map<String,Object> parameters;
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(TestIdentSDKApplication.class).run(args);
+    }
 
 }

@@ -101,9 +101,9 @@ public class TenantAdminTest extends BasicTest {
         // 获取当前租户的凭证列表信息
         var tenantCertConfig = getToList("/console/tenant/cert-config", TenantCertConfigInfoResp.class).getBody();
         Assert.assertEquals(2, tenantCertConfig.size());
-        Assert.assertEquals(AccountCertKind.USERNAME, tenantCertConfig.get(0).getKind());
+        Assert.assertEquals(AccountCertKind.USERNAME, tenantCertConfig.get(1).getKind());
         // 修改当前租户的某个凭证配置
-        patchToEntity("/console/tenant/cert-config/" + tenantCertConfig.get(0).getId(), ModifyTenantCertConfigReq.builder()
+        patchToEntity("/console/tenant/cert-config/" + tenantCertConfig.get(1).getId(), ModifyTenantCertConfigReq.builder()
                 .validRuleNote("至少4个字符，至少1个大写字母、小写字母、数字、特殊字符")
                 .validRule("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\\w\\s]).{4,}$")
                 .build(), Void.class);

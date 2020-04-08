@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @author gudaoxuri
  */
 @Service
-public class ResourceService extends BasicService {
+public class ResourceService extends IdentBasicService {
 
     @Autowired
     private AppService appService;

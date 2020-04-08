@@ -16,6 +16,7 @@
 
 package idealworld.dew.saas.service.ident.service.oauth;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
@@ -27,7 +28,7 @@ import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import idealworld.dew.saas.service.ident.service.AccountService;
-import idealworld.dew.saas.service.ident.service.BasicService;
+import idealworld.dew.saas.service.ident.service.IdentBasicService;
 import idealworld.dew.saas.service.ident.service.TenantService;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.Builder;
@@ -36,12 +37,13 @@ import lombok.experimental.Tolerate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 /**
  * @author gudaoxuri
  */
 @Service
-public class OAuthService extends BasicService {
+public class OAuthService extends IdentBasicService {
 
     @Autowired
     private TenantService tenantService;
@@ -97,6 +99,11 @@ public class OAuthService extends BasicService {
             }
         }
         logger.info("Login Success:  [" + tenantId + "][" + oAuthUserInfoR.getBody().getOpenid() + "]");
+        var qAccount = QAccount.account;
+        var parameters = sqlBuilder.select(qAccount.parameters)
+                .from(qAccount)
+                .where(qAccount.id.eq(accountId))
+                .fetchOne();
         String token = KeyHelper.generateToken();
         var optInfo = new IdentOptInfo()
                 // 转成String避免转化成Integer
@@ -104,6 +111,10 @@ public class OAuthService extends BasicService {
                 .setToken(token)
                 .setRoleInfo(accountService.findRoleInfo(accountId));
         optInfo.setRelTenantId(tenantId);
+        if (StringUtils.isEmpty(parameters)) {
+            parameters = "{}";
+        }
+        optInfo.setParameters($.json.toMap(parameters, String.class, Object.class));
         Dew.auth.setOptInfo(optInfo);
         return Resp.success(optInfo);
     }

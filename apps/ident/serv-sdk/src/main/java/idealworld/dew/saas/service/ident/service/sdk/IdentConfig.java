@@ -24,7 +24,11 @@ public class IdentConfig extends CommonConfig {
 
         private String url = "";
         @Builder.Default
+        private boolean subscribe = false;
+        @Builder.Default
         private Long fetchSec = 60L * 60;
+        @Builder.Default
+        private String tokenFlag = "Dew-Token";
 
     }
 

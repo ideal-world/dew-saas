@@ -47,11 +47,6 @@
                 <artifactId>saas-ident-sdk</artifactId>
                 <version>${dew-saas.version}</version>
             </dependency>
-            <dependency>
-                <groupId>group.idealworld.dew</groupId>
-                <artifactId>saas-ident-sdk-starter</artifactId>
-                <version>${dew-saas.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
