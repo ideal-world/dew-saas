@@ -62,7 +62,7 @@ public class CommonController extends BasicController {
     @PostMapping(value = "/oauth/{tenantId}/login")
     @ApiOperation(value = "OAuth用户注册/登录")
     public Resp<IdentOptInfo> oauthLogin(@PathVariable Long tenantId,
-                                         @RequestBody OAuthLoginReq oAuthLoginReq) {
+                                         @RequestBody OAuthLoginReq oAuthLoginReq) throws Exception {
         return oAuthService.login(oAuthLoginReq, tenantId);
     }
 

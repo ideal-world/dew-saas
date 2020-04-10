@@ -22,6 +22,7 @@ import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.PermissionService;
+import idealworld.dew.saas.service.ident.service.oauth.OAuthService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -43,10 +44,15 @@ public class AppAuthController extends BasicController {
     private PermissionService permissionService;
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;
+    @Autowired
+    private OAuthService oAuthService;
 
     @GetMapping(value = "optinfo")
     @ApiOperation(value = "获取当前登录用户")
     public Resp<IdentOptInfo> getOptInfo() {
+        if(Dew.auth.getOptInfo().isEmpty()){
+            return Resp.unAuthorized("Token不存在或已过期");
+        }
         return Resp.success((IdentOptInfo) Dew.auth.getOptInfo().get());
     }
 
@@ -64,6 +70,12 @@ public class AppAuthController extends BasicController {
     @ApiOperation(value = "取消当前应用的订阅权限信息", notes = "此操作会取消当前应用的所有实例订阅，在多实例场景下慎用")
     public Resp<Void> unSubPermission() {
         return permissionService.unSubPermission(appHandlerInterceptor.getCurrentTenantAndAppId()._1);
+    }
+
+    @GetMapping(value = "oauth/{oauthKind}/access-token")
+    @ApiOperation(value = "获取OAuth的AccessToken")
+    public Resp<String> oauthGetAccessToken(@PathVariable String oauthKind) {
+        return oAuthService.getAccessToken(oauthKind, appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
 }

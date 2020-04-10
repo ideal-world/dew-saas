@@ -18,6 +18,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
 import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
+import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,24 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
             return getToEntity("app/auth/optinfo", new HashMap<>() {{
                 put(IdentSDK.super.config.getIdent().getTokenFlag(), token);
             }}, optInfoClazz);
+        }
+
+        /**
+         * 获取OAuth的AccessToken.
+         *
+         * @return 账号Id
+         */
+        public Resp<String> oauthGetAccessToken(AccountCertKind oauthKind) {
+            return getToEntity("/app/auth/oauth/" + oauthKind.toString() + "/access-token", String.class);
+        }
+
+        /**
+         * 获取OAuth的OpenId.
+         *
+         * @return 账号Id
+         */
+        public Resp<String> oauthGetOpenId(Long accountId, AccountCertKind oauthKind) {
+            return getToEntity("/app/account/" + accountId + "cert-ak?accountCertKind=" + oauthKind.toString(), String.class);
         }
 
         /**

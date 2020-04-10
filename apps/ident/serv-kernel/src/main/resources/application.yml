@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: test
   jpa:
     hibernate:
       ddl-auto: update
@@ -9,6 +7,7 @@ dew:
   cluster:
     cache: redis
     mq: redis
+    lock: redis
     election: redis
   basic:
     format:

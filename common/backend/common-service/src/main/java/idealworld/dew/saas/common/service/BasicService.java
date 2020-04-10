@@ -39,7 +39,6 @@ public abstract class BasicService {
     @Autowired
     private EntityManager entityManager;
 
-
     protected Resp<Long> saveEntity(IdEntity idEntity) {
         entityManager.persist(idEntity);
         return Resp.success(idEntity.getId());

@@ -16,6 +16,7 @@
 
 package idealworld.dew.saas.service.ident.service.sdk;
 
+import com.ecfront.dew.common.StandardCode;
 import com.ecfront.dew.common.exception.RTException;
 import group.idealworld.dew.core.auth.AuthAdapter;
 import group.idealworld.dew.core.auth.dto.OptInfo;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 
@@ -47,6 +49,9 @@ public class IdentAuthAdapter implements AuthAdapter {
         var resp = identSDK.auth.getOptInfo(token, IdentOptInfo.class);
         if (!resp.ok()) {
             logger.warn("获取登录信息错误[" + resp.getCode() + "] " + resp.getMessage());
+            if(resp.getCode().equalsIgnoreCase(StandardCode.UNAUTHORIZED.toString())){
+                return Optional.empty();
+            }
             throw new RTException("获取登录信息错误[" + resp.getCode() + "] " + resp.getMessage());
         }
         return Optional.of((E) resp.getBody());

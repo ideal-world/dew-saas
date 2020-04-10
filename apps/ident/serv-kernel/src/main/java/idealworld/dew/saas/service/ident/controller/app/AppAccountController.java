@@ -106,6 +106,17 @@ public class AppAccountController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    @GetMapping(value = "{accountId}/cert-ak")
+    @ApiOperation(value = "获取当前租户某个账号的某个凭证AK")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "accountCertKind", value = "凭证类型", paramType = "query", dataType = "string", required = true)
+    })
+    public Resp<String> getAccountCertInfo(@PathVariable Long accountId,
+                                           @RequestParam(value = "accountCertKind") String accountCertKind) {
+        return accountService.getAccountCertAk(accountId, accountCertKind,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
+    }
+
     @PatchMapping(value = "{accountId}/cert/{accountCertId}")
     @ApiOperation(value = "修改当前租户某个账号的某个凭证")
     public Resp<Void> modifyAccountCert(@PathVariable Long accountId,

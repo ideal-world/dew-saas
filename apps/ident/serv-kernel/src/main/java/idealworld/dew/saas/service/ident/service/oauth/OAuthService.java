@@ -19,6 +19,8 @@ package idealworld.dew.saas.service.ident.service.oauth;
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
+import group.idealworld.dew.core.cluster.ClusterLock;
+import group.idealworld.dew.core.cluster.ClusterLockWrap;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QAccountCert;
@@ -53,7 +55,7 @@ public class OAuthService extends IdentBasicService {
     private WechatMPAPI wechatService;
 
     @Transactional
-    public Resp<IdentOptInfo> login(OAuthLoginReq oAuthLoginReq, Long tenantId) {
+    public Resp<IdentOptInfo> login(OAuthLoginReq oAuthLoginReq, Long tenantId) throws Exception {
         Resp<OAuthUserInfo> oAuthUserInfoR;
         var tenantCertConfigR = tenantService.getTenantCertConfig(oAuthLoginReq.getCertKind(), tenantId);
         if (!tenantCertConfigR.ok()) {
@@ -72,6 +74,15 @@ public class OAuthService extends IdentBasicService {
             return Resp.error(oAuthUserInfoR);
         }
         var qAccountCert = QAccountCert.accountCert;
+        var lock = Dew.cluster.lock.instance("date:oauth:account:add:"+oAuthUserInfoR.getBody().getOpenid());
+        if(lock.tryLock(5000,10000)){
+            // 空方法，新请求等待1s后才能操作
+            // 5s后释放锁
+            System.out.println(Thread.currentThread()+">>>>"+2);
+
+        }
+        System.out.println(Thread.currentThread()+">>>>"+3);
+
         var accountId = sqlBuilder.select(qAccountCert.relAccountId)
                 .from(qAccountCert)
                 .where(qAccountCert.delFlag.eq(false))

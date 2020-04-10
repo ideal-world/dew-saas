@@ -325,6 +325,21 @@ public class AccountService extends IdentBasicService {
         return findDTOs(query);
     }
 
+    public Resp<String> getAccountCertAk(Long relAccountId, String accountCertKind, Long relTenantId) {
+        if (!checkAccountMembership(relAccountId, relTenantId)) {
+            return Constant.RESP.NOT_FOUNT();
+        }
+        var qAccountCert = QAccountCert.accountCert;
+        var query = sqlBuilder
+                .select(qAccountCert.ak)
+                .from(qAccountCert)
+                .where(qAccountCert.relAccountId.eq(relAccountId))
+                .where(qAccountCert.kind.eq(AccountCertKind.parse(accountCertKind)))
+                .where(qAccountCert.validTime.gt(new Date()))
+                .where(qAccountCert.delFlag.eq(false));
+        return getDTO(query);
+    }
+
     @Transactional
     public Resp<Void> modifyAccountCert(ModifyAccountCertReq modifyAccountCertReq, Long accountCertId,
                                         Long relAccountId, Long relTenantId) {
