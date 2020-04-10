@@ -73,7 +73,7 @@ public class AppOrganizationController extends BasicController {
 
     @DeleteMapping(value = "{organizationId}")
     @ApiOperation(value = "删除当前应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
-    public Resp<Void> deleteOrganization(@PathVariable Long organizationId) {
+    public Resp<Long> deleteOrganization(@PathVariable Long organizationId) {
         return organizationService.deleteOrganization(organizationId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);

@@ -52,7 +52,6 @@ public class OrganizationService extends IdentBasicService {
         var qOrganization = QOrganization.organization;
         if (sqlBuilder.select(qOrganization.id)
                 .from(qOrganization)
-                .where(qOrganization.delFlag.eq(false))
                 .where(qOrganization.relTenantId.eq(relTenantId))
                 .where(qOrganization.relAppId.eq(relAppId))
                 .where(qOrganization.code.eq(addOrganizationReq.getCode()))
@@ -98,8 +97,7 @@ public class OrganizationService extends IdentBasicService {
                 .leftJoin(qAccountCreateUser).on(qOrganization.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qOrganization.updateUser.eq(qAccountUpdateUser.id))
                 .where(qOrganization.relAppId.eq(relAppId))
-                .where(qOrganization.relTenantId.eq(relTenantId))
-                .where(qOrganization.delFlag.eq(false));
+                .where(qOrganization.relTenantId.eq(relTenantId));
         return findDTOs(OrganizationQuery);
     }
 
@@ -133,12 +131,11 @@ public class OrganizationService extends IdentBasicService {
     }
 
     @Transactional
-    public Resp<Void> deleteOrganization(Long organizationId, Long relAppId, Long relTenantId) {
+    public Resp<Long> deleteOrganization(Long organizationId, Long relAppId, Long relTenantId) {
         var qOrganization = QOrganization.organization;
         var getOrganizationCodeR = getDTO(sqlBuilder.select(qOrganization.code)
                 .from(qOrganization)
-                .where(qOrganization.id.eq(organizationId))
-                .where(qOrganization.delFlag.eq(false)));
+                .where(qOrganization.id.eq(organizationId)));
         if (!getOrganizationCodeR.ok()) {
             // 已经被删除
             return Resp.error(getOrganizationCodeR);
@@ -146,25 +143,31 @@ public class OrganizationService extends IdentBasicService {
         // 级联删除机构
         var deleteOrgInfos = findOrganizationIds(organizationId);
         deleteOrgInfos.add(new Tuple2<>(organizationId, getOrganizationCodeR.getBody()));
-        var deleteR = updateEntity(sqlBuilder
-                .update(qOrganization)
-                .set(qOrganization.delFlag, false)
-                .where(qOrganization.id.in(deleteOrgInfos
-                        .stream()
-                        .map(orgInfoTuple -> orgInfoTuple._0)
-                        .collect(Collectors.toList())))
-                .where(qOrganization.relAppId.eq(relAppId))
-                .where(qOrganization.relTenantId.eq(relTenantId))
-        );
-        if (!deleteR.ok()) {
-            return deleteR;
-        }
         // 删除岗位、账号岗位、权限
         postService.deletePostByOrgCodes(deleteOrgInfos
                 .stream()
                 .map(orgInfoTuple -> orgInfoTuple._1)
                 .collect(Collectors.toList()), relAppId, relTenantId);
-        return deleteR;
+        return deleteEntities(sqlBuilder
+                .delete(qOrganization)
+                .where(qOrganization.id.in(deleteOrgInfos
+                        .stream()
+                        .map(orgInfoTuple -> orgInfoTuple._0)
+                        .collect(Collectors.toList())))
+                .where(qOrganization.relAppId.eq(relAppId))
+                .where(qOrganization.relTenantId.eq(relTenantId)));
+    }
+
+    @Transactional
+    protected Resp<Long> deleteOrganization(Long appId, Long relTenantId) {
+        var qOrganization = QOrganization.organization;
+        // 删除岗位、账号岗位、权限
+        postService.deletePost(appId, relTenantId);
+        // 删除机构
+        return deleteEntities(sqlBuilder
+                .delete(qOrganization)
+                .where(qOrganization.relAppId.eq(appId))
+                .where(qOrganization.relTenantId.eq(relTenantId)));
     }
 
     private List<Tuple2<Long, String>> findOrganizationIds(Long parentOrgId) {
@@ -172,13 +175,11 @@ public class OrganizationService extends IdentBasicService {
         return sqlBuilder.select(qOrganization.id, qOrganization.code)
                 .from(qOrganization)
                 .where(qOrganization.parentId.eq(parentOrgId))
-                .where(qOrganization.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .map(orgInfo -> new Tuple2<>(orgInfo.get(0, Long.class), orgInfo.get(1, String.class)))
                 .flatMap(orgInfoTuple -> findOrganizationIds(orgInfoTuple._0).stream())
                 .collect(Collectors.toList());
-
     }
 
 }

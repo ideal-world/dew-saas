@@ -7,8 +7,7 @@ import group.idealworld.dew.core.web.interceptor.BasicHandlerInterceptor;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionExtInfo;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoSub;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +19,8 @@ import java.util.stream.Collectors;
 import static idealworld.dew.saas.common.Constant.ROLE_SPLIT;
 
 @Component
+@Slf4j
 public class AuthProcessor {
-
-    protected static final Logger logger = LoggerFactory.getLogger(AuthProcessor.class);
 
     @Autowired
     private IdentSDK identSDK;
@@ -37,7 +35,7 @@ public class AuthProcessor {
     public void auth() {
         Dew.auth = identAuthAdapter;
         if (!identConfig.getIdent().isSubscribe()) {
-            logger.info("使用本地配置权限，关闭权限订阅");
+            log.info("Close the permission subscription, using the local configuration permission");
             return;
         }
         doSub();
@@ -53,7 +51,7 @@ public class AuthProcessor {
             throw new RTException("权限订阅错误 [" + subPermissionR.getCode() + "]" + subPermissionR.getMessage());
         }
         Dew.cluster.mq.subscribe(subPermissionR.getBody(), messageWrap -> {
-            logger.trace("Received a message :" + messageWrap.getBody());
+            log.trace("Received a message :" + messageWrap.getBody());
             var permissionInfoSub = $.json.toObject(messageWrap.getBody(), PermissionInfoSub.class);
             if (permissionInfoSub.getChangedPermissions() != null
                     && !permissionInfoSub.getChangedPermissions().isEmpty()) {

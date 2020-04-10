@@ -84,7 +84,8 @@ public class SDKTest extends BasicTest {
         sdk.getConfig().getBasic().setAppSk(appCert.getSk());
         sdk.init();
         authProcessor.doSub();
-
+        // 等待2s用于建立mq连接
+       Thread.sleep(2000);
         var orgId = testOrganization();
         var positionCode = testPosition();
         var postId = testPost(positionCode);
@@ -332,7 +333,7 @@ public class SDKTest extends BasicTest {
         var requestR = getToEntity("/mgr/account", Void.class);
         Assert.assertFalse(requestR.ok());
         // 登录
-        var identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
+        var identOptInfo = postToEntity(sdk.getConfig().getIdent().getUrl() +"/auth/" + tenantId + "/login", LoginReq.builder()
                 .certKind(certKind)
                 .ak(ak)
                 .sk(sk)

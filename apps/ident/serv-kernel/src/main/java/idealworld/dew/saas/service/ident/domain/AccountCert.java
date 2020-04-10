@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeEntity;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,14 +17,15 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "ident_account_cert", indexes = {
-        @Index(columnList = "delFlag,relTenantId,relAccountId,kind,ak,validTime"),
-        @Index(columnList = "delFlag,relAccountId,kind,validTime")
+        @Index(columnList = "relTenantId,relAccountId,kind,ak", unique = true),
+        @Index(columnList = "relTenantId,relAccountId,kind,ak,validTime"),
+        @Index(columnList = "relAccountId,kind,validTime")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class AccountCert extends SafeSoftDelEntity {
+public class AccountCert extends SafeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

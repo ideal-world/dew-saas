@@ -22,8 +22,7 @@ import com.ecfront.dew.common.tuple.Tuple2;
 import group.idealworld.dew.core.web.error.ErrorController;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.service.AppService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -41,9 +40,8 @@ import java.nio.charset.StandardCharsets;
  * @author gjason
  */
 @Component
+@Slf4j
 public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
-
-    private static final Logger logger = LoggerFactory.getLogger(group.idealworld.dew.core.web.interceptor.BasicHandlerInterceptor.class);
 
     private static final ThreadLocal<Tuple2<Long, Long>> CONTEXT_TENANT_AND_APP_ID = new ThreadLocal<>();
 

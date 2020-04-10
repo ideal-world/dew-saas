@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: test
   jpa:
     hibernate:
       ddl-auto: update

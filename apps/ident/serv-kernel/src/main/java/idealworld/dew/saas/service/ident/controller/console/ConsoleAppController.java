@@ -60,7 +60,7 @@ public class ConsoleAppController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}")
-    @ApiOperation(value = "删除当前租户的某个应用", notes = "删除应用，关联的应用凭证")
+    @ApiOperation(value = "删除当前租户的某个应用", notes = "删除应用、应用凭证、机构、职位、岗位、账号岗位、权限")
     public Resp<Void> deleteApp(@PathVariable Long appId) {
         return appService.deleteApp(appId, getCurrentTenantId());
     }
@@ -97,7 +97,7 @@ public class ConsoleAppController extends BasicController {
 
     @DeleteMapping(value = "{appId}/cert")
     @ApiOperation(value = "删除当前租户某个应用的所有凭证")
-    public Resp<Void> deleteAppCerts(@PathVariable Long appId) {
+    public Resp<Long> deleteAppCerts(@PathVariable Long appId) {
         return appService.deleteAppCerts(appId, getCurrentTenantId());
     }
 

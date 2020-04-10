@@ -6,8 +6,7 @@ import com.ecfront.dew.common.HttpHelperFactory;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.exception.RTException;
 import idealworld.dew.saas.common.utils.ResponseProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -16,9 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcessor {
-
-    protected static final Logger logger = LoggerFactory.getLogger(CommonSDK.class);
 
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
@@ -96,7 +94,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
         var digestText = (method + "\n" + date + "\n" + url.getPath() + "\n" + (url.getQuery() != null ? url.getQuery() : "")).toLowerCase();
         var secretKey = config.getBasic().getAppSk();
         var signature = $.security.encodeStringToBase64(
-                $.security.digest.digest(digestText,secretKey,"HmacSHA1"),
+                $.security.digest.digest(digestText, secretKey, "HmacSHA1"),
                 StandardCharsets.UTF_8
         );
 
@@ -104,7 +102,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
                 config.getBasic().getAppAk() + ":" + signature);
 
         uri = formatUrl(uri);
-        logger.trace("Request: [" + method + "] " + uri);
+        log.trace("Request: [" + method + "] " + uri);
         var result = httpHelper.request(method, uri, body, header,
                 null, null,
                 config.getPerf().getDefaultConnectTimeoutMS(),

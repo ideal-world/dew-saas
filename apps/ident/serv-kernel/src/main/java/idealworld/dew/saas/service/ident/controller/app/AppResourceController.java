@@ -88,7 +88,7 @@ public class AppResourceController extends BasicController {
     }
 
     @DeleteMapping(value = "{resourceId}")
-    @ApiOperation(value = "删除当前应用的某个资源（组）")
+    @ApiOperation(value = "删除当前应用的某个资源（组）", notes = "资源（组）、权限")
     public Resp<Void> deleteResource(@PathVariable Long resourceId) {
         return resourceService.deleteResource(resourceId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,

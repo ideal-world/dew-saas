@@ -136,7 +136,7 @@ public class AppAccountController extends BasicController {
 
     @DeleteMapping(value = "{accountId}/cert")
     @ApiOperation(value = "删除当前租户某个账号的所有凭证")
-    public Resp<Void> deleteAccountCerts(@PathVariable Long accountId) {
+    public Resp<Long> deleteAccountCerts(@PathVariable Long accountId) {
         return accountService.deleteAccountCerts(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }

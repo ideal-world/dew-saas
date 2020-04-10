@@ -21,12 +21,10 @@ import com.ecfront.dew.common.exception.RTException;
 import group.idealworld.dew.core.auth.AuthAdapter;
 import group.idealworld.dew.core.auth.dto.OptInfo;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 
@@ -37,9 +35,8 @@ import java.util.Optional;
  * @author gjason
  */
 @Component
+@Slf4j
 public class IdentAuthAdapter implements AuthAdapter {
-
-    private static final Logger logger = LoggerFactory.getLogger(IdentAuthAdapter.class);
 
     @Autowired
     protected IdentSDK identSDK;
@@ -48,8 +45,8 @@ public class IdentAuthAdapter implements AuthAdapter {
     public <E extends OptInfo<E>> Optional<E> getOptInfo(String token) {
         var resp = identSDK.auth.getOptInfo(token, IdentOptInfo.class);
         if (!resp.ok()) {
-            logger.warn("获取登录信息错误[" + resp.getCode() + "] " + resp.getMessage());
-            if(resp.getCode().equalsIgnoreCase(StandardCode.UNAUTHORIZED.toString())){
+            log.warn("Login error [{}] : {} ", resp.getCode(), resp.getMessage());
+            if (resp.getCode().equalsIgnoreCase(StandardCode.UNAUTHORIZED.toString())) {
                 return Optional.empty();
             }
             throw new RTException("获取登录信息错误[" + resp.getCode() + "] " + resp.getMessage());

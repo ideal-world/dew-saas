@@ -19,16 +19,13 @@ import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
 
-
+@Slf4j
 public class IdentSDK extends CommonSDK<IdentConfig> {
-
-    private static final Logger logger = LoggerFactory.getLogger(IdentSDK.class);
 
     public Auth auth = new Auth();
     public Account account = new Account();
@@ -399,7 +396,7 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
         }
 
         /**
-         * 删除当前应用的某个资源（组）
+         * 删除当前应用的某个资源（组）及关联的权限
          *
          * @param resourceId
          * @return

@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,7 +50,6 @@ public class PositionService extends IdentBasicService {
         var qPosition = QPosition.position;
         if (sqlBuilder.select(qPosition.id)
                 .from(qPosition)
-                .where(qPosition.delFlag.eq(false))
                 .where(qPosition.relTenantId.eq(relTenantId))
                 .where(qPosition.relAppId.eq(relAppId))
                 .where(qPosition.code.eq(addPositionReq.getCode()))
@@ -95,8 +95,7 @@ public class PositionService extends IdentBasicService {
                 .from(qPosition)
                 .where(qPosition.id.eq(positionId))
                 .where(qPosition.relAppId.eq(relAppId))
-                .where(qPosition.relTenantId.eq(relTenantId))
-                .where(qPosition.delFlag.eq(false));
+                .where(qPosition.relTenantId.eq(relTenantId));
         return getDTO(positionQuery);
     }
 
@@ -111,24 +110,13 @@ public class PositionService extends IdentBasicService {
                         qPosition.relAppId))
                 .from(qPosition)
                 .where(qPosition.relAppId.eq(relAppId))
-                .where(qPosition.relTenantId.eq(relTenantId))
-                .where(qPosition.delFlag.eq(false));
+                .where(qPosition.relTenantId.eq(relTenantId));
         return findDTOs(positionQuery);
     }
 
     @Transactional
     public Resp<Void> deletePosition(Long positionId, Long relAppId, Long relTenantId) {
         var qPosition = QPosition.position;
-        var deleteR = updateEntity(sqlBuilder
-                .update(qPosition)
-                .set(qPosition.delFlag, true)
-                .where(qPosition.id.eq(positionId))
-                .where(qPosition.relAppId.eq(relAppId))
-                .where(qPosition.relTenantId.eq(relTenantId))
-        );
-        if (!deleteR.ok()) {
-            return deleteR;
-        }
         var positionCode = sqlBuilder
                 .select(qPosition.code)
                 .from(qPosition)
@@ -137,7 +125,34 @@ public class PositionService extends IdentBasicService {
                 .where(qPosition.relTenantId.eq(relTenantId))
                 .fetchOne();
         // 删除岗位、账号岗位、权限
-        return postService.deletePostByPositionCode(positionCode, relAppId, relTenantId);
+        postService.deletePostByPositionCodes(new ArrayList<>() {{
+            add(positionCode);
+        }}, relAppId, relTenantId);
+        // 删除职位
+        return deleteEntity(sqlBuilder
+                .delete(qPosition)
+                .where(qPosition.id.eq(positionId))
+                .where(qPosition.relAppId.eq(relAppId))
+                .where(qPosition.relTenantId.eq(relTenantId))
+        );
     }
 
+    @Transactional
+    protected Resp<Long> deletePositions(Long relAppId, Long relTenantId) {
+        var qPosition = QPosition.position;
+        var positionCodes = sqlBuilder
+                .select(qPosition.code)
+                .from(qPosition)
+                .where(qPosition.relAppId.eq(relAppId))
+                .where(qPosition.relTenantId.eq(relTenantId))
+                .fetch();
+        // 删除岗位、账号岗位、权限
+        postService.deletePostByPositionCodes(positionCodes, relAppId, relTenantId);
+        // 删除职位
+        return deleteEntities(sqlBuilder
+                .delete(qPosition)
+                .where(qPosition.relAppId.eq(relAppId))
+                .where(qPosition.relTenantId.eq(relTenantId))
+        );
+    }
 }

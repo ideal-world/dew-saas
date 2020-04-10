@@ -1,16 +1,13 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeEntity;
 import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * The type Account.
@@ -19,14 +16,13 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_account", indexes = {
-        @Index(columnList = "delFlag,relTenantId,status"),
-        @Index(columnList = "relTenantId")
+        @Index(columnList = "relTenantId,status")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Account extends SafeSoftDelEntity {
+public class Account extends SafeEntity {
 
     @Column(nullable = false)
     private String name;

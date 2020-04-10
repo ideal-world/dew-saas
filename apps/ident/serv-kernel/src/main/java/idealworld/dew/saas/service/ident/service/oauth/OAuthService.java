@@ -19,8 +19,6 @@ package idealworld.dew.saas.service.ident.service.oauth;
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
-import group.idealworld.dew.core.cluster.ClusterLock;
-import group.idealworld.dew.core.cluster.ClusterLockWrap;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QAccountCert;
@@ -36,6 +34,7 @@ import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +44,7 @@ import org.springframework.util.StringUtils;
  * @author gudaoxuri
  */
 @Service
+@Slf4j
 public class OAuthService extends IdentBasicService {
 
     @Autowired
@@ -73,19 +73,15 @@ public class OAuthService extends IdentBasicService {
         if (!oAuthUserInfoR.ok()) {
             return Resp.error(oAuthUserInfoR);
         }
-        var qAccountCert = QAccountCert.accountCert;
         var lock = Dew.cluster.lock.instance("date:oauth:account:add:"+oAuthUserInfoR.getBody().getOpenid());
-        if(lock.tryLock(5000,10000)){
-            // 空方法，新请求等待1s后才能操作
+        if(lock.tryLock(5000,5000)){
+            // 空方法，新请求等待5s后才能操作
             // 5s后释放锁
-            System.out.println(Thread.currentThread()+">>>>"+2);
-
         }
-        System.out.println(Thread.currentThread()+">>>>"+3);
-
+        log.info("OAuth Login : [{}] {}",tenantId,$.json.toJsonString(oAuthLoginReq));
+        var qAccountCert = QAccountCert.accountCert;
         var accountId = sqlBuilder.select(qAccountCert.relAccountId)
                 .from(qAccountCert)
-                .where(qAccountCert.delFlag.eq(false))
                 .where(qAccountCert.kind.eq(oAuthLoginReq.getCertKind()))
                 .where(qAccountCert.ak.eq(oAuthUserInfoR.getBody().getOpenid()))
                 .fetchOne();
@@ -103,13 +99,12 @@ public class OAuthService extends IdentBasicService {
                     .from(qAccount)
                     .where(qAccount.id.eq(accountId))
                     .where(qAccount.status.eq(AccountStatus.ENABLED))
-                    .where(qAccount.delFlag.eq(false))
                     .fetchOne() != null;
             if (!exist) {
                 return Resp.badRequest("用户状态异常");
             }
         }
-        logger.info("Login Success:  [" + tenantId + "][" + oAuthUserInfoR.getBody().getOpenid() + "]");
+        log.info("Login Success:  [{}] ak(openId) {}",tenantId, oAuthUserInfoR.getBody().getOpenid());
         var qAccount = QAccount.account;
         var parameters = sqlBuilder.select(qAccount.parameters)
                 .from(qAccount)

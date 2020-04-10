@@ -66,7 +66,7 @@ public class ConsoleOrganizationController extends BasicController {
 
     @DeleteMapping(value = "{appId}/{organizationId}")
     @ApiOperation(value = "删除当前租户某个应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
-    public Resp<Void> deleteOrganization(@PathVariable Long appId, @PathVariable Long organizationId) {
+    public Resp<Long> deleteOrganization(@PathVariable Long appId, @PathVariable Long organizationId) {
         return organizationService.deleteOrganization(organizationId, appId, getCurrentTenantId());
     }
 

@@ -26,6 +26,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
  * @author gudaoxuri
  */
 @Service
+@Slf4j
 public class ResourceService extends IdentBasicService {
 
     @Autowired
@@ -72,7 +74,6 @@ public class ResourceService extends IdentBasicService {
         var qResource = QResource.resource;
         if (sqlBuilder.select(qResource.id)
                 .from(qResource)
-                .where(qResource.delFlag.eq(false))
                 .where(qResource.relAppId.eq(relAppId))
                 .where(qResource.identifier.eq(addResourceReq.getIdentifier()))
                 .where(qResource.method.eq(addResourceReq.getMethod()))
@@ -141,8 +142,7 @@ public class ResourceService extends IdentBasicService {
                 .from(qResource)
                 .where(qResource.id.eq(resourceId))
                 .where(qResource.relAppId.eq(relAppId))
-                .where(qResource.relTenantId.eq(relTenantId))
-                .where(qResource.delFlag.eq(false));
+                .where(qResource.relTenantId.eq(relTenantId));
         return getDTO(resourceQuery);
     }
 
@@ -161,29 +161,24 @@ public class ResourceService extends IdentBasicService {
                         qResource.relAppId))
                 .from(qResource)
                 .where(qResource.relAppId.eq(relAppId))
-                .where(qResource.relTenantId.eq(relTenantId))
-                .where(qResource.delFlag.eq(false));
+                .where(qResource.relTenantId.eq(relTenantId));
         return findDTOs(resourceQuery);
     }
 
     @Transactional
     public Resp<Void> deleteResource(Long resourceId, Long relAppId, Long relTenantId) {
-        // 级联删除资源
         var deleteResInfos = findResourceAndGroup(resourceId);
         deleteResInfos.add(resourceId);
+        // 删除权限
+        permissionService.deletePermissionByResourceIds(deleteResInfos, relAppId, relTenantId);
+        // 级联删除资源
         var qResource = QResource.resource;
-        var deleteR = updateEntity(sqlBuilder
-                .update(qResource)
-                .set(qResource.delFlag, true)
+        return deleteEntity(sqlBuilder
+                .delete(qResource)
                 .where(qResource.id.in(deleteResInfos))
                 .where(qResource.relAppId.eq(relAppId))
                 .where(qResource.relTenantId.eq(relTenantId))
         );
-        if (!deleteR.ok()) {
-            return deleteR;
-        }
-        // 删除权限
-        return permissionService.deletePermissionByResourceIds(deleteResInfos, relAppId, relTenantId);
     }
 
     private List<Long> findResourceAndGroup(Long resParentId) {
@@ -192,7 +187,6 @@ public class ResourceService extends IdentBasicService {
                 .select(qResource.id)
                 .from(qResource)
                 .where(qResource.parentId.eq(resParentId))
-                .where(qResource.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .flatMap(resId -> findResourceAndGroup(resId).stream())
@@ -214,7 +208,6 @@ public class ResourceService extends IdentBasicService {
                         qResource.relAppId))
                 .from(qResource)
                 .where(qResource.parentId.eq(resourceGroupId))
-                .where(qResource.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .flatMap(res -> {

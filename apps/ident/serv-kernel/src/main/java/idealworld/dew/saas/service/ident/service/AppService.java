@@ -16,6 +16,7 @@
 
 package idealworld.dew.saas.service.ident.service;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple3;
 import com.querydsl.core.types.Projections;
@@ -24,6 +25,8 @@ import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,21 +37,27 @@ import java.util.List;
  * @author gudaoxuri
  */
 @Service
+@Slf4j
 public class AppService extends IdentBasicService {
 
-    private static final String CACHE_AK = "app:ak:";
+    private static final String CACHE_AK = "ident:app:ak:";
+
+    @Autowired
+    private OrganizationService organizationService;
+    @Autowired
+    private PositionService positionService;
 
     @Transactional
     public Resp<Long> addApp(AddAppReq addAppReq, Long relTenantId) {
         var qApp = QApp.app;
         if (sqlBuilder.select(qApp.id)
                 .from(qApp)
-                .where(qApp.delFlag.eq(false))
                 .where(qApp.relTenantId.eq(relTenantId))
                 .where(qApp.name.eq(addAppReq.getName()))
                 .fetchCount() != 0) {
             return Resp.conflict("此应用名已存在");
         }
+        log.info("Add App : [{}] {}",relTenantId, $.json.toJsonString(addAppReq));
         var app = App.builder()
                 .name(addAppReq.getName())
                 .icon(addAppReq.getIcon() != null ? addAppReq.getIcon() : "")
@@ -74,7 +83,6 @@ public class AppService extends IdentBasicService {
                         qApp.icon,
                         qApp.parameters,
                         qApp.relTenantId,
-                        qApp.delFlag,
                         qApp.createTime,
                         qApp.updateTime,
                         qAccountCreateUser.name.as("createUserName"),
@@ -82,8 +90,7 @@ public class AppService extends IdentBasicService {
                 .from(qApp)
                 .leftJoin(qAccountCreateUser).on(qApp.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qApp.updateUser.eq(qAccountUpdateUser.id))
-                .where(qApp.relTenantId.eq(relTenantId))
-                .where(qApp.delFlag.eq(false));
+                .where(qApp.relTenantId.eq(relTenantId));
         return findDTOs(query);
     }
 
@@ -107,15 +114,18 @@ public class AppService extends IdentBasicService {
 
     @Transactional
     public Resp<Void> deleteApp(Long appId, Long relTenantId) {
+        // 删除机构
+        organizationService.deleteOrganization(appId, relTenantId);
+        // 删除职位
+        positionService.deletePositions(appId, relTenantId);
+        // 删除应用凭证
+        deleteAppCerts(appId, relTenantId);
         var qApp = QApp.app;
-        var deleteR = updateEntity(sqlBuilder
-                .update(qApp)
-                .set(qApp.delFlag, true)
+        return softDelEntity(sqlBuilder
+                .selectFrom(qApp)
                 .where(qApp.id.eq(appId))
                 .where(qApp.relTenantId.eq(relTenantId))
         );
-        deleteAppCerts(appId, relTenantId);
-        return deleteR;
     }
 
     // ========================== Cert ==============================
@@ -130,8 +140,6 @@ public class AppService extends IdentBasicService {
                 .select(qAppCert.ak, qAppCert.sk, qAppCert.relAppId, qAppCert.validTime, qApp.relTenantId)
                 .from(qAppCert)
                 .leftJoin(qApp).on(qApp.id.eq(qAppCert.relAppId))
-                .where(qAppCert.delFlag.eq(false))
-                .where(qApp.delFlag.eq(false))
                 .where(qAppCert.validTime.gt(new Date()))
                 .fetch()
                 .forEach(info -> {
@@ -154,6 +162,7 @@ public class AppService extends IdentBasicService {
         if (!checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
+        log.info("Add App Cert : [{}] {} : {}",relTenantId,relAppId, $.json.toJsonString(addAppCertReq));
         var ak = KeyHelper.generateAK();
         var sk = KeyHelper.generateSK(ak);
         var appCert = AppCert.builder()
@@ -190,7 +199,6 @@ public class AppService extends IdentBasicService {
                         qAppCert.ak,
                         qAppCert.sk,
                         qAppCert.validTime,
-                        qAppCert.delFlag,
                         qAppCert.createTime,
                         qAppCert.updateTime,
                         qAccountCreateUser.name.as("createUserName"),
@@ -198,8 +206,7 @@ public class AppService extends IdentBasicService {
                 .from(qAppCert)
                 .leftJoin(qAccountCreateUser).on(qAppCert.createUser.eq(qAccountCreateUser.id))
                 .leftJoin(qAccountUpdateUser).on(qAppCert.updateUser.eq(qAccountUpdateUser.id))
-                .where(qAppCert.relAppId.eq(relAppId))
-                .where(qAppCert.delFlag.eq(false));
+                .where(qAppCert.relAppId.eq(relAppId));
         return findDTOs(query);
     }
 
@@ -221,7 +228,6 @@ public class AppService extends IdentBasicService {
         }
         var updateR = updateEntity(updateClause);
         if (updateR.ok() && modifyAppCertReq.getValidTime() != null) {
-            var qApp = QApp.app;
             var updateAppCert = sqlBuilder.selectFrom(qAppCert)
                     .where(qAppCert.id.eq(appCertId))
                     .fetchOne();
@@ -241,22 +247,19 @@ public class AppService extends IdentBasicService {
     }
 
     @Transactional
-    public Resp<Void> deleteAppCerts(Long relAppId, Long relTenantId) {
+    public Resp<Long> deleteAppCerts(Long relAppId, Long relTenantId) {
         if (!checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
         var qAppCert = QAppCert.appCert;
-        sqlBuilder
-                .update(qAppCert)
-                .set(qAppCert.delFlag, true)
-                .where(qAppCert.relAppId.eq(relAppId))
-                .execute();
         sqlBuilder.select(qAppCert.ak)
                 .from(qAppCert)
                 .where(qAppCert.relAppId.eq(relAppId))
                 .fetch()
                 .forEach(ak -> Dew.cluster.cache.del(CACHE_AK + ak));
-        return Resp.success(null);
+        return softDelEntities(sqlBuilder
+                .selectFrom(qAppCert)
+                .where(qAppCert.relAppId.eq(relAppId)));
     }
 
     @Transactional
@@ -265,21 +268,16 @@ public class AppService extends IdentBasicService {
             return Constant.RESP.NOT_FOUNT();
         }
         var qAppCert = QAppCert.appCert;
-        var deleteAppCertR = updateEntity(sqlBuilder
-                .update(qAppCert)
-                .set(qAppCert.delFlag, true)
+        var ak = sqlBuilder.select(qAppCert.ak)
+                .from(qAppCert)
                 .where(qAppCert.id.eq(appCertId))
                 .where(qAppCert.relAppId.eq(relAppId))
-        );
-        if (deleteAppCertR.ok()) {
-            var ak = sqlBuilder.select(qAppCert.ak)
-                    .from(qAppCert)
-                    .where(qAppCert.id.eq(appCertId))
-                    .where(qAppCert.relAppId.eq(relAppId))
-                    .fetchOne();
-            Dew.cluster.cache.del(CACHE_AK + ak);
-        }
-        return deleteAppCertR;
+                .fetchOne();
+        Dew.cluster.cache.del(CACHE_AK + ak);
+        return deleteEntity(sqlBuilder
+                .delete(qAppCert)
+                .where(qAppCert.id.eq(appCertId))
+                .where(qAppCert.relAppId.eq(relAppId)));
     }
 
     protected Boolean checkAppMembership(Long appId, Long relTenantId) {

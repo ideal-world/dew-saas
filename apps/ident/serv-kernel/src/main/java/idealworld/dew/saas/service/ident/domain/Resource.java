@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeEntity;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,15 +16,15 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "ident_resource", indexes = {
-        @Index(columnList = "delFlag,relAppId,identifier,method"),
-        @Index(columnList = "delFlag,relTenantId,relAppId"),
+        @Index(columnList = "relAppId,identifier,method", unique = true),
+        @Index(columnList = "relTenantId,relAppId"),
         @Index(columnList = "parentId")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Resource extends SafeSoftDelEntity {
+public class Resource extends SafeEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.interceptor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
@@ -36,9 +35,9 @@ import javax.annotation.PostConstruct;
 @Configuration
 @ConditionalOnWebApplication
 @Order(10)
+@Slf4j
 public class InterceptorWebAutoConfiguration implements WebMvcConfigurer {
 
-    private static final Logger logger = LoggerFactory.getLogger(group.idealworld.dew.core.web.interceptor.InterceptorWebAutoConfiguration.class);
 
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;
@@ -48,7 +47,7 @@ public class InterceptorWebAutoConfiguration implements WebMvcConfigurer {
      */
     @PostConstruct
     public void init() {
-        logger.info("Load Auto Configuration : {}", this.getClass().getName());
+        log.info("Load Auto Configuration : {}", this.getClass().getName());
     }
 
     @Override

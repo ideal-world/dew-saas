@@ -1,15 +1,12 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * The type Organization Position.
@@ -18,15 +15,15 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ident_post", indexes = {
-        @Index(columnList = "delFlag,relTenantId,relAppId,relPositionCode,relOrganizationCode"),
-        @Index(columnList = "delFlag,relOrganizationCode"),
-        @Index(columnList = "delFlag,relPositionCode")
+        @Index(columnList = "relTenantId,relAppId,relPositionCode,relOrganizationCode",unique = true),
+        @Index(columnList = "relOrganizationCode"),
+        @Index(columnList = "relPositionCode")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Post extends SafeSoftDelEntity {
+public class Post extends SafeEntity {
 
     // 可以为空
     @Column(nullable = false)

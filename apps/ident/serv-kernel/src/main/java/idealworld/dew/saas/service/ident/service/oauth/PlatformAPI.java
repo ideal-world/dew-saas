@@ -3,8 +3,7 @@ package idealworld.dew.saas.service.ident.service.oauth;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple2;
 import group.idealworld.dew.Dew;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,9 +11,8 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
+@Slf4j
 public abstract class PlatformAPI {
-
-    protected static final Logger logger = LoggerFactory.getLogger(WechatMPAPI.class);
 
     protected static final String ACCESS_TOKEN_FLAG = "oauth:access-token:";
 

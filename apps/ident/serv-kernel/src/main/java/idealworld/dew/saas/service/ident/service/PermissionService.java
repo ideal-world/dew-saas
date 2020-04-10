@@ -45,8 +45,8 @@ import java.util.stream.Collectors;
 @Service
 public class PermissionService extends IdentBasicService {
 
-    public static final String IDENT_PERMISSION_SUB_LIST = "cache:ident:permission:app:";
-    public static final String IDENT_PERMISSION_SUB_APPS = "mq:ident:permission:app:";
+    public static final String IDENT_PERMISSION_SUB_LIST = "ident:cache:permission:app:";
+    public static final String IDENT_PERMISSION_SUB_APPS = "ident:mq:permission:app:";
 
     @Autowired
     private ResourceService resourceService;
@@ -61,7 +61,6 @@ public class PermissionService extends IdentBasicService {
         var qPermission = QPermission.permission;
         if (sqlBuilder.select(qPermission.id)
                 .from(qPermission)
-                .where(qPermission.delFlag.eq(false))
                 .where(qPermission.relPostId.eq(addPermissionReq.getRelPostId()))
                 .where(qPermission.relResourceId.eq(addPermissionReq.getRelResourceId()))
                 .fetchCount() != 0) {
@@ -92,16 +91,14 @@ public class PermissionService extends IdentBasicService {
                         qPermission.relAppId))
                 .from(qPermission)
                 .where(qPermission.relAppId.eq(relAppId))
-                .where(qPermission.relTenantId.eq(relTenantId))
-                .where(qPermission.delFlag.eq(false));
+                .where(qPermission.relTenantId.eq(relTenantId));
         return findDTOs(positionQuery);
     }
 
     @Transactional
     public Resp<Void> deletePermission(Long permissionId, Long relAppId, Long relTenantId) {
         var qPermission = QPermission.permission;
-        sqlBuilder.update(qPermission)
-                .set(qPermission.delFlag, true)
+        sqlBuilder.delete(qPermission)
                 .where(qPermission.id.eq(permissionId))
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
@@ -118,11 +115,9 @@ public class PermissionService extends IdentBasicService {
         var deletePermissionIds = sqlBuilder.select(qPermission.id)
                 .from(qPermission)
                 .where(qPermission.relPostId.in(postIds))
-                .where(qPermission.delFlag.eq(false))
                 .fetch();
         sqlBuilder
-                .update(qPermission)
-                .set(qPermission.delFlag, true)
+                .delete(qPermission)
                 .where(qPermission.id.in(deletePermissionIds))
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
@@ -133,15 +128,19 @@ public class PermissionService extends IdentBasicService {
 
     @Transactional
     protected Resp<Void> deletePermissionByResourceIds(List<Long> resourceIds, Long relAppId, Long relTenantId) {
+        if (resourceIds.isEmpty()) {
+            return Constant.RESP.NOT_FOUNT();
+        }
         var qPermission = QPermission.permission;
         var deletePermissionIds = sqlBuilder.select(qPermission.id)
                 .from(qPermission)
                 .where(qPermission.relResourceId.in(resourceIds))
-                .where(qPermission.delFlag.eq(false))
                 .fetch();
+        if (deletePermissionIds.isEmpty()) {
+            return Resp.success(null);
+        }
         sqlBuilder
                 .update(qPermission)
-                .set(qPermission.delFlag, true)
                 .where(qPermission.id.in(deletePermissionIds))
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
@@ -208,11 +207,10 @@ public class PermissionService extends IdentBasicService {
                         qPost.relOrganizationCode.as("organizationCode"),
                         qPost.relAppId))
                 .from(qPermission)
-                .innerJoin(qPost).on(qPermission.relPostId.eq(qPost.id).and(qPost.delFlag.eq(false)))
-                .innerJoin(qResource).on(qPermission.relResourceId.eq(qResource.id).and(qResource.delFlag.eq(false)));
+                .innerJoin(qPost).on(qPermission.relPostId.eq(qPost.id))
+                .innerJoin(qResource).on(qPermission.relResourceId.eq(qResource.id));
         permissionIdsOpt.ifPresent(ids -> permissionQuery.where(qPermission.id.in(ids)));
         return permissionQuery.where(qPermission.relAppId.eq(relAppId))
-                .where(qPermission.delFlag.eq(false))
                 .fetch()
                 .stream()
                 .flatMap(info -> {

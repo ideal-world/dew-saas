@@ -53,7 +53,7 @@ public class ConsoleTenantController extends BasicController {
     }
 
     @DeleteMapping(value = "")
-    @ApiOperation(value = "注销当前的租户", notes = "必须先删除关联的应用")
+    @ApiOperation(value = "注销当前的租户", notes = "必须先删除关联的应用，此操作会同时与此租户相关的所有数据")
     public Resp<Void> unRegisterTenant() {
         return tenantService.unRegisterTenant(getCurrentTenantId());
     }
@@ -87,7 +87,7 @@ public class ConsoleTenantController extends BasicController {
 
     @DeleteMapping(value = "cert-config")
     @ApiOperation(value = "删除当前租户的所有凭证配置")
-    public Resp<Void> deleteTenantCertConfig() {
+    public Resp<Long> deleteTenantCertConfig() {
         return tenantService.deleteTenantCertConfig(getCurrentTenantId());
     }
 

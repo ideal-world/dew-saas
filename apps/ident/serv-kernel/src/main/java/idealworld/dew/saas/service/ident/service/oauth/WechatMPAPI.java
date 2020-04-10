@@ -5,6 +5,7 @@ import com.ecfront.dew.common.HttpHelper;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple2;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
+@Slf4j
 public class WechatMPAPI extends PlatformAPI {
 
     @Override
@@ -32,7 +34,7 @@ public class WechatMPAPI extends PlatformAPI {
         if (response.statusCode != 200) {
             return Resp.custom(String.valueOf(response.statusCode), "微信接口调用异常");
         }
-        logger.trace("微信返回数据:{}", response.result);
+        log.trace("Wechat response : {}", response.result);
         var userInfoResp = $.json.toJson(response.result);
         // 0成功，-1系统繁忙，40029 code无效，45011 访问次数限制（100次/分钟）
         if (userInfoResp.has("errcode")

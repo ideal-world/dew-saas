@@ -79,7 +79,7 @@ public class ConsoleResourceController extends BasicController {
     }
 
     @DeleteMapping(value = "{appId}/{resourceId}")
-    @ApiOperation(value = "删除当前租户某个应用的某个资源（组）")
+    @ApiOperation(value = "删除当前租户某个应用的某个资源（组）", notes = "资源（组）、权限")
     public Resp<Void> deleteResource(@PathVariable Long appId, @PathVariable Long resourceId) {
         return resourceService.deleteResource(resourceId, appId, getCurrentTenantId());
     }

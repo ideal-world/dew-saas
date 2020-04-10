@@ -47,23 +47,21 @@ public class PostService extends IdentBasicService {
     @Autowired
     private PermissionService permissionService;
 
-    @Cacheable("cache:post:getTenantAdminPostId")
+    @Cacheable("ident:cache:post:getTenantAdminPostId")
     public Long getTenantAdminPostId() {
         var qPost = QPost.post;
         return sqlBuilder.select(qPost.id)
                 .from(qPost)
                 .where(qPost.relPositionCode.eq(identConfig.getSecurity().getTenantAdminPositionCode()))
-                .where(qPost.delFlag.eq(false))
                 .fetchOne();
     }
 
-    @Cacheable("cache:post:getDefaultPostId")
+    @Cacheable("ident:cache:post:getDefaultPostId")
     public Long getDefaultPostId() {
         var qPost = QPost.post;
         return sqlBuilder.select(qPost.id)
                 .from(qPost)
                 .where(qPost.relPositionCode.eq(identConfig.getSecurity().getDefaultPositionCode()))
-                .where(qPost.delFlag.eq(false))
                 .fetchOne();
     }
 
@@ -75,7 +73,6 @@ public class PostService extends IdentBasicService {
         var qPost = QPost.post;
         if (sqlBuilder.select(qPost.id)
                 .from(qPost)
-                .where(qPost.delFlag.eq(false))
                 .where(qPost.relTenantId.eq(relTenantId))
                 .where(qPost.relAppId.eq(relAppId))
                 .where(qPost.relOrganizationCode.eq(addPostReq.getRelOrganizationCode() != null ? addPostReq.getRelOrganizationCode() : ""))
@@ -102,56 +99,71 @@ public class PostService extends IdentBasicService {
                         qPost.relAppId))
                 .from(qPost)
                 .where(qPost.relAppId.eq(relAppId))
-                .where(qPost.relTenantId.eq(relTenantId))
-                .where(qPost.delFlag.eq(false));
+                .where(qPost.relTenantId.eq(relTenantId));
         return findDTOs(postQuery);
     }
 
     @Transactional
     public Resp<Void> deletePost(Long postId, Long relAppId, Long relTenantId) {
-        return doDeletePosts(new ArrayList<>() {{
+        doDeletePosts(new ArrayList<>() {{
             add(postId);
         }}, relAppId, relTenantId);
+        return Resp.success(null);
     }
 
     @Transactional
-    protected Resp<Void> deletePostByOrgCodes(List<String> deleteOrgCodes, Long relAppId, Long relTenantId) {
+    protected Resp<Long> deletePost(Long relAppId, Long relTenantId) {
+        var qPost = QPost.post;
+        var deletePostIds = sqlBuilder.select(qPost.id)
+                .from(qPost)
+                .where(qPost.relTenantId.eq(relTenantId))
+                .where(qPost.relAppId.eq(relAppId))
+                .fetch();
+        return doDeletePosts(deletePostIds, relAppId, relTenantId);
+    }
+
+    @Transactional
+    protected Resp<Long> deletePostByOrgCodes(List<String> deleteOrgCodes, Long relAppId, Long relTenantId) {
+        if(deleteOrgCodes.isEmpty()){
+            return Constant.RESP.NOT_FOUNT();
+        }
         var qPost = QPost.post;
         var deletePostIds = sqlBuilder.select(qPost.id)
                 .from(qPost)
                 .where(qPost.relOrganizationCode.in(deleteOrgCodes))
-                .where(qPost.delFlag.eq(false))
+                .where(qPost.relTenantId.eq(relTenantId))
+                .where(qPost.relAppId.eq(relAppId))
                 .fetch();
         return doDeletePosts(deletePostIds, relAppId, relTenantId);
     }
 
     @Transactional
-    protected Resp<Void> deletePostByPositionCode(String deletePositionCode, Long relAppId, Long relTenantId) {
+    protected Resp<Long> deletePostByPositionCodes(List<String> deletePositionCodes, Long relAppId, Long relTenantId) {
+        if(deletePositionCodes.isEmpty()){
+            return Constant.RESP.NOT_FOUNT();
+        }
         var qPost = QPost.post;
         var deletePostIds = sqlBuilder.select(qPost.id)
                 .from(qPost)
-                .where(qPost.relPositionCode.eq(deletePositionCode))
-                .where(qPost.delFlag.eq(false))
+                .where(qPost.relPositionCode.in(deletePositionCodes))
                 .where(qPost.relTenantId.eq(relTenantId))
                 .where(qPost.relAppId.eq(relAppId))
                 .fetch();
         return doDeletePosts(deletePostIds, relAppId, relTenantId);
     }
 
-    private Resp<Void> doDeletePosts(List<Long> postIds, Long relAppId, Long relTenantId) {
-        // 删除岗位
-        var qPost = QPost.post;
-        sqlBuilder
-                .update(qPost)
-                .set(qPost.delFlag, true)
-                .where(qPost.id.in(postIds))
-                .where(qPost.relAppId.eq(relAppId))
-                .where(qPost.relTenantId.eq(relTenantId))
-                .execute();
+    private Resp<Long> doDeletePosts(List<Long> postIds, Long relAppId, Long relTenantId) {
         // 删除账号岗位
-        accountService.deleteAccountPostByPostIds(postIds);
+        accountService.deleteAccountPosts(postIds);
         // 删除权限
         permissionService.deletePermissionByPostIds(postIds, relAppId, relTenantId);
-        return Resp.success(null);
+        // 删除岗位
+        var qPost = QPost.post;
+        return deleteEntities(sqlBuilder
+                .delete(qPost)
+                .where(qPost.id.in(postIds))
+                .where(qPost.relAppId.eq(relAppId))
+                .where(qPost.relTenantId.eq(relTenantId)));
     }
+
 }

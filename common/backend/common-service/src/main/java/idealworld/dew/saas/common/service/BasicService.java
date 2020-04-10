@@ -16,23 +16,24 @@
 
 package idealworld.dew.saas.common.service;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
+import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.service.domain.BasicSoftDelEntity;
 import idealworld.dew.saas.common.service.domain.IdEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
-public abstract class BasicService {
-
-    protected static final Logger logger = LoggerFactory.getLogger(BasicService.class);
+@Slf4j
+public abstract class BasicService<DEL extends BasicSoftDelEntity> {
 
     @Autowired
     protected JPAQueryFactory sqlBuilder;
@@ -48,18 +49,72 @@ public abstract class BasicService {
         var modifyRowNum = updateClause.execute();
         if (modifyRowNum == 0) {
             return Constant.RESP.NOT_FOUNT();
-        } else {
-            return Resp.success(null);
         }
+        return Resp.success(null);
     }
+
+    protected Resp<Long> updateEntities(JPAUpdateClause updateClause) {
+        return Resp.success(updateClause.execute());
+    }
+
+    protected Resp<Void> deleteEntity(JPADeleteClause deleteClause) {
+        log.info("Delete entity , cond : {}", deleteClause.toString());
+        var modifyRowNum = deleteClause.execute();
+        if (modifyRowNum == 0) {
+            return Constant.RESP.NOT_FOUNT();
+        }
+        return Resp.success(null);
+    }
+
+    protected Resp<Long> deleteEntities(JPADeleteClause deleteClause) {
+        log.info("Delete entities , cond : {}", deleteClause.toString());
+        return Resp.success(deleteClause.execute());
+    }
+
+    protected <E extends IdEntity> Resp<Void> softDelEntity(JPAQuery<E> jpaQuery) {
+        var entity = jpaQuery.fetchOne();
+        if (entity == null) {
+            return Constant.RESP.NOT_FOUNT();
+        }
+        log.info("Soft Delete entity {} , cond : {}", jpaQuery.getType().getSimpleName(), jpaQuery.toString());
+        BasicSoftDelEntity basicSoftDelEntity = softDelPackage(entity);
+        basicSoftDelEntity.setKind(softDelGetKind());
+        basicSoftDelEntity.setEntityName(jpaQuery.getType().getSimpleName());
+        basicSoftDelEntity.setRecordId(entity.getId());
+        basicSoftDelEntity.setContent($.json.toJsonString(entity));
+        saveEntity(basicSoftDelEntity);
+        entityManager.remove(entity);
+        return Resp.success(null);
+    }
+
+    protected <E extends IdEntity> Resp<Long> softDelEntities(JPAQuery<E> jpaQuery) {
+        log.info("Soft Delete entities {} , cond : {}", jpaQuery.getType().getSimpleName(), jpaQuery.toString());
+        var deleteCounts = jpaQuery.fetch()
+                .stream()
+                .map(entity -> {
+                    BasicSoftDelEntity basicSoftDelEntity = softDelPackage(entity);
+                    basicSoftDelEntity.setKind(softDelGetKind());
+                    basicSoftDelEntity.setEntityName(jpaQuery.getType().getSimpleName());
+                    basicSoftDelEntity.setRecordId(entity.getId());
+                    basicSoftDelEntity.setContent($.json.toJsonString(entity));
+                    saveEntity(basicSoftDelEntity);
+                    entityManager.remove(entity);
+                    return entity.getId();
+                })
+                .count();
+        return Resp.success(deleteCounts);
+    }
+
+    protected abstract String softDelGetKind();
+
+    protected abstract <E extends IdEntity> DEL softDelPackage(E deleteEntity);
 
     protected <E> Resp<E> getDTO(JPAQuery<E> jpaQuery) {
         var obj = jpaQuery.fetchOne();
         if (obj == null) {
             return Constant.RESP.NOT_FOUNT();
-        } else {
-            return Resp.success(obj);
         }
+        return Resp.success(obj);
     }
 
     protected <E> Resp<List<E>> findDTOs(JPAQuery<E> jpaQuery) {

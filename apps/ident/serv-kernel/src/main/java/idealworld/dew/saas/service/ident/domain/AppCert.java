@@ -1,15 +1,12 @@
 package idealworld.dew.saas.service.ident.domain;
 
-import idealworld.dew.saas.common.service.domain.SafeSoftDelEntity;
+import idealworld.dew.saas.common.service.domain.SafeEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -19,15 +16,14 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "ident_app_cert", indexes = {
-        @Index(columnList = "delFlag,ak", unique = true),
-        @Index(columnList = "delFlag,relAppId,validTime"),
-        @Index(columnList = "relAppId")
+        @Index(columnList = "ak", unique = true),
+        @Index(columnList = "relAppId,validTime")
 })
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class AppCert extends SafeSoftDelEntity {
+public class AppCert extends SafeEntity {
 
     @Column(nullable = false)
     private String note;
