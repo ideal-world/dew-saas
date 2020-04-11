@@ -21,6 +21,7 @@ import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountPostReq;
@@ -50,6 +51,8 @@ public class TenantService extends IdentBasicService {
     private static final Map<String, Pattern> VALID_RULES = new ConcurrentHashMap<>();
 
     @Autowired
+    private IdentConfig identConfig;
+    @Autowired
     private AccountService accountService;
     @Autowired
     private OrganizationService organizationService;
@@ -61,6 +64,9 @@ public class TenantService extends IdentBasicService {
     @Transactional
     public Resp<IdentOptInfo> registerTenant(RegisterTenantReq registerTenantReq) {
         log.info("Register Tenant : {}", $.json.toJsonString(registerTenantReq));
+        if (!identConfig.isAllowTenantRegister()) {
+            return Resp.forbidden("The current configuration does not allow tenants to self-register");
+        }
         var tenantAdminPostId = postService.getTenantAdminPostId();
         var addAccountR = accountService.addAccountExt(AddAccountReq.builder()
                 .name(registerTenantReq.getAccountName())

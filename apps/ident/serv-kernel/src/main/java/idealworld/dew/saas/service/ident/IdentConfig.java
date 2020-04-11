@@ -28,6 +28,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "dew.saas.ident")
 public class IdentConfig {
 
+    private boolean allowTenantRegister = false;
+
     private App app = new App();
     private Security security = new Security();
 

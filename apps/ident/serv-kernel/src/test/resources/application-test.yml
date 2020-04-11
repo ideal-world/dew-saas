@@ -7,6 +7,11 @@ spring:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:./ident.db;AUTO_SERVER=TRUE
 
+dew:
+  saas:
+    ident:
+      allow-tenant-register: true
+
 server:
   port: 8081
 
