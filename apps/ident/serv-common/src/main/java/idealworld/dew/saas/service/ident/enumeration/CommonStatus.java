@@ -7,13 +7,13 @@ import java.util.Arrays;
 /**
  * @author gudaoxuri
  */
-public enum AccountStatus {
+public enum CommonStatus {
 
     DISABLED("DISABLED"), ENABLED("ENABLED");
 
     private String code;
 
-    AccountStatus(String code) {
+    CommonStatus(String code) {
         this.code = code;
     }
 
@@ -22,10 +22,10 @@ public enum AccountStatus {
         return code;
     }
 
-    public static AccountStatus parse(String code) {
-        return Arrays.stream(AccountStatus.values())
+    public static CommonStatus parse(String code) {
+        return Arrays.stream(CommonStatus.values())
                 .filter(item -> item.code.equalsIgnoreCase(code))
                 .findFirst()
-                .orElseThrow(() -> new RTException("Account status {" + code + "} NOT exist."));
+                .orElseThrow(() -> new RTException("Common status {" + code + "} NOT exist."));
     }
 }

@@ -21,7 +21,7 @@ import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
-import idealworld.dew.saas.service.ident.dto.tenant.AddTenantCertConfigReq;
+import idealworld.dew.saas.service.ident.dto.tenant.AddTenantCertReq;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.junit.Assert;
 import org.springframework.stereotype.Component;
@@ -89,8 +89,8 @@ public class AuthTest extends BasicTest {
                 .sk(globalTenantAdminSk)
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
-        // 添加当前租户的凭证配置
-        postToEntity("/console/tenant/cert-config", AddTenantCertConfigReq.builder()
+        // 添加当前租户的凭证
+        postToEntity("/console/tenant/cert", AddTenantCertReq.builder()
                 .kind(AccountCertKind.WECHAT_MP)
                 .oauthAk(oauthJson.get("wechat-mp").get("ak").asText())
                 .oauthSk(oauthJson.get("wechat-mp").get("sk").asText())

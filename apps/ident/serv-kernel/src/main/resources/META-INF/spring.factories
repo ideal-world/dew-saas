@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  idealworld.dew.saas.service.ident.interceptor.InterceptorWebAutoConfiguration
+  idealworld.dew.saas.service.ident.interceptor.AppInterceptorWebAutoConfiguration

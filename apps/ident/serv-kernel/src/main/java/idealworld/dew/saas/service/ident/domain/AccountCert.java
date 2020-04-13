@@ -2,6 +2,7 @@ package idealworld.dew.saas.service.ident.domain;
 
 import idealworld.dew.saas.common.service.domain.SafeEntity;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

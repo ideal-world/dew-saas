@@ -27,7 +27,7 @@ import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
-import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,24 +60,26 @@ public class AccountService extends IdentBasicService {
 
     @Transactional
     public Resp<IdentOptInfo> login(LoginReq loginReq, Long relTenantId) {
-        log.info("login : [{}] {}", relTenantId,$.json.toJsonString(loginReq));
+        log.info("login : [{}] {}", relTenantId, $.json.toJsonString(loginReq));
         var qAccount = QAccount.account;
         var qAccountCert = QAccountCert.accountCert;
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+        var qTenantCert = QTenantCert.tenantCert;
         var accountInfo = sqlBuilder
                 .select(qAccountCert.sk, qAccount.id, qAccount.parameters)
                 .from(qAccountCert)
-                .innerJoin(qTenantCertConfig).on(qAccountCert.relTenantId.eq(qTenantCertConfig.relTenantId))
+                .innerJoin(qTenantCert).on(
+                        qAccountCert.relTenantId.eq(qTenantCert.relTenantId)
+                                .and(qTenantCert.status.eq(CommonStatus.ENABLED)))
                 .leftJoin(qAccount).on(qAccountCert.relAccountId.eq(qAccount.id))
-                .where(qTenantCertConfig.kind.eq(loginReq.getCertKind()))
+                .where(qTenantCert.kind.eq(loginReq.getCertKind()))
                 .where(qAccountCert.kind.eq(loginReq.getCertKind()))
                 .where(qAccountCert.ak.eq(loginReq.getAk()))
                 .where(qAccountCert.validTime.after(new Date()))
                 .where(qAccount.relTenantId.eq(relTenantId))
-                .where(qAccount.status.eq(AccountStatus.ENABLED))
+                .where(qAccount.status.eq(CommonStatus.ENABLED))
                 .fetchOne();
         if (accountInfo == null) {
-            log.warn("Login Fail: [{}] AK {} not exist or expired",relTenantId,loginReq.getAk());
+            log.warn("Login Fail: [{}] AK {} not exist or expired", relTenantId, loginReq.getAk());
             return Resp.notFound("登录凭证不存在或已过期");
         }
         var certSk = accountInfo.get(0, String.class);
@@ -85,10 +87,10 @@ public class AccountService extends IdentBasicService {
         var parameters = accountInfo.get(2, String.class);
         var validateR = validateSK(loginReq.getCertKind(), loginReq.getAk(), loginReq.getSk(), certSk, relTenantId);
         if (!validateR.ok()) {
-            log.warn("Login Fail: [{}] SK {} un-match",relTenantId,loginReq.getAk());
+            log.warn("Login Fail: [{}] SK {} un-match", relTenantId, loginReq.getAk());
             return Resp.error(validateR);
         }
-        log.info("Login Success:  [{}] ak {}",relTenantId,loginReq.getAk());
+        log.info("Login Success:  [{}] ak {}", relTenantId, loginReq.getAk());
         String token = KeyHelper.generateToken();
         var optInfo = new IdentOptInfo()
                 // 转成String避免转化成Integer
@@ -106,7 +108,7 @@ public class AccountService extends IdentBasicService {
 
     @Transactional
     public Resp<Void> logout(Long accountId, String token) {
-        log.info("Logout Account {} by token {}",accountId,token);
+        log.info("Logout Account {} by token {}", accountId, token);
         Dew.auth.removeOptInfo(token);
         return Resp.success(null);
     }
@@ -134,12 +136,12 @@ public class AccountService extends IdentBasicService {
                 .fetchCount() != 0) {
             return Resp.conflict("此凭证已存在");
         }
-        log.info("Add Account : [{}] {}",relTenantId,$.json.toJsonString(addAccountReq));
+        log.info("Add Account : [{}] {}", relTenantId, $.json.toJsonString(addAccountReq));
         var account = Account.builder()
                 .name(addAccountReq.getName())
                 .avatar(addAccountReq.getAvatar() != null ? addAccountReq.getAvatar() : "")
                 .parameters(addAccountReq.getParameters() != null ? addAccountReq.getParameters() : "{}")
-                .status(AccountStatus.ENABLED)
+                .status(CommonStatus.ENABLED)
                 .relTenantId(relTenantId)
                 .build();
         saveEntity(account);
@@ -276,7 +278,7 @@ public class AccountService extends IdentBasicService {
                 .fetchCount() != 0) {
             return Resp.conflict("此凭证已存在");
         }
-        log.info("Add Account Cert : [{}] {} : {}",relTenantId,relAccountId, $.json.toJsonString(addAccountCertReq));
+        log.info("Add Account Cert : [{}] {} : {}", relTenantId, relAccountId, $.json.toJsonString(addAccountCertReq));
         var processR = certProcessSK(addAccountCertReq.getKind(),
                 addAccountCertReq.getAk(),
                 addAccountCertReq.getSk(),
@@ -458,7 +460,7 @@ public class AccountService extends IdentBasicService {
 
     @Transactional
     protected Resp<Long> deleteAccountPosts(List<Long> postIds) {
-        if(postIds.isEmpty()){
+        if (postIds.isEmpty()) {
             return Constant.RESP.NOT_FOUNT();
         }
         var qAccountPost = QAccountPost.accountPost;

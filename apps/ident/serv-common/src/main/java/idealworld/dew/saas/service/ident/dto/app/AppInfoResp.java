@@ -1,5 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.app;
 
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -29,6 +30,9 @@ public class AppInfoResp implements Serializable {
 
     @ApiModelProperty(value = "应用扩展信息（Json格式）")
     private String parameters;
+
+    @ApiModelProperty(value = "应用状态", required = true)
+    private CommonStatus status;
 
     @ApiModelProperty(value = "应用所属租户", required = true)
     private Long relTenantId;

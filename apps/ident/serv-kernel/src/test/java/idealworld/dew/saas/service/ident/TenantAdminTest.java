@@ -94,21 +94,21 @@ public class TenantAdminTest extends BasicTest {
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
 
-        // 添加当前租户的凭证配置
-        var tenantCertConfigId = postToEntity("/console/tenant/cert-config", AddTenantCertConfigReq.builder()
+        // 添加当前租户的凭证
+        var tenantCertId = postToEntity("/console/tenant/cert", AddTenantCertReq.builder()
                 .kind(AccountCertKind.PHONE)
                 .build(), Long.class).getBody();
         // 获取当前租户的凭证列表信息
-        var tenantCertConfig = getToList("/console/tenant/cert-config", TenantCertConfigInfoResp.class).getBody();
-        Assert.assertEquals(2, tenantCertConfig.size());
-        Assert.assertEquals(AccountCertKind.USERNAME, tenantCertConfig.get(1).getKind());
-        // 修改当前租户的某个凭证配置
-        patchToEntity("/console/tenant/cert-config/" + tenantCertConfig.get(1).getId(), ModifyTenantCertConfigReq.builder()
+        var tenantCert = getToList("/console/tenant/cert", TenantCertInfoResp.class).getBody();
+        Assert.assertEquals(2, tenantCert.size());
+        Assert.assertEquals(AccountCertKind.USERNAME, tenantCert.get(1).getKind());
+        // 修改当前租户的某个凭证
+        patchToEntity("/console/tenant/cert/" + tenantCert.get(1).getId(), ModifyTenantCertReq.builder()
                 .validRuleNote("至少4个字符，至少1个大写字母、小写字母、数字、特殊字符")
                 .validRule("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\\w\\s]).{4,}$")
                 .build(), Void.class);
-        // 删除当前租户的某个凭证配置
-        delete("/console/tenant/cert-config/" + tenantCertConfigId);
+        // 删除当前租户的某个凭证
+        delete("/console/tenant/cert/" + tenantCertId);
 
         return identOptInfo.getRelTenantId();
     }

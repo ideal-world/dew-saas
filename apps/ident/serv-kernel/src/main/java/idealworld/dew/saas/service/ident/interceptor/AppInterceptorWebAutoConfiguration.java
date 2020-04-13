@@ -36,8 +36,7 @@ import javax.annotation.PostConstruct;
 @ConditionalOnWebApplication
 @Order(10)
 @Slf4j
-public class InterceptorWebAutoConfiguration implements WebMvcConfigurer {
-
+public class AppInterceptorWebAutoConfiguration implements WebMvcConfigurer {
 
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;

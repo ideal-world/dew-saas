@@ -1,7 +1,7 @@
 package idealworld.dew.saas.service.ident.domain;
 
 import idealworld.dew.saas.common.service.domain.SafeEntity;
-import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -34,7 +34,7 @@ public class Account extends SafeEntity {
     private String parameters;
 
     @Column(nullable = false)
-    private AccountStatus status;
+    private CommonStatus status;
 
     @Column(nullable = false)
     private Long relTenantId;

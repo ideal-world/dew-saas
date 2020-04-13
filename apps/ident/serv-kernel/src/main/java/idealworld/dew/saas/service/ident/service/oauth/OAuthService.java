@@ -26,7 +26,7 @@ import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
 import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
-import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.IdentBasicService;
 import idealworld.dew.saas.service.ident.service.TenantService;
@@ -57,12 +57,12 @@ public class OAuthService extends IdentBasicService {
     @Transactional
     public Resp<IdentOptInfo> login(OAuthLoginReq oAuthLoginReq, Long tenantId) throws Exception {
         Resp<OAuthUserInfo> oAuthUserInfoR;
-        var tenantCertConfigR = tenantService.getTenantCertConfig(oAuthLoginReq.getCertKind(), tenantId);
-        if (!tenantCertConfigR.ok()) {
-            return Resp.error(tenantCertConfigR);
+        var tenantCertR = tenantService.getTenantCert(oAuthLoginReq.getCertKind(), tenantId);
+        if (!tenantCertR.ok()) {
+            return Resp.error(tenantCertR);
         }
-        var oauthAk = tenantCertConfigR.getBody().getOauthAk();
-        var oauthSk = tenantCertConfigR.getBody().getOauthSk();
+        var oauthAk = tenantCertR.getBody().getOauthAk();
+        var oauthSk = tenantCertR.getBody().getOauthSk();
         switch (oAuthLoginReq.getCertKind()) {
             case WECHAT_MP:
                 oAuthUserInfoR = wechatService.getUserInfo(oAuthLoginReq.getCode(), oauthAk, oauthSk);
@@ -98,7 +98,7 @@ public class OAuthService extends IdentBasicService {
             var exist = sqlBuilder.select(qAccount.id)
                     .from(qAccount)
                     .where(qAccount.id.eq(accountId))
-                    .where(qAccount.status.eq(AccountStatus.ENABLED))
+                    .where(qAccount.status.eq(CommonStatus.ENABLED))
                     .fetchOne() != null;
             if (!exist) {
                 return Resp.badRequest("用户状态异常");
@@ -126,12 +126,12 @@ public class OAuthService extends IdentBasicService {
     }
 
     public Resp<String> getAccessToken(String oauthKind, Long tenantId) {
-        var tenantCertConfigR = tenantService.getTenantCertConfig(AccountCertKind.parse(oauthKind), tenantId);
-        if (!tenantCertConfigR.ok()) {
-            return Resp.error(tenantCertConfigR);
+        var tenantCertR = tenantService.getTenantCert(AccountCertKind.parse(oauthKind), tenantId);
+        if (!tenantCertR.ok()) {
+            return Resp.error(tenantCertR);
         }
-        var oauthAk = tenantCertConfigR.getBody().getOauthAk();
-        var oauthSk = tenantCertConfigR.getBody().getOauthSk();
+        var oauthAk = tenantCertR.getBody().getOauthAk();
+        var oauthSk = tenantCertR.getBody().getOauthSk();
         if (oauthKind.equalsIgnoreCase(AccountCertKind.WECHAT_MP.toString())) {
             return wechatService.getAccessToken(oauthAk, oauthSk);
         }

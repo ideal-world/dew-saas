@@ -1,5 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.tenant;
 
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -25,5 +26,8 @@ public class ModifyTenantReq implements Serializable {
 
     @ApiModelProperty(value = "租户扩展信息（Json格式）")
     private String parameters;
+
+    @ApiModelProperty(value = "租户状态")
+    private CommonStatus status;
 
 }

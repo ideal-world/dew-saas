@@ -60,35 +60,35 @@ public class ConsoleTenantController extends BasicController {
 
     // ========================== Cert ==============================
 
-    @PostMapping(value = "cert-config")
-    @ApiOperation(value = "添加当前租户的凭证配置")
-    public Resp<Long> addTenantCertConfig(@RequestBody AddTenantCertConfigReq addTenantCertConfigReq) {
-        return tenantService.addTenantCertConfig(addTenantCertConfigReq, getCurrentTenantId());
+    @PostMapping(value = "cert")
+    @ApiOperation(value = "添加当前租户的凭证")
+    public Resp<Long> addTenantCert(@RequestBody AddTenantCertReq addTenantCertReq) {
+        return tenantService.addTenantCert(addTenantCertReq, getCurrentTenantId());
     }
 
-    @GetMapping(value = "cert-config")
-    @ApiOperation(value = "获取当前租户的凭证配置列表信息")
-    public Resp<List<TenantCertConfigInfoResp>> findTenantCertConfigInfo() {
-        return tenantService.findTenantCertConfigInfo(getCurrentTenantId());
+    @GetMapping(value = "cert")
+    @ApiOperation(value = "获取当前租户的凭证列表信息")
+    public Resp<List<TenantCertInfoResp>> findTenantCertInfo() {
+        return tenantService.findTenantCertInfo(getCurrentTenantId());
     }
 
-    @PatchMapping(value = "cert-config/{tenantCertConfigId}")
-    @ApiOperation(value = "修改当前租户的某个凭证配置")
-    public Resp<Void> modifyTenantCertConfig(@PathVariable Long tenantCertConfigId,
-                                             @RequestBody ModifyTenantCertConfigReq modifyTenantCertConfigReq) {
-        return tenantService.modifyTenantCertConfig(modifyTenantCertConfigReq, tenantCertConfigId, getCurrentTenantId());
+    @PatchMapping(value = "cert/{tenantCertId}")
+    @ApiOperation(value = "修改当前租户的某个凭证")
+    public Resp<Void> modifyTenantCert(@PathVariable Long tenantCertId,
+                                             @RequestBody ModifyTenantCertReq modifyTenantCertReq) {
+        return tenantService.modifyTenantCert(modifyTenantCertReq, tenantCertId, getCurrentTenantId());
     }
 
-    @DeleteMapping(value = "cert-config/{tenantCertConfigId}")
-    @ApiOperation(value = "删除当前租户的某个凭证配置")
-    public Resp<Void> deleteTenantCertConfig(@PathVariable Long tenantCertConfigId) {
-        return tenantService.deleteTenantCertConfig(tenantCertConfigId, getCurrentTenantId());
+    @DeleteMapping(value = "cert/{tenantCertId}")
+    @ApiOperation(value = "删除当前租户的某个凭证")
+    public Resp<Void> deleteTenantCert(@PathVariable Long tenantCertId) {
+        return tenantService.deleteTenantCert(tenantCertId, getCurrentTenantId());
     }
 
-    @DeleteMapping(value = "cert-config")
-    @ApiOperation(value = "删除当前租户的所有凭证配置")
-    public Resp<Long> deleteTenantCertConfig() {
-        return tenantService.deleteTenantCertConfig(getCurrentTenantId());
+    @DeleteMapping(value = "cert")
+    @ApiOperation(value = "删除当前租户的所有凭证")
+    public Resp<Long> deleteTenantCert() {
+        return tenantService.deleteTenantCert(getCurrentTenantId());
     }
 
 }

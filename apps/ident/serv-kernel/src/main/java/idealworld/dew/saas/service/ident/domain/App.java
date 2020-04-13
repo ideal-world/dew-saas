@@ -1,6 +1,7 @@
 package idealworld.dew.saas.service.ident.domain;
 
 import idealworld.dew.saas.common.service.domain.SafeEntity;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,8 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "ident_app", indexes = {
-        @Index(columnList = "relTenantId,name", unique = true)
+        @Index(columnList = "relTenantId,name", unique = true),
+        @Index(columnList = "status")
 })
 @Data
 @SuperBuilder
@@ -30,9 +32,13 @@ public class App extends SafeEntity {
     private String icon;
 
     @Column(nullable = false)
+    private CommonStatus status;
+
+    @Column(nullable = false)
     private String parameters;
 
     @Column(nullable = false)
     private Long relTenantId;
+
 
 }

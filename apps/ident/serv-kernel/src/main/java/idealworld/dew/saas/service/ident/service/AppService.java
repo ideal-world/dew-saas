@@ -18,19 +18,17 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
-import com.ecfront.dew.common.tuple.Tuple3;
 import com.querydsl.core.types.Projections;
-import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,12 +38,12 @@ import java.util.List;
 @Slf4j
 public class AppService extends IdentBasicService {
 
-    private static final String CACHE_AK = "ident:app:ak:";
-
     @Autowired
     private OrganizationService organizationService;
     @Autowired
     private PositionService positionService;
+    @Autowired
+    private InterceptService interceptService;
 
     @Transactional
     public Resp<Long> addApp(AddAppReq addAppReq, Long relTenantId) {
@@ -57,14 +55,16 @@ public class AppService extends IdentBasicService {
                 .fetchCount() != 0) {
             return Resp.conflict("此应用名已存在");
         }
-        log.info("Add App : [{}] {}",relTenantId, $.json.toJsonString(addAppReq));
+        log.info("Add App : [{}] {}", relTenantId, $.json.toJsonString(addAppReq));
         var app = App.builder()
                 .name(addAppReq.getName())
                 .icon(addAppReq.getIcon() != null ? addAppReq.getIcon() : "")
                 .parameters(addAppReq.getParameters() != null ? addAppReq.getParameters() : "{}")
+                .status(CommonStatus.ENABLED)
                 .relTenantId(relTenantId)
                 .build();
         var saveR = saveEntity(app);
+        interceptService.changeAppStatus(app.getId(), CommonStatus.ENABLED);
         addAppCert(AddAppCertReq.builder()
                 .note("默认凭证")
                 .build(), saveR.getBody(), relTenantId);
@@ -82,6 +82,7 @@ public class AppService extends IdentBasicService {
                         qApp.name,
                         qApp.icon,
                         qApp.parameters,
+                        qApp.status,
                         qApp.relTenantId,
                         qApp.createTime,
                         qApp.updateTime,
@@ -109,6 +110,10 @@ public class AppService extends IdentBasicService {
         if (modifyAppReq.getParameters() != null) {
             updateClause.set(qApp.parameters, modifyAppReq.getParameters());
         }
+        if (modifyAppReq.getStatus() != null) {
+            updateClause.set(qApp.status, modifyAppReq.getStatus());
+            interceptService.changeAppStatus(appId, modifyAppReq.getStatus());
+        }
         return updateEntity(updateClause);
     }
 
@@ -121,6 +126,7 @@ public class AppService extends IdentBasicService {
         // 删除应用凭证
         deleteAppCerts(appId, relTenantId);
         var qApp = QApp.app;
+        interceptService.changeAppStatus(appId, CommonStatus.DISABLED);
         return softDelEntity(sqlBuilder
                 .selectFrom(qApp)
                 .where(qApp.id.eq(appId))
@@ -130,39 +136,12 @@ public class AppService extends IdentBasicService {
 
     // ========================== Cert ==============================
 
-    public void cacheAppCerts() {
-        if (!ELECTION.isLeader()) {
-            return;
-        }
-        var qAppCert = QAppCert.appCert;
-        var qApp = QApp.app;
-        sqlBuilder
-                .select(qAppCert.ak, qAppCert.sk, qAppCert.relAppId, qAppCert.validTime, qApp.relTenantId)
-                .from(qAppCert)
-                .leftJoin(qApp).on(qApp.id.eq(qAppCert.relAppId))
-                .where(qAppCert.validTime.gt(new Date()))
-                .fetch()
-                .forEach(info -> {
-                    var ak = info.get(0, String.class);
-                    var sk = info.get(1, String.class);
-                    var relAppId = info.get(2, Long.class);
-                    var validTime = info.get(3, Date.class);
-                    var relTenantId = info.get(4, Long.class);
-                    if (validTime.getTime() == Constant.NEVER_EXPIRE_TIME.getTime()) {
-                        Dew.cluster.cache.set(CACHE_AK + ak, sk + ":" + relTenantId + ":" + relAppId);
-                    } else {
-                        Dew.cluster.cache.setex(CACHE_AK + ak, sk + ":" + relTenantId + ":" + relAppId,
-                                (validTime.getTime() - System.currentTimeMillis()) / 1000);
-                    }
-                });
-    }
-
     @Transactional
     public Resp<Long> addAppCert(AddAppCertReq addAppCertReq, Long relAppId, Long relTenantId) {
         if (!checkAppMembership(relAppId, relTenantId)) {
             return Constant.RESP.NOT_FOUNT();
         }
-        log.info("Add App Cert : [{}] {} : {}",relTenantId,relAppId, $.json.toJsonString(addAppCertReq));
+        log.info("Add App Cert : [{}] {} : {}", relTenantId, relAppId, $.json.toJsonString(addAppCertReq));
         var ak = KeyHelper.generateAK();
         var sk = KeyHelper.generateSK(ak);
         var appCert = AppCert.builder()
@@ -170,16 +149,12 @@ public class AppService extends IdentBasicService {
                 .ak(ak)
                 .sk(sk)
                 .validTime(addAppCertReq.getValidTime() != null ? addAppCertReq.getValidTime() : Constant.NEVER_EXPIRE_TIME)
+                .status(CommonStatus.ENABLED)
                 .relAppId(relAppId)
                 .build();
         var saveR = saveEntity(appCert);
         if (saveR.ok()) {
-            if (addAppCertReq.getValidTime() == null) {
-                Dew.cluster.cache.set(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relTenantId + ":" + relAppId);
-            } else {
-                Dew.cluster.cache.setex(CACHE_AK + appCert.getAk(), appCert.getSk() + ":" + relTenantId + ":" + relAppId,
-                        (appCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
-            }
+            interceptService.changeAppCert(appCert, relAppId, relTenantId);
         }
         return saveR;
     }
@@ -198,6 +173,7 @@ public class AppService extends IdentBasicService {
                         qAppCert.note,
                         qAppCert.ak,
                         qAppCert.sk,
+                        qAppCert.status,
                         qAppCert.validTime,
                         qAppCert.createTime,
                         qAppCert.updateTime,
@@ -226,24 +202,19 @@ public class AppService extends IdentBasicService {
         if (modifyAppCertReq.getValidTime() != null) {
             updateClause.set(qAppCert.validTime, modifyAppCertReq.getValidTime());
         }
+        if (modifyAppCertReq.getStatus() != null) {
+            updateClause.set(qAppCert.status, modifyAppCertReq.getStatus());
+        }
         var updateR = updateEntity(updateClause);
-        if (updateR.ok() && modifyAppCertReq.getValidTime() != null) {
+        if (updateR.ok() && (
+                modifyAppCertReq.getValidTime() != null || modifyAppCertReq.getStatus() != null
+        )) {
             var updateAppCert = sqlBuilder.selectFrom(qAppCert)
                     .where(qAppCert.id.eq(appCertId))
                     .fetchOne();
-            Dew.cluster.cache.setex(CACHE_AK + updateAppCert.getAk() + ":" + relTenantId + ":" + relAppId, updateAppCert.getSk(),
-                    (updateAppCert.getValidTime().getTime() - System.currentTimeMillis()) / 1000);
+            interceptService.changeAppCert(updateAppCert, relAppId, relTenantId);
         }
         return updateR;
-    }
-
-    public Resp<Tuple3<String, Long, Long>> getAppCertByAk(String ak) {
-        var skAndTenantAndAppId = Dew.cluster.cache.get(CACHE_AK + ak);
-        if (skAndTenantAndAppId == null) {
-            return Resp.notFound("");
-        }
-        var skAndAppIdSplit = skAndTenantAndAppId.split(":");
-        return Resp.success(new Tuple3<>(skAndAppIdSplit[0], Long.valueOf(skAndAppIdSplit[1]), Long.valueOf(skAndAppIdSplit[2])));
     }
 
     @Transactional
@@ -256,7 +227,7 @@ public class AppService extends IdentBasicService {
                 .from(qAppCert)
                 .where(qAppCert.relAppId.eq(relAppId))
                 .fetch()
-                .forEach(ak -> Dew.cluster.cache.del(CACHE_AK + ak));
+                .forEach(ak -> interceptService.deleteAppCert(ak));
         return softDelEntities(sqlBuilder
                 .selectFrom(qAppCert)
                 .where(qAppCert.relAppId.eq(relAppId)));
@@ -273,7 +244,7 @@ public class AppService extends IdentBasicService {
                 .where(qAppCert.id.eq(appCertId))
                 .where(qAppCert.relAppId.eq(relAppId))
                 .fetchOne();
-        Dew.cluster.cache.del(CACHE_AK + ak);
+        interceptService.deleteAppCert(ak);
         return deleteEntity(sqlBuilder
                 .delete(qAppCert)
                 .where(qAppCert.id.eq(appCertId))

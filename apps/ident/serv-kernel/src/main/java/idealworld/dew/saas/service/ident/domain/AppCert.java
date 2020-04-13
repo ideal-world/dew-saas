@@ -1,6 +1,7 @@
 package idealworld.dew.saas.service.ident.domain;
 
 import idealworld.dew.saas.common.service.domain.SafeEntity;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,8 @@ import java.util.Date;
 @Entity
 @Table(name = "ident_app_cert", indexes = {
         @Index(columnList = "ak", unique = true),
-        @Index(columnList = "relAppId,validTime")
+        @Index(columnList = "relAppId,validTime"),
+        @Index(columnList = "status")
 })
 @Data
 @SuperBuilder
@@ -33,6 +35,9 @@ public class AppCert extends SafeEntity {
 
     @Column(nullable = false)
     private String sk;
+
+    @Column(nullable = false)
+    private CommonStatus status;
 
     @Column(nullable = false)
     private Date validTime;

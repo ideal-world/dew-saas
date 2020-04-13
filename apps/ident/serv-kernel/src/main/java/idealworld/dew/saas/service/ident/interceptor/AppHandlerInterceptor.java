@@ -21,7 +21,7 @@ import com.ecfront.dew.common.StandardCode;
 import com.ecfront.dew.common.tuple.Tuple2;
 import group.idealworld.dew.core.web.error.ErrorController;
 import idealworld.dew.saas.service.ident.IdentConfig;
-import idealworld.dew.saas.service.ident.service.AppService;
+import idealworld.dew.saas.service.ident.service.InterceptService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,7 +48,7 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private IdentConfig identConfig;
     @Autowired
-    private AppService appService;
+    private InterceptService interceptService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -65,7 +65,7 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
         var ak = authorization.split(":")[0];
-        var legalSkAndAppIdR = appService.getAppCertByAk(ak);
+        var legalSkAndAppIdR = interceptService.getAppCertByAk(ak);
         if (!legalSkAndAppIdR.ok()) {
             ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
                     "认证错误，请检查AK是否合法",
@@ -87,6 +87,13 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
         if (!reqSignature.equalsIgnoreCase(calcSignature)) {
             ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
                     "认证错误，请检查签名是否合法",
+                    AuthException.class.getName());
+            return false;
+        }
+        if (!interceptService.checkTenantStatus(tenantId) ||
+                !interceptService.checkAppStatus(appId)) {
+            ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
+                    "租户或应用不合法",
                     AuthException.class.getName());
             return false;
         }

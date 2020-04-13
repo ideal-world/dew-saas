@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.tenant;
 
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -11,15 +11,12 @@ import java.io.Serializable;
 
 @Data
 @Builder
-@ApiModel("添加租户凭证配置请求")
-public class AddTenantCertConfigReq implements Serializable {
+@ApiModel("修改租户凭证请求")
+public class ModifyTenantCertReq implements Serializable {
 
     @Tolerate
-    public AddTenantCertConfigReq() {
+    public ModifyTenantCertReq() {
     }
-
-    @ApiModelProperty(value = "租户凭证类型名称", required = true)
-    private AccountCertKind kind;
 
     @ApiModelProperty(value = "租户凭证校验正则规则说明")
     private String validRuleNote;
@@ -35,5 +32,8 @@ public class AddTenantCertConfigReq implements Serializable {
 
     @ApiModelProperty(value = "OAuth下的应用密钥")
     private String oauthSk;
+
+    @ApiModelProperty(value = "租户凭证状态", required = true)
+    private CommonStatus status;
 
 }

@@ -1,5 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.app;
 
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -23,5 +24,8 @@ public class ModifyAppCertReq implements Serializable {
 
     @ApiModelProperty(value = "应用凭证过期时间")
     private Date validTime;
+
+    @ApiModelProperty(value = "应用凭证状态")
+    private CommonStatus status;
 
 }

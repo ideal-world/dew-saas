@@ -1,6 +1,7 @@
 package idealworld.dew.saas.service.ident.dto.tenant;
 
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -12,11 +13,11 @@ import java.util.Date;
 
 @Data
 @Builder
-@ApiModel("租户凭证配置信息")
-public class TenantCertConfigInfoResp implements Serializable {
+@ApiModel("租户凭证信息")
+public class TenantCertInfoResp implements Serializable {
 
     @Tolerate
-    public TenantCertConfigInfoResp() {
+    public TenantCertInfoResp() {
     }
 
     @ApiModelProperty(value = "租户凭证Id", required = true)
@@ -39,6 +40,9 @@ public class TenantCertConfigInfoResp implements Serializable {
 
     @ApiModelProperty(value = "OAuth下的应用密钥")
     private String oauthSk;
+
+    @ApiModelProperty(value = "租户状态", required = true)
+    private CommonStatus status;
 
     @ApiModelProperty(value = "创建者", required = true)
     protected String createUserName;

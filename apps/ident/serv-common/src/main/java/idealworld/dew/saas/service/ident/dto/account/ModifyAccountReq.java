@@ -1,6 +1,6 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
-import idealworld.dew.saas.service.ident.enumeration.AccountStatus;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -28,6 +28,6 @@ public class ModifyAccountReq implements Serializable {
     private String parameters;
 
     @ApiModelProperty(value = "账号状态")
-    private AccountStatus status;
+    private CommonStatus status;
 
 }

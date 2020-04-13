@@ -25,6 +25,7 @@ import idealworld.dew.saas.service.ident.domain.Post;
 import idealworld.dew.saas.service.ident.domain.QPosition;
 import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.IdentBasicService;
+import idealworld.dew.saas.service.ident.service.InterceptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -40,7 +41,7 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
     @Autowired
     private IdentConfig identConfig;
     @Autowired
-    private AppService appService;
+    private InterceptService interceptService;
 
     /**
      * Init.
@@ -50,7 +51,8 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         DewContext.setOptInfoClazz(IdentOptInfo.class);
         initPermissionData();
-        appService.cacheAppCerts();
+        interceptService.cacheTenantAndAppStatus();
+        interceptService.cacheAppCerts();
     }
 
     private void initPermissionData() {

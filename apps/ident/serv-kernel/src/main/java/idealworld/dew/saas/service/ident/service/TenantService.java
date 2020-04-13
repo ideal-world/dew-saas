@@ -29,6 +29,7 @@ import idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.dto.tenant.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,8 @@ public class TenantService extends IdentBasicService {
     private PositionService positionService;
     @Autowired
     private PostService postService;
+    @Autowired
+    private InterceptService interceptService;
 
     @Transactional
     public Resp<IdentOptInfo> registerTenant(RegisterTenantReq registerTenantReq) {
@@ -86,12 +89,14 @@ public class TenantService extends IdentBasicService {
                 .name(registerTenantReq.getTenantName())
                 .icon("")
                 .parameters("{}")
+                .status(CommonStatus.ENABLED)
                 .createUser(addAccountR.getBody())
                 .updateUser(addAccountR.getBody())
                 .build();
         saveEntity(tenant);
+        interceptService.changeTenantStatus(tenant.getId(), CommonStatus.ENABLED);
         accountService.updateAccountTenant(addAccountR.getBody(), tenant.getId());
-        addTenantCertConfig(AddTenantCertConfigReq.builder()
+        addTenantCert(AddTenantCertReq.builder()
                 .kind(registerTenantReq.getCertKind())
                 .build(), tenant.getId());
         // 自动登录
@@ -114,6 +119,7 @@ public class TenantService extends IdentBasicService {
                         qTenant.name,
                         qTenant.icon,
                         qTenant.parameters,
+                        qTenant.status,
                         qTenant.createTime,
                         qTenant.updateTime,
                         qAccountCreateUser.name.as("createUserName"),
@@ -137,6 +143,10 @@ public class TenantService extends IdentBasicService {
         if (modifyTenantReq.getParameters() != null) {
             updateClause.set(qTenant.parameters, modifyTenantReq.getParameters());
         }
+        if (modifyTenantReq.getStatus() != null) {
+            updateClause.set(qTenant.status, modifyTenantReq.getStatus());
+            interceptService.changeTenantStatus(tenantId, modifyTenantReq.getStatus());
+        }
         return updateEntity(updateClause);
     }
 
@@ -159,8 +169,9 @@ public class TenantService extends IdentBasicService {
         // 删除职位
         positionService.deletePositions(Constant.OBJECT_UNDEFINED, tenantId);
         // 删除租户凭证
-        deleteTenantCertConfig(tenantId);
+        deleteTenantCert(tenantId);
         var qTenant = QTenant.tenant;
+        interceptService.changeTenantStatus(tenantId, CommonStatus.DISABLED);
         return softDelEntity(sqlBuilder
                 .selectFrom(qTenant)
                 .where(qTenant.id.eq(tenantId))
@@ -170,97 +181,102 @@ public class TenantService extends IdentBasicService {
     // ========================== Cert ==============================
 
     @Transactional
-    public Resp<Long> addTenantCertConfig(AddTenantCertConfigReq addTenantCertConfigReq,
-                                          Long relTenantId) {
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
-        if (sqlBuilder.select(qTenantCertConfig.id)
-                .from(qTenantCertConfig)
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
-                .where(qTenantCertConfig.kind.eq(addTenantCertConfigReq.getKind()))
+    public Resp<Long> addTenantCert(AddTenantCertReq addTenantCertReq,
+                                    Long relTenantId) {
+        var qTenantCert = QTenantCert.tenantCert;
+        if (sqlBuilder.select(qTenantCert.id)
+                .from(qTenantCert)
+                .where(qTenantCert.relTenantId.eq(relTenantId))
+                .where(qTenantCert.kind.eq(addTenantCertReq.getKind()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此凭证配置已存在");
+            return Resp.conflict("此凭证已存在");
         }
-        log.info("Add Tenant Cert Config : {}", $.json.toJsonString(addTenantCertConfigReq));
-        var tenantCertConfig = TenantCertConfig.builder()
-                .kind(addTenantCertConfigReq.getKind())
-                .validRuleNote(addTenantCertConfigReq.getValidRuleNote() != null ? addTenantCertConfigReq.getValidRuleNote() : "")
-                .validRule(addTenantCertConfigReq.getValidRule() != null ? addTenantCertConfigReq.getValidRule() : "")
-                .validTimeSec(addTenantCertConfigReq.getValidTimeSec() != null
-                        ? addTenantCertConfigReq.getValidTimeSec() : Constant.OBJECT_UNDEFINED)
-                .oauthAk(addTenantCertConfigReq.getOauthAk() != null ? addTenantCertConfigReq.getOauthAk() : "")
-                .oauthSk(addTenantCertConfigReq.getOauthSk() != null ? addTenantCertConfigReq.getOauthSk() : "")
+        log.info("Add Tenant Cert : {}", $.json.toJsonString(addTenantCertReq));
+        var tenantCert = TenantCert.builder()
+                .kind(addTenantCertReq.getKind())
+                .validRuleNote(addTenantCertReq.getValidRuleNote() != null ? addTenantCertReq.getValidRuleNote() : "")
+                .validRule(addTenantCertReq.getValidRule() != null ? addTenantCertReq.getValidRule() : "")
+                .validTimeSec(addTenantCertReq.getValidTimeSec() != null
+                        ? addTenantCertReq.getValidTimeSec() : Constant.OBJECT_UNDEFINED)
+                .oauthAk(addTenantCertReq.getOauthAk() != null ? addTenantCertReq.getOauthAk() : "")
+                .oauthSk(addTenantCertReq.getOauthSk() != null ? addTenantCertReq.getOauthSk() : "")
+                .status(CommonStatus.ENABLED)
                 .relTenantId(relTenantId)
                 .build();
-        return saveEntity(tenantCertConfig);
+        return saveEntity(tenantCert);
     }
 
-    public Resp<List<TenantCertConfigInfoResp>> findTenantCertConfigInfo(Long relTenantId) {
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+    public Resp<List<TenantCertInfoResp>> findTenantCertInfo(Long relTenantId) {
+        var qTenantCert = QTenantCert.tenantCert;
         var qAccountCreateUser = QAccount.account;
         var qAccountUpdateUser = QAccount.account;
         var query = sqlBuilder
                 .select(Projections.bean(
-                        TenantCertConfigInfoResp.class,
-                        qTenantCertConfig.id,
-                        qTenantCertConfig.kind,
-                        qTenantCertConfig.validRuleNote,
-                        qTenantCertConfig.validRule,
-                        qTenantCertConfig.validTimeSec,
-                        qTenantCertConfig.oauthAk,
-                        qTenantCertConfig.oauthSk,
-                        qTenantCertConfig.createTime,
-                        qTenantCertConfig.updateTime,
+                        TenantCertInfoResp.class,
+                        qTenantCert.id,
+                        qTenantCert.kind,
+                        qTenantCert.validRuleNote,
+                        qTenantCert.validRule,
+                        qTenantCert.validTimeSec,
+                        qTenantCert.oauthAk,
+                        qTenantCert.oauthSk,
+                        qTenantCert.status,
+                        qTenantCert.createTime,
+                        qTenantCert.updateTime,
                         qAccountCreateUser.name.as("createUserName"),
                         qAccountUpdateUser.name.as("updateUserName")))
-                .from(qTenantCertConfig)
-                .leftJoin(qAccountCreateUser).on(qTenantCertConfig.createUser.eq(qAccountCreateUser.id))
-                .leftJoin(qAccountUpdateUser).on(qTenantCertConfig.updateUser.eq(qAccountUpdateUser.id))
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId));
+                .from(qTenantCert)
+                .leftJoin(qAccountCreateUser).on(qTenantCert.createUser.eq(qAccountCreateUser.id))
+                .leftJoin(qAccountUpdateUser).on(qTenantCert.updateUser.eq(qAccountUpdateUser.id))
+                .where(qTenantCert.relTenantId.eq(relTenantId));
         return findDTOs(query);
     }
 
     @Transactional
-    public Resp<Void> modifyTenantCertConfig(ModifyTenantCertConfigReq modifyTenantCertConfigReq, Long tenantCertConfigId,
-                                             Long relTenantId) {
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
-        var updateClause = sqlBuilder.update(qTenantCertConfig)
-                .where(qTenantCertConfig.id.eq(tenantCertConfigId))
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId));
-        if (modifyTenantCertConfigReq.getValidRule() != null) {
-            updateClause.set(qTenantCertConfig.validRule, modifyTenantCertConfigReq.getValidRule());
+    public Resp<Void> modifyTenantCert(ModifyTenantCertReq modifyTenantCertReq, Long tenantCertId,
+                                       Long relTenantId) {
+        var qTenantCert = QTenantCert.tenantCert;
+        var updateClause = sqlBuilder.update(qTenantCert)
+                .where(qTenantCert.id.eq(tenantCertId))
+                .where(qTenantCert.relTenantId.eq(relTenantId));
+        if (modifyTenantCertReq.getValidRule() != null) {
+            updateClause.set(qTenantCert.validRule, modifyTenantCertReq.getValidRule());
         }
-        if (modifyTenantCertConfigReq.getValidRuleNote() != null) {
-            updateClause.set(qTenantCertConfig.validRuleNote, modifyTenantCertConfigReq.getValidRuleNote());
+        if (modifyTenantCertReq.getValidRuleNote() != null) {
+            updateClause.set(qTenantCert.validRuleNote, modifyTenantCertReq.getValidRuleNote());
         }
-        if (modifyTenantCertConfigReq.getValidTimeSec() != null) {
-            updateClause.set(qTenantCertConfig.validTimeSec, modifyTenantCertConfigReq.getValidTimeSec());
+        if (modifyTenantCertReq.getValidTimeSec() != null) {
+            updateClause.set(qTenantCert.validTimeSec, modifyTenantCertReq.getValidTimeSec());
         }
-        if (modifyTenantCertConfigReq.getOauthAk() != null) {
-            updateClause.set(qTenantCertConfig.oauthAk, modifyTenantCertConfigReq.getOauthAk());
+        if (modifyTenantCertReq.getOauthAk() != null) {
+            updateClause.set(qTenantCert.oauthAk, modifyTenantCertReq.getOauthAk());
         }
-        if (modifyTenantCertConfigReq.getOauthSk() != null) {
-            updateClause.set(qTenantCertConfig.oauthSk, modifyTenantCertConfigReq.getOauthSk());
+        if (modifyTenantCertReq.getOauthSk() != null) {
+            updateClause.set(qTenantCert.oauthSk, modifyTenantCertReq.getOauthSk());
+        }
+        if (modifyTenantCertReq.getStatus() != null) {
+            updateClause.set(qTenantCert.status, modifyTenantCertReq.getStatus());
         }
         return updateEntity(updateClause);
     }
 
     @Transactional
-    public Resp<Long> deleteTenantCertConfig(Long relTenantId) {
-        log.info("Delete Tenant Cert Config By TenantId : {}", relTenantId);
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+    public Resp<Long> deleteTenantCert(Long relTenantId) {
+        log.info("Delete Tenant Cert By TenantId : {}", relTenantId);
+        var qTenantCert = QTenantCert.tenantCert;
         return softDelEntities(sqlBuilder
-                .selectFrom(qTenantCertConfig)
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId)));
+                .selectFrom(qTenantCert)
+                .where(qTenantCert.relTenantId.eq(relTenantId)));
     }
 
     @Transactional
-    public Resp<Void> deleteTenantCertConfig(Long tenantCertConfigId, Long relTenantId) {
-        log.info("Delete Tenant Cert Config By Id : {}", tenantCertConfigId);
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+    public Resp<Void> deleteTenantCert(Long tenantCertId, Long relTenantId) {
+        log.info("Delete Tenant Cert By Id : {}", tenantCertId);
+        var qTenantCert = QTenantCert.tenantCert;
         return deleteEntity(sqlBuilder
-                .delete(qTenantCertConfig)
-                .where(qTenantCertConfig.id.eq(tenantCertConfigId))
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId)));
+                .delete(qTenantCert)
+                .where(qTenantCert.id.eq(tenantCertId))
+                .where(qTenantCert.relTenantId.eq(relTenantId)));
     }
 
     protected Resp<Date> checkValidRuleAndReturnValidTime(AccountCertKind kind, String sk, Long relTenantId) {
@@ -268,19 +284,20 @@ public class TenantService extends IdentBasicService {
             // 表示租户管理员注册时临时分配的虚拟租户号
             return Resp.success(Constant.NEVER_EXPIRE_TIME);
         }
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
-        var tenantCertConfig = sqlBuilder
-                .select(qTenantCertConfig.validRule,
-                        qTenantCertConfig.validTimeSec)
-                .from(qTenantCertConfig)
-                .where(qTenantCertConfig.kind.eq(kind))
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
+        var qTenantCert = QTenantCert.tenantCert;
+        var tenantCert = sqlBuilder
+                .select(qTenantCert.validRule,
+                        qTenantCert.validTimeSec)
+                .from(qTenantCert)
+                .where(qTenantCert.status.eq(CommonStatus.ENABLED))
+                .where(qTenantCert.kind.eq(kind))
+                .where(qTenantCert.relTenantId.eq(relTenantId))
                 .fetchOne();
-        if (tenantCertConfig == null) {
-            return Resp.badRequest("凭证不存在");
+        if (tenantCert == null) {
+            return Resp.badRequest("凭证不存在或已禁用");
         }
-        var validRule = tenantCertConfig.get(0, String.class);
-        var validTimeSec = tenantCertConfig.get(1, Long.class);
+        var validRule = tenantCert.get(0, String.class);
+        var validTimeSec = tenantCert.get(1, Long.class);
         if (!StringUtils.isEmpty(validRule)) {
             if (!VALID_RULES.containsKey(validRule)) {
                 VALID_RULES.put(validRule, Pattern.compile(validRule));
@@ -294,12 +311,13 @@ public class TenantService extends IdentBasicService {
                 : new Date(System.currentTimeMillis() + validTimeSec * 1000));
     }
 
-    public Resp<TenantCertConfig> getTenantCertConfig(AccountCertKind kind, Long relTenantId) {
-        var qTenantCertConfig = QTenantCertConfig.tenantCertConfig;
+    public Resp<TenantCert> getTenantCert(AccountCertKind kind, Long relTenantId) {
+        var qTenantCert = QTenantCert.tenantCert;
         return getDTO(sqlBuilder
-                .selectFrom(qTenantCertConfig)
-                .where(qTenantCertConfig.relTenantId.eq(relTenantId))
-                .where(qTenantCertConfig.kind.eq(kind)));
+                .selectFrom(qTenantCert)
+                .where(qTenantCert.relTenantId.eq(relTenantId))
+                .where(qTenantCert.status.eq(CommonStatus.ENABLED))
+                .where(qTenantCert.kind.eq(kind)));
     }
 
 }
