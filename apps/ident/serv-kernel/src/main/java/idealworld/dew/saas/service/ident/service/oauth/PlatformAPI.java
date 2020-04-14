@@ -3,6 +3,7 @@ package idealworld.dew.saas.service.ident.service.oauth;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple2;
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.resp.StandardResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 public abstract class PlatformAPI {
 
     protected static final String ACCESS_TOKEN_FLAG = "oauth:access-token:";
+    protected static final String BUSINESS_OAUTH="OAUTH";
 
     abstract String getPlatformFlag();
 
@@ -25,14 +27,14 @@ public abstract class PlatformAPI {
     public Resp<String> getAccessToken(String ak, String sk) {
         var accessToken = Dew.cluster.cache.get(ACCESS_TOKEN_FLAG + getPlatformFlag());
         if (accessToken != null) {
-            return Resp.success(accessToken);
+            return StandardResp.success(accessToken);
         }
         var getR = doGetAccessToken(ak, sk);
         if (!getR.ok()) {
-            return Resp.error(getR);
+            return StandardResp.error(getR);
         }
         Dew.cluster.cache.setex(ACCESS_TOKEN_FLAG, getR.getBody()._0, getR.getBody()._1 - 10);
-        return Resp.success(getR.getBody()._0);
+        return StandardResp.success(getR.getBody()._0);
     }
 
 }

@@ -17,6 +17,7 @@
 package idealworld.dew.saas.service.ident;
 
 import com.ecfront.dew.common.Resp;
+import idealworld.dew.saas.common.resp.StandardResp;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,12 +31,12 @@ public class TestController {
 
     @GetMapping(value = "account")
     public Resp<Void> testPermission1() {
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
     @GetMapping(value = "account/{id}")
     public Resp<Void> testPermission2() {
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
 }

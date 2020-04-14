@@ -19,6 +19,7 @@ package idealworld.dew.saas.service.ident.service.oauth;
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QAccountCert;
@@ -47,6 +48,8 @@ import org.springframework.util.StringUtils;
 @Slf4j
 public class OAuthService extends IdentBasicService {
 
+    private static final String BUSINESS_OAUTH="OAUTH";
+
     @Autowired
     private TenantService tenantService;
     @Autowired
@@ -59,7 +62,7 @@ public class OAuthService extends IdentBasicService {
         Resp<OAuthUserInfo> oAuthUserInfoR;
         var tenantCertR = tenantService.getTenantCert(oAuthLoginReq.getCertKind(), tenantId);
         if (!tenantCertR.ok()) {
-            return Resp.error(tenantCertR);
+            return StandardResp.error(tenantCertR);
         }
         var oauthAk = tenantCertR.getBody().getOauthAk();
         var oauthSk = tenantCertR.getBody().getOauthSk();
@@ -68,10 +71,10 @@ public class OAuthService extends IdentBasicService {
                 oAuthUserInfoR = wechatService.getUserInfo(oAuthLoginReq.getCode(), oauthAk, oauthSk);
                 break;
             default:
-                return Resp.notFound("凭证类型不合法");
+                return StandardResp.notFound(BUSINESS_OAUTH,"凭证类型不合法");
         }
         if (!oAuthUserInfoR.ok()) {
-            return Resp.error(oAuthUserInfoR);
+            return StandardResp.error(oAuthUserInfoR);
         }
         var lock = Dew.cluster.lock.instance("date:oauth:account:add:"+oAuthUserInfoR.getBody().getOpenid());
         if(lock.tryLock(5000,5000)){
@@ -101,7 +104,7 @@ public class OAuthService extends IdentBasicService {
                     .where(qAccount.status.eq(CommonStatus.ENABLED))
                     .fetchOne() != null;
             if (!exist) {
-                return Resp.badRequest("用户状态异常");
+                return StandardResp.badRequest(BUSINESS_OAUTH,"用户状态异常");
             }
         }
         log.info("Login Success:  [{}] ak(openId) {}",tenantId, oAuthUserInfoR.getBody().getOpenid());
@@ -122,20 +125,20 @@ public class OAuthService extends IdentBasicService {
         }
         optInfo.setParameters($.json.toMap(parameters, String.class, Object.class));
         Dew.auth.setOptInfo(optInfo);
-        return Resp.success(optInfo);
+        return StandardResp.success(optInfo);
     }
 
     public Resp<String> getAccessToken(String oauthKind, Long tenantId) {
         var tenantCertR = tenantService.getTenantCert(AccountCertKind.parse(oauthKind), tenantId);
         if (!tenantCertR.ok()) {
-            return Resp.error(tenantCertR);
+            return StandardResp.error(tenantCertR);
         }
         var oauthAk = tenantCertR.getBody().getOauthAk();
         var oauthSk = tenantCertR.getBody().getOauthSk();
         if (oauthKind.equalsIgnoreCase(AccountCertKind.WECHAT_MP.toString())) {
             return wechatService.getAccessToken(oauthAk, oauthSk);
         }
-        return Resp.notFound("凭证类型不合法");
+        return StandardResp.notFound(BUSINESS_OAUTH,"凭证类型不合法");
     }
 
     @Data

@@ -20,6 +20,7 @@ import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple3;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.service.ident.domain.AppCert;
 import idealworld.dew.saas.service.ident.domain.QApp;
 import idealworld.dew.saas.service.ident.domain.QAppCert;
@@ -132,10 +133,10 @@ public class InterceptService extends IdentBasicService {
     public Resp<Tuple3<String, Long, Long>> getAppCertByAk(String ak) {
         var skAndTenantAndAppId = Dew.cluster.cache.get(CACHE_AK + ak);
         if (skAndTenantAndAppId == null) {
-            return Resp.notFound("");
+            return StandardResp.notFound("INTERCEPT","通过 ak:%s 找不到对应的应用和租户",ak);
         }
         var skAndAppIdSplit = skAndTenantAndAppId.split(":");
-        return Resp.success(new Tuple3<>(skAndAppIdSplit[0], Long.valueOf(skAndAppIdSplit[1]), Long.valueOf(skAndAppIdSplit[2])));
+        return StandardResp.success(new Tuple3<>(skAndAppIdSplit[0], Long.valueOf(skAndAppIdSplit[1]), Long.valueOf(skAndAppIdSplit[2])));
     }
 
 }

@@ -26,7 +26,7 @@ public class IdentConfig extends CommonConfig {
         @Builder.Default
         private boolean subscribe = false;
         @Builder.Default
-        private Long fetchSec = 60L * 60;
+        private Integer aliveHeartbeatPeriodSec = 60;
         @Builder.Default
         private String tokenFlag = "Dew-Token";
 

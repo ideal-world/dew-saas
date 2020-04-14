@@ -18,7 +18,7 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.service.ident.domain.Position;
 import idealworld.dew.saas.service.ident.domain.QPosition;
 import idealworld.dew.saas.service.ident.dto.position.AddPositionReq;
@@ -37,6 +37,8 @@ import java.util.List;
 @Service
 public class PositionService extends IdentBasicService {
 
+    private static final String BUSINESS_POSITION = "POSITION";
+
     @Autowired
     private AppService appService;
     @Autowired
@@ -44,8 +46,9 @@ public class PositionService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> addPosition(AddPositionReq addPositionReq, Long relAppId, Long relTenantId) {
-        if (!appService.checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qPosition = QPosition.position;
         if (sqlBuilder.select(qPosition.id)
@@ -54,7 +57,7 @@ public class PositionService extends IdentBasicService {
                 .where(qPosition.relAppId.eq(relAppId))
                 .where(qPosition.code.eq(addPositionReq.getCode()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此职位已存在");
+            return StandardResp.conflict(BUSINESS_POSITION,"职位已存在");
         }
         var position = Position.builder()
                 .code(addPositionReq.getCode())

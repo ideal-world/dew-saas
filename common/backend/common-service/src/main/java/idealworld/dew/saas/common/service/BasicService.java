@@ -23,7 +23,7 @@ import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
-import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.domain.BasicSoftDelEntity;
 import idealworld.dew.saas.common.service.domain.IdEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -42,39 +42,39 @@ public abstract class BasicService<DEL extends BasicSoftDelEntity> {
 
     protected Resp<Long> saveEntity(IdEntity idEntity) {
         entityManager.persist(idEntity);
-        return Resp.success(idEntity.getId());
+        return StandardResp.success(idEntity.getId());
     }
 
     protected Resp<Void> updateEntity(JPAUpdateClause updateClause) {
         var modifyRowNum = updateClause.execute();
         if (modifyRowNum == 0) {
-            return Constant.RESP.NOT_FOUNT();
+            return StandardResp.notFound("BASIC", "没有需要更新的记录 %s", updateClause.toString());
         }
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
     protected Resp<Long> updateEntities(JPAUpdateClause updateClause) {
-        return Resp.success(updateClause.execute());
+        return StandardResp.success(updateClause.execute());
     }
 
     protected Resp<Void> deleteEntity(JPADeleteClause deleteClause) {
         log.info("Delete entity , cond : {}", deleteClause.toString());
         var modifyRowNum = deleteClause.execute();
         if (modifyRowNum == 0) {
-            return Constant.RESP.NOT_FOUNT();
+            return StandardResp.notFound("BASIC", "没有需要删除的记录 %s", deleteClause.toString());
         }
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
     protected Resp<Long> deleteEntities(JPADeleteClause deleteClause) {
         log.info("Delete entities , cond : {}", deleteClause.toString());
-        return Resp.success(deleteClause.execute());
+        return StandardResp.success(deleteClause.execute());
     }
 
     protected <E extends IdEntity> Resp<Void> softDelEntity(JPAQuery<E> jpaQuery) {
         var entity = jpaQuery.fetchOne();
         if (entity == null) {
-            return Constant.RESP.NOT_FOUNT();
+            return StandardResp.notFound("BASIC", "没有需要软删的记录 %s", jpaQuery.toString());
         }
         log.info("Soft Delete entity {} , cond : {}", jpaQuery.getType().getSimpleName(), jpaQuery.toString());
         BasicSoftDelEntity basicSoftDelEntity = softDelPackage(entity);
@@ -84,7 +84,7 @@ public abstract class BasicService<DEL extends BasicSoftDelEntity> {
         basicSoftDelEntity.setContent($.json.toJsonString(entity));
         saveEntity(basicSoftDelEntity);
         entityManager.remove(entity);
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
     protected <E extends IdEntity> Resp<Long> softDelEntities(JPAQuery<E> jpaQuery) {
@@ -102,7 +102,7 @@ public abstract class BasicService<DEL extends BasicSoftDelEntity> {
                     return entity.getId();
                 })
                 .count();
-        return Resp.success(deleteCounts);
+        return StandardResp.success(deleteCounts);
     }
 
     protected abstract String softDelGetKind();
@@ -112,14 +112,14 @@ public abstract class BasicService<DEL extends BasicSoftDelEntity> {
     protected <E> Resp<E> getDTO(JPAQuery<E> jpaQuery) {
         var obj = jpaQuery.fetchOne();
         if (obj == null) {
-            return Constant.RESP.NOT_FOUNT();
+            return StandardResp.notFound("BASIC", "没有获取到记录 %s", jpaQuery.toString());
         }
-        return Resp.success(obj);
+        return StandardResp.success(obj);
     }
 
     protected <E> Resp<List<E>> findDTOs(JPAQuery<E> jpaQuery) {
         var obj = jpaQuery.fetch();
-        return Resp.success(obj);
+        return StandardResp.success(obj);
     }
 
     protected <E> Resp<Page<E>> pageDTOs(JPAQuery<E> jpaQuery, Long pageNumber, Integer pageSize) {
@@ -127,15 +127,15 @@ public abstract class BasicService<DEL extends BasicSoftDelEntity> {
                 .limit(pageSize)
                 .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
                 .fetchResults();
-        return Resp.success(Page.build(pageNumber, pageSize, obj.getTotal(), obj.getResults()));
+        return StandardResp.success(Page.build(pageNumber, pageSize, obj.getTotal(), obj.getResults()));
     }
 
     protected <E> Resp<Long> countQuery(JPAQuery<E> jpaQuery) {
-        return Resp.success(jpaQuery.fetchCount());
+        return StandardResp.success(jpaQuery.fetchCount());
     }
 
     protected <E> Resp<Boolean> existQuery(JPAQuery<E> jpaQuery) {
-        return Resp.success(jpaQuery.fetchCount() != 0);
+        return StandardResp.success(jpaQuery.fetchCount() != 0);
     }
 
 }

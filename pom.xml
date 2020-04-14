@@ -33,6 +33,7 @@
 
     <properties>
         <dew-saas.version>2.1.0-SNAPSHOT</dew-saas.version>
+        <checkstyle.config.path>./checkstyle/checkstyle.xml</checkstyle.config.path>
     </properties>
 
     <developers>

@@ -1,5 +1,6 @@
 package idealworld.dew.saas.service.ident.service.sdk;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
 import idealworld.dew.saas.common.sdk.CommonSDK;
@@ -88,7 +89,19 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
          * 订阅当前应用的权限信息
          */
         public Resp<String> subPermissions() {
-            return getToEntity("app/auth/permission/sub?expireSec=" + getConfig().getIdent().getFetchSec(), String.class);
+            Resp<String> subResp = getToEntity("app/auth/permission/sub?heartbeatPeriodSec=" +
+                    getConfig().getIdent().getAliveHeartbeatPeriodSec(), String.class);
+            if (!subResp.ok()) {
+                return subResp;
+            }
+            $.timer.periodic(getConfig().getIdent().getAliveHeartbeatPeriodSec().longValue(), true, () -> {
+                Resp<Void> hbResp = getToEntity("app/auth/permission/heartbeat?heartbeatPeriodSec=" +
+                        getConfig().getIdent().getAliveHeartbeatPeriodSec(), Void.class);
+                if (!hbResp.ok()) {
+                    log.error("Permission subscribe error [{}] : {}", hbResp.getCode(), hbResp.getMessage());
+                }
+            });
+            return subResp;
         }
 
         /**

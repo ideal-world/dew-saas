@@ -19,6 +19,7 @@ package idealworld.dew.saas.service.ident.service;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.service.ident.domain.QResource;
 import idealworld.dew.saas.service.ident.domain.Resource;
 import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
@@ -42,6 +43,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ResourceService extends IdentBasicService {
 
+    private static final String BUSINESS_RESOURCE = "RESOURCE";
+
     @Autowired
     private AppService appService;
     @Autowired
@@ -49,8 +52,9 @@ public class ResourceService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> addResourceGroup(AddResourceGroupReq addResourceGroupReq, Long relAppId, Long relTenantId) {
-        if (!appService.checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var resource = Resource.builder()
                 .kind(ResourceKind.GROUP)
@@ -68,8 +72,9 @@ public class ResourceService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> addResource(AddResourceReq addResourceReq, Long relAppId, Long relTenantId) {
-        if (!appService.checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qResource = QResource.resource;
         if (sqlBuilder.select(qResource.id)
@@ -78,7 +83,7 @@ public class ResourceService extends IdentBasicService {
                 .where(qResource.identifier.eq(addResourceReq.getIdentifier()))
                 .where(qResource.method.eq(addResourceReq.getMethod()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此资源已存在");
+            return StandardResp.conflict(BUSINESS_RESOURCE, "资源已存在");
         }
         var resource = Resource.builder()
                 .kind(addResourceReq.getKind())

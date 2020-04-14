@@ -23,12 +23,23 @@ import java.text.ParseException;
 import java.util.Date;
 
 /**
+ * 全局常量.
+ *
  * @author gudaoxuri
  */
 public class Constant {
 
+    /**
+     * 永不过期的时间.
+     */
     public static Date NEVER_EXPIRE_TIME;
+    /**
+     * 角色分隔线.
+     */
     public static final String ROLE_SPLIT = "-";
+    /**
+     * 未定义对象的标识，多用于全局Id标识.
+     */
     public static final Long OBJECT_UNDEFINED = 0L;
 
     static {
@@ -37,23 +48,6 @@ public class Constant {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-    }
-
-    public static class RESP {
-
-        public static <E> Resp<E> NOT_FOUNT() {
-            return Resp.notFound("找不到操作对象,请检查权限");
-        }
-
-        public static <E> Resp<E> NOT_FOUNT(String objName) {
-            return Resp.notFound("找不到操作的" + objName + ",请检查权限");
-        }
-
-    }
-
-    public static class MQ {
-
-
     }
 
 }

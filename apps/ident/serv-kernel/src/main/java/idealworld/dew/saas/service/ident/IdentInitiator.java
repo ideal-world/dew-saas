@@ -19,11 +19,11 @@ package idealworld.dew.saas.service.ident;
 
 import group.idealworld.dew.core.DewContext;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.Position;
 import idealworld.dew.saas.service.ident.domain.Post;
 import idealworld.dew.saas.service.ident.domain.QPosition;
-import idealworld.dew.saas.service.ident.service.AppService;
 import idealworld.dew.saas.service.ident.service.IdentBasicService;
 import idealworld.dew.saas.service.ident.service.InterceptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +49,7 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
     @Transactional
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        StandardResp.setServiceFlag("IDENT");
         DewContext.setOptInfoClazz(IdentOptInfo.class);
         initPermissionData();
         interceptService.cacheTenantAndAppStatus();

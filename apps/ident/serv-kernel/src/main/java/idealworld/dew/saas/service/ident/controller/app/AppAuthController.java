@@ -18,6 +18,7 @@ package idealworld.dew.saas.service.ident.controller.app;
 
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
@@ -50,20 +51,30 @@ public class AppAuthController extends BasicController {
     @GetMapping(value = "optinfo")
     @ApiOperation(value = "获取当前登录用户")
     public Resp<IdentOptInfo> getOptInfo() {
-        if(Dew.auth.getOptInfo().isEmpty()){
-            return Resp.unAuthorized("Token不存在或已过期");
+        if (Dew.auth.getOptInfo().isEmpty()) {
+            return StandardResp.unAuthorized("OPT_INFO","Token不存在或已过期");
         }
-        return Resp.success((IdentOptInfo) Dew.auth.getOptInfo().get());
+        return StandardResp.success((IdentOptInfo) Dew.auth.getOptInfo().get());
     }
 
     @GetMapping(value = "permission/sub")
     @ApiOperation(value = "订阅当前应用的权限信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "expireSec", value = "过期时间", paramType = "query", dataType = "long", required = true)
+            @ApiImplicitParam(name = "heartbeatPeriodSec", value = "心跳周期", paramType = "query", dataType = "int", required = true)
     })
-    public Resp<String> subPermissions(@RequestParam(value = "expireSec") Long expireSec) {
+    public Resp<String> subPermissions(@RequestParam(value = "heartbeatPeriodSec") Integer heartbeatPeriodSec) {
         return permissionService.subPermissions(
-                appHandlerInterceptor.getCurrentTenantAndAppId()._1, expireSec);
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1, heartbeatPeriodSec);
+    }
+
+    @GetMapping(value = "permission/heartbeat")
+    @ApiOperation(value = "当前应用的权限信息订阅的心跳检测")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "heartbeatPeriodSec", value = "心跳周期", paramType = "query", dataType = "int", required = true)
+    })
+    public Resp<Void> subHeartbeat(@RequestParam(value = "heartbeatPeriodSec") Integer heartbeatPeriodSec) {
+        return permissionService.subHeartbeat(
+                appHandlerInterceptor.getCurrentTenantAndAppId()._1, heartbeatPeriodSec);
     }
 
     @DeleteMapping(value = "permission/sub")

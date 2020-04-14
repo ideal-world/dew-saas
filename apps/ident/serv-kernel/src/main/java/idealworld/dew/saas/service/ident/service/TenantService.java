@@ -20,6 +20,7 @@ import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.*;
@@ -51,6 +52,9 @@ public class TenantService extends IdentBasicService {
 
     private static final Map<String, Pattern> VALID_RULES = new ConcurrentHashMap<>();
 
+    private static final String BUSINESS_TENANT = "TENANT";
+    private static final String BUSINESS_TENANT_CERT = "TENANT_CERT";
+
     @Autowired
     private IdentConfig identConfig;
     @Autowired
@@ -68,7 +72,7 @@ public class TenantService extends IdentBasicService {
     public Resp<IdentOptInfo> registerTenant(RegisterTenantReq registerTenantReq) {
         log.info("Register Tenant : {}", $.json.toJsonString(registerTenantReq));
         if (!identConfig.isAllowTenantRegister()) {
-            return Resp.forbidden("The current configuration does not allow tenants to self-register");
+            return StandardResp.locked(BUSINESS_TENANT, "The current configuration does not allow tenants to self-register");
         }
         var tenantAdminPostId = postService.getTenantAdminPostId();
         var addAccountR = accountService.addAccountExt(AddAccountReq.builder()
@@ -83,7 +87,7 @@ public class TenantService extends IdentBasicService {
                         .build())
                 .build(), Constant.OBJECT_UNDEFINED);
         if (!addAccountR.ok()) {
-            return Resp.error(addAccountR);
+            return StandardResp.error(addAccountR);
         }
         var tenant = Tenant.builder()
                 .name(registerTenantReq.getTenantName())
@@ -160,7 +164,7 @@ public class TenantService extends IdentBasicService {
                 .fetchCount();
         if (count != 0) {
             log.warn("Un-Register Tenant error: need to delete the app first");
-            return Resp.conflict("请先删除租户下的所有应用");
+            return StandardResp.conflict(BUSINESS_TENANT, "请先删除租户下的所有应用");
         }
         // 删除账号
         accountService.deleteAccounts(tenantId);
@@ -189,7 +193,7 @@ public class TenantService extends IdentBasicService {
                 .where(qTenantCert.relTenantId.eq(relTenantId))
                 .where(qTenantCert.kind.eq(addTenantCertReq.getKind()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此凭证已存在");
+            return StandardResp.conflict(BUSINESS_TENANT_CERT, "凭证已存在");
         }
         log.info("Add Tenant Cert : {}", $.json.toJsonString(addTenantCertReq));
         var tenantCert = TenantCert.builder()
@@ -282,7 +286,7 @@ public class TenantService extends IdentBasicService {
     protected Resp<Date> checkValidRuleAndReturnValidTime(AccountCertKind kind, String sk, Long relTenantId) {
         if (relTenantId.equals(Constant.OBJECT_UNDEFINED)) {
             // 表示租户管理员注册时临时分配的虚拟租户号
-            return Resp.success(Constant.NEVER_EXPIRE_TIME);
+            return StandardResp.success(Constant.NEVER_EXPIRE_TIME);
         }
         var qTenantCert = QTenantCert.tenantCert;
         var tenantCert = sqlBuilder
@@ -294,7 +298,7 @@ public class TenantService extends IdentBasicService {
                 .where(qTenantCert.relTenantId.eq(relTenantId))
                 .fetchOne();
         if (tenantCert == null) {
-            return Resp.badRequest("凭证不存在或已禁用");
+            return StandardResp.badRequest(BUSINESS_TENANT_CERT, "凭证不存在或已禁用");
         }
         var validRule = tenantCert.get(0, String.class);
         var validTimeSec = tenantCert.get(1, Long.class);
@@ -303,10 +307,10 @@ public class TenantService extends IdentBasicService {
                 VALID_RULES.put(validRule, Pattern.compile(validRule));
             }
             if (!VALID_RULES.get(validRule).matcher(sk).matches()) {
-                return Resp.badRequest("凭证密钥规则不合法");
+                return StandardResp.badRequest(BUSINESS_TENANT_CERT, "凭证密钥规则不合法");
             }
         }
-        return Resp.success(validTimeSec == null || validTimeSec.equals(Constant.OBJECT_UNDEFINED)
+        return StandardResp.success(validTimeSec == null || validTimeSec.equals(Constant.OBJECT_UNDEFINED)
                 ? Constant.NEVER_EXPIRE_TIME
                 : new Date(System.currentTimeMillis() + validTimeSec * 1000));
     }

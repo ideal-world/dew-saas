@@ -30,13 +30,8 @@ public class IdentConfig {
 
     private boolean allowTenantRegister = false;
 
-    private App app = new App();
     private Security security = new Security();
-
-    @Data
-    public static class App {
-        private String authFieldName = "Authorization";
-    }
+    private App app = new App();
 
     @Data
     public static class Security {
@@ -46,6 +41,15 @@ public class IdentConfig {
         private String tenantAdminPositionName = "租户管理员";
         private String defaultPositionCode = "DEFAULT_ROLE";
         private String defaultPositionName = "默认角色";
+
+        private Integer skKindByVCodeExpireSec = 60 * 5;
+        private Integer skKindByVCodeMaxErrorTimes = 5;
+
+    }
+
+    @Data
+    public static class App {
+        private String authFieldName = "Authorization";
     }
 
 }

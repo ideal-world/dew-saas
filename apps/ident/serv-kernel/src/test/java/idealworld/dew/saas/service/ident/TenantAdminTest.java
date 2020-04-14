@@ -37,6 +37,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import idealworld.dew.saas.service.ident.dto.tenant.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
 import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import org.junit.Assert;
@@ -311,7 +312,7 @@ public class TenantAdminTest extends BasicTest {
                         .relPostId(postId)
                         .build())
                 .build(), Long.class);
-        Assert.assertEquals(StandardCode.BAD_REQUEST.toString(), addAccountR.getCode());
+        Assert.assertTrue(addAccountR.getCode().startsWith(StandardCode.BAD_REQUEST.toString()));
         var accountId = postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户")
                 .certReq(AddAccountCertReq.builder()

@@ -39,7 +39,6 @@ public class AuthProcessor {
             return;
         }
         doSub();
-        $.timer.periodic(identConfig.getIdent().getFetchSec(), true, this::doSub);
     }
 
     public void doSub() {

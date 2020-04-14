@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * HTTP响应处理.
+ *
  * @author gudaoxuri
  */
 public abstract class ResponseProcessor {

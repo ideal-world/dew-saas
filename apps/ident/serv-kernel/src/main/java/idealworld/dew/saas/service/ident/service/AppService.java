@@ -20,6 +20,7 @@ import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.app.*;
 import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
@@ -38,6 +39,9 @@ import java.util.List;
 @Slf4j
 public class AppService extends IdentBasicService {
 
+    private static final String BUSINESS_APP="APP";
+    private static final String BUSINESS_APP_CERT="APP_CERT";
+
     @Autowired
     private OrganizationService organizationService;
     @Autowired
@@ -53,7 +57,7 @@ public class AppService extends IdentBasicService {
                 .where(qApp.relTenantId.eq(relTenantId))
                 .where(qApp.name.eq(addAppReq.getName()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此应用名已存在");
+            return StandardResp.conflict(BUSINESS_APP,"此应用名已存在");
         }
         log.info("Add App : [{}] {}", relTenantId, $.json.toJsonString(addAppReq));
         var app = App.builder()
@@ -138,8 +142,9 @@ public class AppService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> addAppCert(AddAppCertReq addAppCertReq, Long relAppId, Long relTenantId) {
-        if (!checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         log.info("Add App Cert : [{}] {} : {}", relTenantId, relAppId, $.json.toJsonString(addAppCertReq));
         var ak = KeyHelper.generateAK();
@@ -160,8 +165,9 @@ public class AppService extends IdentBasicService {
     }
 
     public Resp<List<AppCertInfoResp>> findAppCertInfo(Long relAppId, Long relTenantId) {
-        if (!checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAppCert = QAppCert.appCert;
         var qAccountCreateUser = QAccount.account;
@@ -189,8 +195,9 @@ public class AppService extends IdentBasicService {
     @Transactional
     public Resp<Void> modifyAppCert(ModifyAppCertReq modifyAppCertReq, Long appCertId,
                                     Long relAppId, Long relTenantId) {
-        if (!checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAppCert = QAppCert.appCert;
         var updateClause = sqlBuilder.update(qAppCert)
@@ -219,8 +226,9 @@ public class AppService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> deleteAppCerts(Long relAppId, Long relTenantId) {
-        if (!checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAppCert = QAppCert.appCert;
         sqlBuilder.select(qAppCert.ak)
@@ -235,8 +243,9 @@ public class AppService extends IdentBasicService {
 
     @Transactional
     public Resp<Void> deleteAppCert(Long appCertId, Long relAppId, Long relTenantId) {
-        if (!checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAppCert = QAppCert.appCert;
         var ak = sqlBuilder.select(qAppCert.ak)
@@ -251,14 +260,16 @@ public class AppService extends IdentBasicService {
                 .where(qAppCert.relAppId.eq(relAppId)));
     }
 
-    protected Boolean checkAppMembership(Long appId, Long relTenantId) {
+    protected Resp<Void> checkAppMembership(Long appId, Long relTenantId) {
         var qApp = QApp.app;
         var num = sqlBuilder
                 .selectFrom(qApp)
                 .where(qApp.id.eq(appId))
                 .where(qApp.relTenantId.eq(relTenantId))
                 .fetchCount();
-        return num != 0;
+        return num != 0 ? StandardResp.success(null)
+                : StandardResp.unAuthorized(BUSINESS_APP,"应用:%s 不属于租户:%s", appId, relTenantId);
+
     }
 
 }

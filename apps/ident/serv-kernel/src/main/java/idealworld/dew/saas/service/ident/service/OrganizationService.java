@@ -20,6 +20,7 @@ import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.tuple.Tuple2;
 import com.querydsl.core.types.Projections;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.service.ident.domain.Organization;
 import idealworld.dew.saas.service.ident.domain.QAccount;
 import idealworld.dew.saas.service.ident.domain.QOrganization;
@@ -39,6 +40,8 @@ import java.util.stream.Collectors;
 @Service
 public class OrganizationService extends IdentBasicService {
 
+    private static final String BUSINESS_ORG = "ORG";
+
     @Autowired
     private AppService appService;
     @Autowired
@@ -46,8 +49,9 @@ public class OrganizationService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> AddOrganization(AddOrganizationReq addOrganizationReq, Long relAppId, Long relTenantId) {
-        if (!appService.checkAppMembership(relAppId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qOrganization = QOrganization.organization;
         if (sqlBuilder.select(qOrganization.id)
@@ -56,7 +60,7 @@ public class OrganizationService extends IdentBasicService {
                 .where(qOrganization.relAppId.eq(relAppId))
                 .where(qOrganization.code.eq(addOrganizationReq.getCode()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此机构编码已存在");
+            return StandardResp.conflict(BUSINESS_ORG, "此机构编码已存在");
         }
         var appCert = Organization.builder()
                 .kind(addOrganizationReq.getKind())
@@ -138,7 +142,7 @@ public class OrganizationService extends IdentBasicService {
                 .where(qOrganization.id.eq(organizationId)));
         if (!getOrganizationCodeR.ok()) {
             // 已经被删除
-            return Resp.error(getOrganizationCodeR);
+            return StandardResp.error(getOrganizationCodeR);
         }
         // 级联删除机构
         var deleteOrgInfos = findOrganizationIds(organizationId);

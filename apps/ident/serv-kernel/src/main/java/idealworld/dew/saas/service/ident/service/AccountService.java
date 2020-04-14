@@ -23,7 +23,9 @@ import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.auth.dto.OptInfo;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
+import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
@@ -49,10 +51,13 @@ public class AccountService extends IdentBasicService {
 
     private static final String SK_KIND_VCODE_TMP_REL = "sk-kind:vocde:tmp-rel:";
     private static final String SK_KIND_VCODE_ERROR_TIMES = "sk-kind:vocde:error-times:";
-    // TODO config
-    private static final int SK_KIND_VCODE_EXPRIE_SEC = 60 * 5;
-    private static final int SK_KIND_VCODE_MAX_ERROR_TIMES = 5;
 
+    private static final String BUSINESS_ACCOUNT="ACCOUNT";
+    private static final String BUSINESS_ACCOUNT_CERT="ACCOUNT_CERT";
+    private static final String BUSINESS_ACCOUNT_POST="ACCOUNT_POST";
+
+    @Autowired
+    private IdentConfig identConfig;
     @Autowired
     private TenantService tenantService;
     @Autowired
@@ -80,7 +85,7 @@ public class AccountService extends IdentBasicService {
                 .fetchOne();
         if (accountInfo == null) {
             log.warn("Login Fail: [{}] AK {} not exist or expired", relTenantId, loginReq.getAk());
-            return Resp.notFound("登录凭证不存在或已过期");
+            return StandardResp.notFound(BUSINESS_ACCOUNT,"登录凭证 %s 不存在或已过期",loginReq.getAk());
         }
         var certSk = accountInfo.get(0, String.class);
         var accountId = accountInfo.get(1, Long.class);
@@ -88,7 +93,7 @@ public class AccountService extends IdentBasicService {
         var validateR = validateSK(loginReq.getCertKind(), loginReq.getAk(), loginReq.getSk(), certSk, relTenantId);
         if (!validateR.ok()) {
             log.warn("Login Fail: [{}] SK {} un-match", relTenantId, loginReq.getAk());
-            return Resp.error(validateR);
+            return StandardResp.error(validateR);
         }
         log.info("Login Success:  [{}] ak {}", relTenantId, loginReq.getAk());
         String token = KeyHelper.generateToken();
@@ -103,14 +108,14 @@ public class AccountService extends IdentBasicService {
         }
         optInfo.setParameters($.json.toMap(parameters, String.class, Object.class));
         Dew.auth.setOptInfo(optInfo);
-        return Resp.success(optInfo);
+        return StandardResp.success(optInfo);
     }
 
     @Transactional
     public Resp<Void> logout(Long accountId, String token) {
         log.info("Logout Account {} by token {}", accountId, token);
         Dew.auth.removeOptInfo(token);
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
     @Transactional
@@ -118,14 +123,14 @@ public class AccountService extends IdentBasicService {
         var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountReq.getCertReq().getKind(),
                 addAccountReq.getCertReq().getSk(), relTenantId);
         if (!checkValidRuleAndReturnValidTimeR.ok()) {
-            return Resp.error(checkValidRuleAndReturnValidTimeR);
+            return StandardResp.error(checkValidRuleAndReturnValidTimeR);
         }
         var processR = certProcessSK(addAccountReq.getCertReq().getKind(),
                 addAccountReq.getCertReq().getAk(),
                 addAccountReq.getCertReq().getSk(),
                 relTenantId);
         if (!processR.ok()) {
-            return Resp.error(processR);
+            return StandardResp.error(processR);
         }
         var qAccountCert = QAccountCert.accountCert;
         if (sqlBuilder.select(qAccountCert.id)
@@ -134,7 +139,7 @@ public class AccountService extends IdentBasicService {
                 .where(qAccountCert.kind.eq(addAccountReq.getCertReq().getKind()))
                 .where(qAccountCert.ak.eq(addAccountReq.getCertReq().getAk()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此凭证已存在");
+            return StandardResp.conflict(BUSINESS_ACCOUNT_CERT,"凭证已存在");
         }
         log.info("Add Account : [{}] {}", relTenantId, $.json.toJsonString(addAccountReq));
         var account = Account.builder()
@@ -152,7 +157,7 @@ public class AccountService extends IdentBasicService {
                     .build());
         }
         addAccountPost(addAccountReq.getPostReq(), account.getId(), relTenantId);
-        return Resp.success(account.getId());
+        return StandardResp.success(account.getId());
     }
 
     public Resp<AccountInfoResp> getAccountInfo(Long accountId, Long relTenantId) {
@@ -246,14 +251,15 @@ public class AccountService extends IdentBasicService {
         );
     }
 
-    protected Boolean checkAccountMembership(Long accountId, Long relTenantId) {
+    protected Resp<Void> checkAccountMembership(Long accountId, Long relTenantId) {
         var qAccount = QAccount.account;
         var num = sqlBuilder
                 .selectFrom(qAccount)
                 .where(qAccount.id.eq(accountId))
                 .where(qAccount.relTenantId.eq(relTenantId))
                 .fetchCount();
-        return num != 0;
+        return num != 0 ? StandardResp.success(null)
+                : StandardResp.unAuthorized(BUSINESS_ACCOUNT,"用户:%s 不属于租户:%s", accountId, relTenantId);
     }
 
     // ========================== Cert ==============================
@@ -261,13 +267,14 @@ public class AccountService extends IdentBasicService {
     @Transactional
     public Resp<Long> addAccountCert(AddAccountCertReq addAccountCertReq,
                                      Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountCertReq.getKind(),
                 addAccountCertReq.getSk(), relTenantId);
         if (!checkValidRuleAndReturnValidTimeR.ok()) {
-            return Resp.error(checkValidRuleAndReturnValidTimeR);
+            return StandardResp.error(checkValidRuleAndReturnValidTimeR);
         }
         var qAccountCert = QAccountCert.accountCert;
         if (sqlBuilder.select(qAccountCert.id)
@@ -276,7 +283,7 @@ public class AccountService extends IdentBasicService {
                 .where(qAccountCert.kind.eq(addAccountCertReq.getKind()))
                 .where(qAccountCert.ak.eq(addAccountCertReq.getAk()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此凭证已存在");
+            return StandardResp.conflict(BUSINESS_ACCOUNT_CERT,"凭证已存在");
         }
         log.info("Add Account Cert : [{}] {} : {}", relTenantId, relAccountId, $.json.toJsonString(addAccountCertReq));
         var processR = certProcessSK(addAccountCertReq.getKind(),
@@ -284,7 +291,7 @@ public class AccountService extends IdentBasicService {
                 addAccountCertReq.getSk(),
                 relTenantId);
         if (!processR.ok()) {
-            return Resp.error(processR);
+            return StandardResp.error(processR);
         }
         return doAddAccountCert(addAccountCertReq, processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), relAccountId, relTenantId);
     }
@@ -303,8 +310,9 @@ public class AccountService extends IdentBasicService {
     }
 
     public Resp<List<AccountCertInfoResp>> findAccountCertInfo(Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountCert = QAccountCert.accountCert;
         var qAccountCreateUser = QAccount.account;
@@ -329,8 +337,9 @@ public class AccountService extends IdentBasicService {
     }
 
     public Resp<String> getAccountCertAk(Long relAccountId, String accountCertKind, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountCert = QAccountCert.accountCert;
         var query = sqlBuilder
@@ -345,8 +354,9 @@ public class AccountService extends IdentBasicService {
     @Transactional
     public Resp<Void> modifyAccountCert(ModifyAccountCertReq modifyAccountCertReq, Long accountCertId,
                                         Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountCert = QAccountCert.accountCert;
         var updateClause = sqlBuilder.update(qAccountCert)
@@ -388,8 +398,9 @@ public class AccountService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> addAccountPost(AddAccountPostReq addAccountPostReq, Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountPost = QAccountPost.accountPost;
         if (sqlBuilder.select(qAccountPost.id)
@@ -397,7 +408,7 @@ public class AccountService extends IdentBasicService {
                 .where(qAccountPost.relAccountId.eq(relAccountId))
                 .where(qAccountPost.relPostId.eq(addAccountPostReq.getRelPostId()))
                 .fetchCount() != 0) {
-            return Resp.conflict("此关联岗位已存在");
+            return StandardResp.conflict(BUSINESS_ACCOUNT_POST,"关联岗位已存在");
         }
         var accountCert = AccountPost.builder()
                 .relPostId(addAccountPostReq.getRelPostId())
@@ -407,8 +418,9 @@ public class AccountService extends IdentBasicService {
     }
 
     public Resp<List<AccountPostInfoResp>> findAccountPostInfo(Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountPost = QAccountPost.accountPost;
         var query = sqlBuilder
@@ -423,8 +435,9 @@ public class AccountService extends IdentBasicService {
 
     @Transactional
     public Resp<Long> deleteAccountPosts(Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountPost = QAccountPost.accountPost;
         return deleteEntities(sqlBuilder
@@ -434,8 +447,9 @@ public class AccountService extends IdentBasicService {
 
     @Transactional
     public Resp<Void> deleteAccountPost(Long accountPostId, Long relAccountId, Long relTenantId) {
-        if (!checkAccountMembership(relAccountId, relTenantId)) {
-            return Constant.RESP.NOT_FOUNT();
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
         }
         var qAccountPost = QAccountPost.accountPost;
         return deleteEntity(sqlBuilder
@@ -461,7 +475,7 @@ public class AccountService extends IdentBasicService {
     @Transactional
     protected Resp<Long> deleteAccountPosts(List<Long> postIds) {
         if (postIds.isEmpty()) {
-            return Constant.RESP.NOT_FOUNT();
+            return StandardResp.notFound(BUSINESS_ACCOUNT_POST,"没有要删除的岗位");
         }
         var qAccountPost = QAccountPost.accountPost;
         return deleteEntities(sqlBuilder
@@ -488,7 +502,7 @@ public class AccountService extends IdentBasicService {
 
     public void certSendVC(String ak, Long tenantId) {
         String tmpSk = (int) ((Math.random() * 9 + 1) * 1000) + "";
-        Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak, tmpSk, SK_KIND_VCODE_EXPRIE_SEC);
+        Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak, tmpSk, identConfig.getSecurity().getSkKindByVCodeExpireSec());
     }
 
     private Resp<String> certProcessSK(AccountCertKind certKind, String ak, String sk, Long tenantId) {
@@ -497,16 +511,16 @@ public class AccountService extends IdentBasicService {
             case PHONE:
                 String tmpSk = Dew.cluster.cache.get(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 if (tmpSk == null) {
-                    return Resp.badRequest("验证码不存在或已过期");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码不存在或已过期");
                 }
                 if (!tmpSk.equalsIgnoreCase(sk)) {
-                    return Resp.badRequest("验证码错误");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码错误");
                 }
-                return Resp.success("");
+                return StandardResp.success("");
             case USERNAME:
-                return Resp.success($.security.digest.digest(ak + sk, "SHA-512"));
+                return StandardResp.success($.security.digest.digest(ak + sk, "SHA-512"));
             default:
-                return Resp.success("");
+                return StandardResp.success("");
         }
     }
 
@@ -517,28 +531,28 @@ public class AccountService extends IdentBasicService {
             case PHONE:
                 String tmpSk = Dew.cluster.cache.get(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 if (tmpSk == null) {
-                    return Resp.badRequest("验证码不存在或已过期，请重新获取");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码不存在或已过期，请重新获取");
                 }
                 if (!tmpSk.equalsIgnoreCase(inputSk)) {
                     if (Dew.cluster.cache.incrBy(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak, 1)
-                            >= SK_KIND_VCODE_MAX_ERROR_TIMES) {
+                            >= identConfig.getSecurity().getSkKindByVCodeMaxErrorTimes()) {
                         Dew.cluster.cache.del(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                         Dew.cluster.cache.del(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak);
-                        return Resp.badRequest("验证码不存在或已过期，请重新获取");
+                        return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码不存在或已过期，请重新获取");
                     }
-                    return Resp.badRequest("验证码错误");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码错误");
                 }
                 Dew.cluster.cache.del(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 Dew.cluster.cache.del(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak);
-                return Resp.success(null);
+                return StandardResp.success(null);
             case USERNAME:
                 if (!$.security.digest.validate(ak + inputSk, storageSk, "SHA-512")) {
-                    return Resp.badRequest("密码错误");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"密码错误");
                 } else {
-                    return Resp.success(null);
+                    return StandardResp.success(null);
                 }
             default:
-                return Resp.success(null);
+                return StandardResp.success(null);
         }
     }
 

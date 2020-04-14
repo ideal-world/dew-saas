@@ -19,7 +19,6 @@ package idealworld.dew.saas.service.ident.service;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.cluster.ClusterElection;
 import idealworld.dew.saas.common.service.BasicService;
-import idealworld.dew.saas.common.service.domain.BasicSoftDelEntity;
 import idealworld.dew.saas.common.service.domain.IdEntity;
 import idealworld.dew.saas.service.ident.domain.SoftDelRecord;
 

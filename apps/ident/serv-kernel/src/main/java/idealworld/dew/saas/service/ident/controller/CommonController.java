@@ -18,6 +18,7 @@ package idealworld.dew.saas.service.ident.controller;
 
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
@@ -74,7 +75,7 @@ public class CommonController extends BasicController {
             var token = info.getToken();
             accountService.logout(accountId, token);
         });
-        return Resp.success(null);
+        return StandardResp.success(null);
     }
 
 
