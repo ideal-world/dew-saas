@@ -17,9 +17,9 @@ import javax.persistence.MappedSuperclass;
 public class ConfigEntity extends SafeEntity {
 
     @Column(nullable = false)
-    protected String key;
+    protected String k;
 
     @Column(nullable = false)
-    protected String value;
+    protected String v;
 
 }

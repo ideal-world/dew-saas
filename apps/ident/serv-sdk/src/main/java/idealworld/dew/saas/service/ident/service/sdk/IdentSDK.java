@@ -71,7 +71,7 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
          * @return 账号Id
          */
         public Resp<String> oauthGetOpenId(Long accountId, AccountCertKind oauthKind) {
-            return getToEntity("/app/account/" + accountId + "cert-ak?accountCertKind=" + oauthKind.toString(), String.class);
+            return getToEntity("/app/account/" + accountId + "/cert-ak?accountCertKind=" + oauthKind.toString(), String.class);
         }
 
         /**
