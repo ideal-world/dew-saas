@@ -21,18 +21,41 @@ import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.utils.ResponseProcessor;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
+/**
+ * Basic test.
+ *
+ * @author gudaoxuri
+ */
 public abstract class BasicTest extends ResponseProcessor {
 
-    protected AccountCertKind globalTenantAdminCertKind = AccountCertKind.USERNAME;
+    /**
+     * The Global tenant admin ident kind.
+     */
+    protected AccountIdentKind globalTenantAdminIdentKind = AccountIdentKind.USERNAME;
+    /**
+     * The Global tenant admin ak.
+     */
     protected String globalTenantAdminAk = "gudaoxuri";
+    /**
+     * The Global tenant admin sk.
+     */
     protected String globalTenantAdminSk = "pwd123";
-    protected AccountCertKind globalUserCertKind = AccountCertKind.USERNAME;
+    /**
+     * The Global user ident kind.
+     */
+    protected AccountIdentKind globalUserIdentKind = AccountIdentKind.USERNAME;
+    /**
+     * The Global user ak.
+     */
     protected String globalUserAk = "test";
+    /**
+     * The Global user sk.
+     */
     protected String globalUserSk = "Aa10#";
 
     @Value("${server.port:8080}")
@@ -40,6 +63,11 @@ public abstract class BasicTest extends ResponseProcessor {
 
     private IdentOptInfo identOptInfo;
 
+    /**
+     * Sets ident opt info.
+     *
+     * @param identOptInfo the ident opt info
+     */
     protected void setIdentOptInfo(IdentOptInfo identOptInfo) {
         this.identOptInfo = identOptInfo;
     }

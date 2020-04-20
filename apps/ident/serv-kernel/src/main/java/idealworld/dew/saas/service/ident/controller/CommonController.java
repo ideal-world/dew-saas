@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.service.AccountService;
+import idealworld.dew.saas.service.ident.service.OAuthService;
 import idealworld.dew.saas.service.ident.service.TenantService;
-import idealworld.dew.saas.service.ident.service.oauth.OAuthService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +33,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * 公共操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -45,38 +47,63 @@ public class CommonController extends BasicController {
     @Autowired
     private AccountService accountService;
     @Autowired
-    private OAuthService oAuthService;
+    private OAuthService oauthservice;
 
+    /**
+     * 注册租户.
+     *
+     * @param registerTenantReq the register tenant req
+     * @return the resp
+     */
     @PostMapping(value = "/tenant/register")
     @ApiOperation(value = "注册租户")
-    public Resp<IdentOptInfo> registerTenant(@RequestBody RegisterTenantReq registerTenantReq) {
+    public Resp<IdentOptInfo> registerTenant(@Validated @RequestBody RegisterTenantReq registerTenantReq) {
         return tenantService.registerTenant(registerTenantReq);
     }
 
+    /**
+     * 用户登录.
+     *
+     * @param tenantId the tenant id
+     * @param loginReq the login req
+     * @return the resp
+     */
     @PostMapping(value = "/auth/{tenantId}/login")
     @ApiOperation(value = "用户登录")
     public Resp<IdentOptInfo> login(@PathVariable Long tenantId,
-                                    @RequestBody LoginReq loginReq) {
+                                    @Validated @RequestBody LoginReq loginReq) {
         return accountService.login(loginReq, tenantId);
     }
 
+    /**
+     * OAuth用户注册/登录.
+     *
+     * @param tenantId      the tenant id
+     * @param oauthLoginReq the o auth login req
+     * @return the resp
+     * @throws Exception the exception
+     */
     @PostMapping(value = "/oauth/{tenantId}/login")
     @ApiOperation(value = "OAuth用户注册/登录")
     public Resp<IdentOptInfo> oauthLogin(@PathVariable Long tenantId,
-                                         @RequestBody OAuthLoginReq oAuthLoginReq) throws Exception {
-        return oAuthService.login(oAuthLoginReq, tenantId);
+                                         @Validated @RequestBody OAuthLoginReq oauthLoginReq) throws Exception {
+        return oauthservice.login(oauthLoginReq, tenantId);
     }
 
+    /**
+     * 注销登录.
+     *
+     * @return the resp
+     */
     @DeleteMapping(value = "/auth/{tenantId}/logout")
     @ApiOperation(value = "注销登录")
     public Resp<Void> logout() {
         Dew.auth.getOptInfo().ifPresent(info -> {
-            var accountId = Long.valueOf((String) info.getAccountCode());
+            var openId = (String) info.getAccountCode();
             var token = info.getToken();
-            accountService.logout(accountId, token);
+            accountService.logout(openId, token);
         });
         return StandardResp.success(null);
     }
-
 
 }

@@ -24,6 +24,8 @@ import lombok.Data;
 import java.util.Map;
 
 /**
+ * Ident opt info.
+ *
  * @author gudaoxuri
  */
 @Data
@@ -34,6 +36,6 @@ public class IdentOptInfo extends OptInfo<IdentOptInfo> {
     private Long relTenantId;
 
     @ApiModelProperty(value = "账号扩展信息", required = true)
-    private Map<String,Object> parameters;
+    private Map<String, Object> parameters;
 
 }

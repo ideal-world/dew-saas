@@ -17,7 +17,6 @@
 package idealworld.dew.saas.common;
 
 import com.ecfront.dew.common.$;
-import com.ecfront.dew.common.Resp;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -30,10 +29,6 @@ import java.util.Date;
 public class Constant {
 
     /**
-     * 永不过期的时间.
-     */
-    public static Date NEVER_EXPIRE_TIME;
-    /**
      * 角色分隔线.
      */
     public static final String ROLE_SPLIT = "-";
@@ -41,6 +36,10 @@ public class Constant {
      * 未定义对象的标识，多用于全局Id标识.
      */
     public static final Long OBJECT_UNDEFINED = 0L;
+    /**
+     * 永不过期的时间.
+     */
+    public static Date NEVER_EXPIRE_TIME;
 
     static {
         try {

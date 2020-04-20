@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletResponse;
  * App Servlet拦截器.
  *
  * @author gudaoxuri
- * @author gjason
  */
 @Component
 @Slf4j

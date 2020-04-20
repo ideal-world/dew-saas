@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.service.ident.service.oauth;
+package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.enumeration.CommonStatus;
 import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.domain.QAccount;
-import idealworld.dew.saas.service.ident.domain.QAccountCert;
-import idealworld.dew.saas.service.ident.dto.account.AddAccountCertReq;
+import idealworld.dew.saas.service.ident.domain.QAccountIdent;
+import idealworld.dew.saas.service.ident.dto.account.AddAccountIdentReq;
 import idealworld.dew.saas.service.ident.dto.account.AddAccountReq;
 import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
-import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
-import idealworld.dew.saas.service.ident.service.AccountService;
-import idealworld.dew.saas.service.ident.service.IdentBasicService;
-import idealworld.dew.saas.service.ident.service.TenantService;
+import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
+import idealworld.dew.saas.service.ident.service.oauthimpl.WechatMPAPI;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.Builder;
 import lombok.Data;
@@ -42,13 +40,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
+ * OAuth service.
+ *
  * @author gudaoxuri
  */
 @Service
 @Slf4j
 public class OAuthService extends IdentBasicService {
 
-    private static final String BUSINESS_OAUTH="OAUTH";
+    private static final String BUSINESS_OAUTH = "OAUTH";
 
     @Autowired
     private TenantService tenantService;
@@ -57,43 +57,51 @@ public class OAuthService extends IdentBasicService {
     @Autowired
     private WechatMPAPI wechatService;
 
+    /**
+     * Login.
+     *
+     * @param oauthLoginReq the o auth login req
+     * @param tenantId      the tenant id
+     * @return the resp
+     * @throws Exception the exception
+     */
     @Transactional
-    public Resp<IdentOptInfo> login(OAuthLoginReq oAuthLoginReq, Long tenantId) throws Exception {
-        Resp<OAuthUserInfo> oAuthUserInfoR;
-        var tenantCertR = tenantService.getTenantCert(oAuthLoginReq.getCertKind(), tenantId);
-        if (!tenantCertR.ok()) {
-            return StandardResp.error(tenantCertR);
+    public Resp<IdentOptInfo> login(OAuthLoginReq oauthLoginReq, Long tenantId) throws Exception {
+        Resp<OAuthUserInfo> oauthUserInfoR;
+        var tenantIdentR = tenantService.getTenantIdent(oauthLoginReq.getIdentKind(), tenantId);
+        if (!tenantIdentR.ok()) {
+            return StandardResp.error(tenantIdentR);
         }
-        var oauthAk = tenantCertR.getBody().getOauthAk();
-        var oauthSk = tenantCertR.getBody().getOauthSk();
-        switch (oAuthLoginReq.getCertKind()) {
+        var oauthAk = tenantIdentR.getBody().getOauthAk();
+        var oauthSk = tenantIdentR.getBody().getOauthSk();
+        switch (oauthLoginReq.getIdentKind()) {
             case WECHAT_MP:
-                oAuthUserInfoR = wechatService.getUserInfo(oAuthLoginReq.getCode(), oauthAk, oauthSk);
+                oauthUserInfoR = wechatService.getUserInfo(oauthLoginReq.getCode(), oauthAk, oauthSk);
                 break;
             default:
-                return StandardResp.notFound(BUSINESS_OAUTH,"凭证类型不合法");
+                return StandardResp.notFound(BUSINESS_OAUTH, "认证类型不合法");
         }
-        if (!oAuthUserInfoR.ok()) {
-            return StandardResp.error(oAuthUserInfoR);
+        if (!oauthUserInfoR.ok()) {
+            return StandardResp.error(oauthUserInfoR);
         }
-        var lock = Dew.cluster.lock.instance("date:oauth:account:add:"+oAuthUserInfoR.getBody().getOpenid());
-        if(lock.tryLock(5000,5000)){
+        var lock = Dew.cluster.lock.instance("date:oauth:account:add:" + oauthUserInfoR.getBody().getOpenid());
+        if (lock.tryLock(5000, 5000)) {
             // 空方法，新请求等待5s后才能操作
             // 5s后释放锁
         }
-        log.info("OAuth Login : [{}] {}",tenantId,$.json.toJsonString(oAuthLoginReq));
-        var qAccountCert = QAccountCert.accountCert;
-        var accountId = sqlBuilder.select(qAccountCert.relAccountId)
-                .from(qAccountCert)
-                .where(qAccountCert.kind.eq(oAuthLoginReq.getCertKind()))
-                .where(qAccountCert.ak.eq(oAuthUserInfoR.getBody().getOpenid()))
+        log.info("OAuth Login : [{}] {}", tenantId, $.json.toJsonString(oauthLoginReq));
+        var qAccountIdent = QAccountIdent.accountIdent;
+        var accountId = sqlBuilder.select(qAccountIdent.relAccountId)
+                .from(qAccountIdent)
+                .where(qAccountIdent.kind.eq(oauthLoginReq.getIdentKind()))
+                .where(qAccountIdent.ak.eq(oauthUserInfoR.getBody().getOpenid()))
                 .fetchOne();
         if (accountId == null) {
             accountId = accountService.addAccountExt(AddAccountReq.builder()
                     .name("")
-                    .certReq(AddAccountCertReq.builder()
-                            .kind(AccountCertKind.WECHAT_MP)
-                            .ak(oAuthUserInfoR.getBody().getOpenid())
+                    .identReq(AddAccountIdentReq.builder()
+                            .kind(AccountIdentKind.WECHAT_MP)
+                            .ak(oauthUserInfoR.getBody().getOpenid())
                             .sk("").build())
                     .build(), tenantId).getBody();
         } else {
@@ -104,10 +112,10 @@ public class OAuthService extends IdentBasicService {
                     .where(qAccount.status.eq(CommonStatus.ENABLED))
                     .fetchOne() != null;
             if (!exist) {
-                return StandardResp.badRequest(BUSINESS_OAUTH,"用户状态异常");
+                return StandardResp.badRequest(BUSINESS_OAUTH, "用户状态异常");
             }
         }
-        log.info("Login Success:  [{}] ak(openId) {}",tenantId, oAuthUserInfoR.getBody().getOpenid());
+        log.info("Login Success:  [{}] ak(openId) {}", tenantId, oauthUserInfoR.getBody().getOpenid());
         var qAccount = QAccount.account;
         var parameters = sqlBuilder.select(qAccount.parameters)
                 .from(qAccount)
@@ -115,8 +123,7 @@ public class OAuthService extends IdentBasicService {
                 .fetchOne();
         String token = KeyHelper.generateToken();
         var optInfo = new IdentOptInfo()
-                // 转成String避免转化成Integer
-                .setAccountCode(accountId + "")
+                .setAccountCode(accountService.getOpenId(accountId).getBody())
                 .setToken(token)
                 .setRoleInfo(accountService.findRoleInfo(accountId));
         optInfo.setRelTenantId(tenantId);
@@ -128,36 +135,48 @@ public class OAuthService extends IdentBasicService {
         return StandardResp.success(optInfo);
     }
 
+    /**
+     * Gets access token.
+     *
+     * @param oauthKind the oauth kind
+     * @param tenantId  the tenant id
+     * @return the access token
+     */
     public Resp<String> getAccessToken(String oauthKind, Long tenantId) {
-        var tenantCertR = tenantService.getTenantCert(AccountCertKind.parse(oauthKind), tenantId);
-        if (!tenantCertR.ok()) {
-            return StandardResp.error(tenantCertR);
+        var tenantIdentR = tenantService.getTenantIdent(AccountIdentKind.parse(oauthKind), tenantId);
+        if (!tenantIdentR.ok()) {
+            return StandardResp.error(tenantIdentR);
         }
-        var oauthAk = tenantCertR.getBody().getOauthAk();
-        var oauthSk = tenantCertR.getBody().getOauthSk();
-        if (oauthKind.equalsIgnoreCase(AccountCertKind.WECHAT_MP.toString())) {
+        var oauthAk = tenantIdentR.getBody().getOauthAk();
+        var oauthSk = tenantIdentR.getBody().getOauthSk();
+        if (oauthKind.equalsIgnoreCase(AccountIdentKind.WECHAT_MP.toString())) {
             return wechatService.getAccessToken(oauthAk, oauthSk);
         }
-        return StandardResp.notFound(BUSINESS_OAUTH,"凭证类型不合法");
+        return StandardResp.notFound(BUSINESS_OAUTH, "认证类型不合法");
     }
 
+    /**
+     * O auth user info.
+     */
     @Data
     @Builder
     public static class OAuthUserInfo {
-
-        @Tolerate
-        public OAuthUserInfo() {
-        }
 
         /**
          * 用户唯一标识.
          */
         private String openid;
-
         /**
          * 同一平台下的多个用户共用一个标识.
          */
         private String unionid;
+
+        /**
+         * Instantiates a new O auth user info.
+         */
+        @Tolerate
+        public OAuthUserInfo() {
+        }
 
     }
 

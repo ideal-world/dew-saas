@@ -21,11 +21,15 @@ import com.ecfront.dew.common.Resp;
 import group.idealworld.dew.Dew;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.common.utils.ResponseProcessor;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Map;
 
+/**
+ * Basic test.
+ *
+ * @author gudaoxuri
+ */
 public abstract class BasicTest extends ResponseProcessor {
 
     @Value("${server.port:8080}")
@@ -33,6 +37,11 @@ public abstract class BasicTest extends ResponseProcessor {
 
     private IdentOptInfo identOptInfo;
 
+    /**
+     * Sets ident opt info.
+     *
+     * @param identOptInfo the ident opt info
+     */
     protected void setIdentOptInfo(IdentOptInfo identOptInfo) {
         this.identOptInfo = identOptInfo;
     }

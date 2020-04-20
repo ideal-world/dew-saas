@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 应用控制台机构管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -45,14 +47,25 @@ public class AppOrganizationController extends BasicController {
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;
 
+    /**
+     * 添加当前应用的机构.
+     *
+     * @param addOrganizationReq the add organization req
+     * @return the resp
+     */
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的机构")
-    public Resp<Long> addOrganization(@RequestBody AddOrganizationReq addOrganizationReq) {
+    public Resp<Long> addOrganization(@Validated @RequestBody AddOrganizationReq addOrganizationReq) {
         return organizationService.AddOrganization(addOrganizationReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 获取当前应用的机构列表信息.
+     *
+     * @return the resp
+     */
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的机构列表信息")
     public Resp<List<OrganizationInfoResp>> findOrganizationInfo() {
@@ -61,16 +74,29 @@ public class AppOrganizationController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 修改当前应用的某个机构.
+     *
+     * @param organizationId        the organization id
+     * @param modifyOrganizationReq the modify organization req
+     * @return the resp
+     */
     @PatchMapping(value = "{organizationId}")
     @ApiOperation(value = "修改当前应用的某个机构")
     public Resp<Void> modifyOrganization(@PathVariable Long organizationId,
-                                         @RequestBody ModifyOrganizationReq modifyOrganizationReq) {
+                                         @Validated @RequestBody ModifyOrganizationReq modifyOrganizationReq) {
         return organizationService.modifyOrganization(modifyOrganizationReq,
                 organizationId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 删除当前应用的某个机构.
+     *
+     * @param organizationId the organization id
+     * @return the resp
+     */
     @DeleteMapping(value = "{organizationId}")
     @ApiOperation(value = "删除当前应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
     public Resp<Long> deleteOrganization(@PathVariable Long organizationId) {

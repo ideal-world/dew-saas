@@ -15,21 +15,21 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>group.idealworld.dew</groupId>
-        <artifactId>saas-ident-parent</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
-        <relativePath>../</relativePath>
-    </parent>
-
-    <artifactId>saas-ident-frontend</artifactId>
-    <name>3.1 Dew SAAS Ident Frontend</name>
-    <packaging>pom</packaging>
+  <parent>
+    <groupId>group.idealworld.dew</groupId>
+    <artifactId>saas-ident-parent</artifactId>
     <version>2.1.0-SNAPSHOT</version>
+    <relativePath>../</relativePath>
+  </parent>
+
+  <artifactId>saas-ident-frontend</artifactId>
+  <name>3.1 Dew SAAS Ident Frontend</name>
+  <packaging>pom</packaging>
+  <version>2.1.0-SNAPSHOT</version>
 
 </project>

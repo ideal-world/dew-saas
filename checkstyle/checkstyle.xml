@@ -147,11 +147,11 @@
             <message key="name.invalidPattern"
                      value="Type name ''{0}'' must match pattern ''{1}''."/>
         </module>
-        <module name="MemberName">
+       <!-- <module name="MemberName">
             <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
             <message key="name.invalidPattern"
                      value="Member name ''{0}'' must match pattern ''{1}''."/>
-        </module>
+        </module>-->
         <module name="ParameterName">
             <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern"
@@ -169,7 +169,7 @@
         </module>
         <module name="LocalVariableName">
             <property name="tokens" value="VARIABLE_DEF"/>
-            <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
+            <property name="format" value="^[a-z]([a-zA-Z0-9]*)?$"/>
             <message key="name.invalidPattern"
                      value="Local variable name ''{0}'' must match pattern ''{1}''."/>
         </module>
@@ -213,7 +213,7 @@
             <property name="allowedAbbreviationLength" value="1"/>
         </module>-->
         <module name="OverloadMethodsDeclarationOrder"/>
-        <module name="VariableDeclarationUsageDistance"/>
+       <!-- <module name="VariableDeclarationUsageDistance"/>-->
         <!--与Idea的包导入优化规则冲突，优先使用idea规则-->
         <!--<module name="CustomImportOrder">
             <property name="sortImportsInGroupAlphabetically" value="true"/>
@@ -227,12 +227,12 @@
             <property name="allowLineBreaks" value="true"/>
         </module>
         <module name="ParenPad"/>
-        <module name="OperatorWrap">
+        <!--<module name="OperatorWrap">
             <property name="option" value="NL"/>
             <property name="tokens"
                       value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR,
                     LT, MINUS, MOD, NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR, METHOD_REF "/>
-        </module>
+        </module>-->
         <module name="AnnotationLocation">
             <property name="id" value="AnnotationLocationMostCases"/>
             <property name="tokens"

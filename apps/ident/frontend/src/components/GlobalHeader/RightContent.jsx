@@ -1,23 +1,40 @@
-import { Tooltip, Tag } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
-import React from 'react';
-import { connect } from 'dva';
-import Avatar from './AvatarDropdown';
-import HeaderSearch from '../HeaderSearch';
-import SelectLang from '../SelectLang';
-import styles from './index.less';
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Tag, Tooltip} from 'antd'
+import {QuestionCircleOutlined} from '@ant-design/icons'
+import React from 'react'
+import {connect} from 'dva'
+import Avatar from './AvatarDropdown'
+import HeaderSearch from '../HeaderSearch'
+import SelectLang from '../SelectLang'
+import styles from './index.less'
+
 const ENVTagColor = {
   dev: 'orange',
   test: 'green',
   pre: '#87d068',
-};
+}
 
 const GlobalHeaderRight = props => {
-  const { theme, layout } = props;
-  let className = styles.right;
+  const {theme, layout} = props
+  let className = styles.right
 
   if (theme === 'dark' && layout === 'topmenu') {
-    className = `${styles.right}  ${styles.dark}`;
+    className = `${styles.right}  ${styles.dark}`
   }
 
   return (
@@ -54,21 +71,21 @@ const GlobalHeaderRight = props => {
           rel="noopener noreferrer"
           className={styles.action}
         >
-          <QuestionCircleOutlined />
+          <QuestionCircleOutlined/>
         </a>
       </Tooltip>
-      <Avatar />
+      <Avatar/>
       {REACT_APP_ENV && (
         <span>
           <Tag color={ENVTagColor[REACT_APP_ENV]}>{REACT_APP_ENV}</Tag>
         </span>
       )}
-      <SelectLang className={styles.action} />
+      <SelectLang className={styles.action}/>
     </div>
-  );
-};
+  )
+}
 
-export default connect(({ settings }) => ({
+export default connect(({settings}) => ({
   theme: settings.navTheme,
   layout: settings.layout,
-}))(GlobalHeaderRight);
+}))(GlobalHeaderRight)

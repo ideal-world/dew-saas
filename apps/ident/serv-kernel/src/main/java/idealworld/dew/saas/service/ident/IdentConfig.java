@@ -21,6 +21,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
+ * Ident config.
+ *
  * @author gudaoxuri
  */
 @Component
@@ -33,6 +35,9 @@ public class IdentConfig {
     private Security security = new Security();
     private App app = new App();
 
+    /**
+     * Security.
+     */
     @Data
     public static class Security {
         private String systemAdminPositionCode = "SYSTEM_ADMIN";
@@ -47,6 +52,9 @@ public class IdentConfig {
 
     }
 
+    /**
+     * App.
+     */
     @Data
     public static class App {
         private String authFieldName = "Authorization";

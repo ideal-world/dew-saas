@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 应用控制台资源管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -46,31 +48,56 @@ public class AppResourceController extends BasicController {
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;
 
+    /**
+     * 添加当前应用的资源组.
+     *
+     * @param addResourceGroupReq the add resource group req
+     * @return the resp
+     */
     @PostMapping(value = "group")
     @ApiOperation(value = "添加当前应用的资源组")
-    public Resp<Long> addResourceGroup(@RequestBody AddResourceGroupReq addResourceGroupReq) {
+    public Resp<Long> addResourceGroup(@Validated @RequestBody AddResourceGroupReq addResourceGroupReq) {
         return resourceService.addResourceGroup(addResourceGroupReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 添加当前应用的资源.
+     *
+     * @param addResourceReq the add resource req
+     * @return the resp
+     */
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前应用的资源")
-    public Resp<Long> addResource(@RequestBody AddResourceReq addResourceReq) {
+    public Resp<Long> addResource(@Validated @RequestBody AddResourceReq addResourceReq) {
         return resourceService.addResource(addResourceReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 修改当前应用的某个资源（组）.
+     *
+     * @param resourceId        the resource id
+     * @param modifyResourceReq the modify resource req
+     * @return the resp
+     */
     @PatchMapping(value = "{resourceId}")
     @ApiOperation(value = "修改当前应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long resourceId,
-                                     @RequestBody ModifyResourceReq modifyResourceReq) {
+                                     @Validated @RequestBody ModifyResourceReq modifyResourceReq) {
         return resourceService.modifyResource(modifyResourceReq, resourceId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 获取当前应用的某个资源（组）信息.
+     *
+     * @param resourceId the resource id
+     * @return the resource
+     */
     @GetMapping(value = "{resourceId}")
     @ApiOperation(value = "获取当前应用的某个资源（组）信息")
     public Resp<ResourceInfoResp> getResource(@PathVariable Long resourceId) {
@@ -79,6 +106,11 @@ public class AppResourceController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 获取当前应用的资源（组）列表信息.
+     *
+     * @return the resp
+     */
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前应用的资源（组）列表信息")
     public Resp<List<ResourceInfoResp>> findResources() {
@@ -87,6 +119,12 @@ public class AppResourceController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 删除当前应用的某个资源（组）.
+     *
+     * @param resourceId the resource id
+     * @return the resp
+     */
     @DeleteMapping(value = "{resourceId}")
     @ApiOperation(value = "删除当前应用的某个资源（组）", notes = "资源（组）、权限")
     public Resp<Void> deleteResource(@PathVariable Long resourceId) {

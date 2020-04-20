@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * Test controller.
+ *
  * @author gudaoxuri
  */
 @RestController
 @RequestMapping(value = "/mgr")
 public class TestController {
 
+    /**
+     * Test permission 1.
+     *
+     * @return the resp
+     */
     @GetMapping(value = "account")
     public Resp<Void> testPermission1() {
         return StandardResp.success(null);
     }
 
+    /**
+     * Test permission 2.
+     *
+     * @return the resp
+     */
     @GetMapping(value = "account/{id}")
     public Resp<Void> testPermission2() {
         return StandardResp.success(null);

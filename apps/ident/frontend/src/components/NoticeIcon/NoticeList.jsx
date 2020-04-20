@@ -1,20 +1,36 @@
-import { Avatar, List } from 'antd';
-import React from 'react';
-import classNames from 'classnames';
-import styles from './NoticeList.less';
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Avatar, List} from 'antd'
+import React from 'react'
+import classNames from 'classnames'
+import styles from './NoticeList.less'
 
 const NoticeList = ({
-  data = [],
-  onClick,
-  onClear,
-  title,
-  onViewMore,
-  emptyText,
-  showClear = true,
-  clearText,
-  viewMoreText,
-  showViewMore = false,
-}) => {
+                      data = [],
+                      onClick,
+                      onClear,
+                      title,
+                      onViewMore,
+                      emptyText,
+                      showClear = true,
+                      clearText,
+                      viewMoreText,
+                      showViewMore = false,
+                    }) => {
   if (data.length === 0) {
     return (
       <div className={styles.notFound}>
@@ -24,7 +40,7 @@ const NoticeList = ({
         />
         <div>{emptyText}</div>
       </div>
-    );
+    )
   }
 
   return (
@@ -35,15 +51,15 @@ const NoticeList = ({
         renderItem={(item, i) => {
           const itemCls = classNames(styles.item, {
             [styles.read]: item.read,
-          }); // eslint-disable-next-line no-nested-ternary
+          }) // eslint-disable-next-line no-nested-ternary
 
           const leftIcon = item.avatar ? (
             typeof item.avatar === 'string' ? (
-              <Avatar className={styles.avatar} src={item.avatar} />
+              <Avatar className={styles.avatar} src={item.avatar}/>
             ) : (
               <span className={styles.iconElement}>{item.avatar}</span>
             )
-          ) : null;
+          ) : null
           return (
             <List.Item
               className={itemCls}
@@ -67,7 +83,7 @@ const NoticeList = ({
                 }
               />
             </List.Item>
-          );
+          )
         }}
       />
       <div className={styles.bottomBar}>
@@ -80,7 +96,7 @@ const NoticeList = ({
           <div
             onClick={e => {
               if (onViewMore) {
-                onViewMore(e);
+                onViewMore(e)
               }
             }}
           >
@@ -89,7 +105,7 @@ const NoticeList = ({
         ) : null}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NoticeList;
+export default NoticeList

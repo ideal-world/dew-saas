@@ -20,7 +20,9 @@ import idealworld.dew.saas.DewSAASApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
 /**
- * The type Dew ident application.
+ * Dew ident application.
+ *
+ * @author gudaoxuri
  */
 public class TestIdentSDKApplication extends DewSAASApplication {
 

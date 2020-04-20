@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 租户控制台资源管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -43,28 +45,57 @@ public class ConsoleResourceController extends BasicController {
     @Autowired
     private ResourceService resourceService;
 
+    /**
+     * 添加当前租户某个应用的资源组.
+     *
+     * @param appId               the app id
+     * @param addResourceGroupReq the add resource group req
+     * @return the resp
+     */
     @PostMapping(value = "{appId}/group")
     @ApiOperation(value = "添加当前租户某个应用的资源组")
     public Resp<Long> addResourceGroup(@PathVariable Long appId,
-                                       @RequestBody AddResourceGroupReq addResourceGroupReq) {
+                                       @Validated @RequestBody AddResourceGroupReq addResourceGroupReq) {
         return resourceService.addResourceGroup(addResourceGroupReq, appId, getCurrentTenantId());
     }
 
+    /**
+     * 添加当前租户某个应用的资源.
+     *
+     * @param appId          the app id
+     * @param addResourceReq the add resource req
+     * @return the resp
+     */
     @PostMapping(value = "{appId}")
     @ApiOperation(value = "添加当前租户某个应用的资源")
     public Resp<Long> addResource(@PathVariable Long appId,
-                                  @RequestBody AddResourceReq addResourceReq) {
+                                  @Validated @RequestBody AddResourceReq addResourceReq) {
         return resourceService.addResource(addResourceReq, appId, getCurrentTenantId());
     }
 
+    /**
+     * 修改当前租户某个应用的某个资源（组）.
+     *
+     * @param appId             the app id
+     * @param resourceId        the resource id
+     * @param modifyResourceReq the modify resource req
+     * @return the resp
+     */
     @PatchMapping(value = "{appId}/{resourceId}")
     @ApiOperation(value = "修改当前租户某个应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long appId,
                                      @PathVariable Long resourceId,
-                                     @RequestBody ModifyResourceReq modifyResourceReq) {
+                                     @Validated @RequestBody ModifyResourceReq modifyResourceReq) {
         return resourceService.modifyResource(modifyResourceReq, resourceId, appId, getCurrentTenantId());
     }
 
+    /**
+     * 获取当前租户某个应用的某个资源（组）信息.
+     *
+     * @param appId      the app id
+     * @param resourceId the resource id
+     * @return the resource
+     */
     @GetMapping(value = "{appId}/{resourceId}")
     @ApiOperation(value = "获取当前租户某个应用的某个资源（组）信息")
     public Resp<ResourceInfoResp> getResource(@PathVariable Long appId,
@@ -72,12 +103,25 @@ public class ConsoleResourceController extends BasicController {
         return resourceService.getResource(resourceId, appId, getCurrentTenantId());
     }
 
+    /**
+     * 获取当前租户某个应用的资源（组）列表信息.
+     *
+     * @param appId the app id
+     * @return the resp
+     */
     @GetMapping(value = "{appId}")
     @ApiOperation(value = "获取当前租户某个应用的资源（组）列表信息")
     public Resp<List<ResourceInfoResp>> findResources(@PathVariable Long appId) {
         return resourceService.findResources(appId, getCurrentTenantId());
     }
 
+    /**
+     * 删除当前租户某个应用的某个资源（组）.
+     *
+     * @param appId      the app id
+     * @param resourceId the resource id
+     * @return the resp
+     */
     @DeleteMapping(value = "{appId}/{resourceId}")
     @ApiOperation(value = "删除当前租户某个应用的某个资源（组）", notes = "资源（组）、权限")
     public Resp<Void> deleteResource(@PathVariable Long appId, @PathVariable Long resourceId) {

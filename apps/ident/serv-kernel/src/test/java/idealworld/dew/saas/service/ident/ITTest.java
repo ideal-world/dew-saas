@@ -16,11 +16,6 @@
 
 package idealworld.dew.saas.service.ident;
 
-import idealworld.dew.saas.common.service.dto.IdentOptInfo;
-import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
-import idealworld.dew.saas.service.ident.dto.app.AppCertInfoResp;
-import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The type tenant test.
+ * tenant test.
  *
  * @author gudaoxuri
  */
@@ -42,6 +37,9 @@ public class ITTest extends BasicTest {
     @Autowired
     private AuthTest authTest;
 
+    /**
+     * Test all.
+     */
     @Test
     public void testAll() {
         var tenantId = tenantAdminTest.testAll();

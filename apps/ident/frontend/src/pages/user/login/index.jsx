@@ -1,13 +1,29 @@
-import { AlipayCircleOutlined, TaobaoCircleOutlined, WeiboCircleOutlined } from '@ant-design/icons';
-import { Alert, Checkbox } from 'antd';
-import React, { useState } from 'react';
-import { Link } from 'umi';
-import { connect } from 'dva';
-import LoginFrom from './components/Login';
-import styles from './style.less';
-const { Tab, UserName, Password, Mobile, Captcha, Submit } = LoginFrom;
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-const LoginMessage = ({ content }) => (
+import {Alert, Checkbox} from 'antd'
+import React, {useState} from 'react'
+import {Link} from 'umi'
+import {connect} from 'dva'
+import LoginFrom from './components/Login'
+import styles from './style.less'
+
+const {Tab, UserName, Password, Mobile, Captcha, Submit} = LoginFrom
+
+const LoginMessage = ({content}) => (
   <Alert
     style={{
       marginBottom: 24,
@@ -16,28 +32,28 @@ const LoginMessage = ({ content }) => (
     type="error"
     showIcon
   />
-);
+)
 
 const Login = props => {
-  const { userLogin = {}, submitting } = props;
-  const { status, type: loginType } = userLogin;
-  const [autoLogin, setAutoLogin] = useState(true);
-  const [type, setType] = useState('account');
+  const {userLogin = {}, submitting} = props
+  const {status, type: loginType} = userLogin
+  const [autoLogin, setAutoLogin] = useState(true)
+  const [type, setType] = useState('account')
 
   const handleSubmit = values => {
-    const { dispatch } = props;
+    const {dispatch} = props
     dispatch({
       type: 'login/login',
-      payload: { ...values, type },
-    });
-  };
+      payload: {...values, type},
+    })
+  }
 
   return (
     <div className={styles.main}>
       <LoginFrom activeKey={type} onTabChange={setType} onSubmit={handleSubmit}>
         <Tab key="account" tab="登录">
           {status === 'error' && loginType === 'account' && !submitting && (
-            <LoginMessage content="账户或密码错误（admin/ant.design）" />
+            <LoginMessage content="账户或密码错误（admin/ant.design）"/>
           )}
 
           <UserName
@@ -62,36 +78,36 @@ const Login = props => {
           />
         </Tab>
         {/*<Tab key="mobile" tab="手机号登录">*/}
-          {/*{status === 'error' && loginType === 'mobile' && !submitting && (*/}
-            {/*<LoginMessage content="验证码错误" />*/}
-          {/*)}*/}
-          {/*<Mobile*/}
-            {/*name="mobile"*/}
-            {/*placeholder="手机号"*/}
-            {/*rules={[*/}
-              {/*{*/}
-                {/*required: true,*/}
-                {/*message: '请输入手机号！',*/}
-              {/*},*/}
-              {/*{*/}
-                {/*pattern: /^1\d{10}$/,*/}
-                {/*message: '手机号格式错误！',*/}
-              {/*},*/}
-            {/*]}*/}
-          {/*/>*/}
-          {/*<Captcha*/}
-            {/*name="captcha"*/}
-            {/*placeholder="验证码"*/}
-            {/*countDown={120}*/}
-            {/*getCaptchaButtonText=""*/}
-            {/*getCaptchaSecondText="秒"*/}
-            {/*rules={[*/}
-              {/*{*/}
-                {/*required: true,*/}
-                {/*message: '请输入验证码！',*/}
-              {/*},*/}
-            {/*]}*/}
-          {/*/>*/}
+        {/*{status === 'error' && loginType === 'mobile' && !submitting && (*/}
+        {/*<LoginMessage content="验证码错误" />*/}
+        {/*)}*/}
+        {/*<Mobile*/}
+        {/*name="mobile"*/}
+        {/*placeholder="手机号"*/}
+        {/*rules={[*/}
+        {/*{*/}
+        {/*required: true,*/}
+        {/*message: '请输入手机号！',*/}
+        {/*},*/}
+        {/*{*/}
+        {/*pattern: /^1\d{10}$/,*/}
+        {/*message: '手机号格式错误！',*/}
+        {/*},*/}
+        {/*]}*/}
+        {/*/>*/}
+        {/*<Captcha*/}
+        {/*name="captcha"*/}
+        {/*placeholder="验证码"*/}
+        {/*countDown={120}*/}
+        {/*getCaptchaButtonText=""*/}
+        {/*getCaptchaSecondText="秒"*/}
+        {/*rules={[*/}
+        {/*{*/}
+        {/*required: true,*/}
+        {/*message: '请输入验证码！',*/}
+        {/*},*/}
+        {/*]}*/}
+        {/*/>*/}
         {/*</Tab>*/}
         <div>
           <Checkbox checked={autoLogin} onChange={e => setAutoLogin(e.target.checked)}>
@@ -117,10 +133,10 @@ const Login = props => {
         </div>
       </LoginFrom>
     </div>
-  );
-};
+  )
+}
 
-export default connect(({ login, loading }) => ({
+export default connect(({login, loading}) => ({
   userLogin: login,
   submitting: loading.effects['login/login'],
-}))(Login);
+}))(Login)

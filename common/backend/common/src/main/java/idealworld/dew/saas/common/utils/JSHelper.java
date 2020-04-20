@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package idealworld.dew.saas.common.utils;
 
 import javax.script.*;
@@ -5,13 +21,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The type Js helper.
+ * Js helper.
  *
  * @author gudoxuri
  */
 public class JSHelper {
 
     private static final ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
+    private static final Map<String, JSHelper> JS_HELPER_MAP = new HashMap<>();
     private Invocable invocable;
 
     private JSHelper(Invocable invocable) {
@@ -31,22 +48,6 @@ public class JSHelper {
         script.eval();
         return new JSHelper((Invocable) script.getEngine());
     }
-
-    /**
-     * Execute t.
-     *
-     * @param <T>       the type parameter
-     * @param jsFunName the js fun name
-     * @param args      the args
-     * @return the t
-     * @throws ScriptException       the script exception
-     * @throws NoSuchMethodException the no such method exception
-     */
-    public <T> T execute(String jsFunName, Object... args) throws ScriptException, NoSuchMethodException {
-        return (T) invocable.invokeFunction(jsFunName, args);
-    }
-
-    private static final Map<String, JSHelper> JS_HELPER_MAP = new HashMap<>();
 
     /**
      * Build by inst id.
@@ -83,6 +84,20 @@ public class JSHelper {
      */
     public static void removeAll() {
         JS_HELPER_MAP.clear();
+    }
+
+    /**
+     * Execute t.
+     *
+     * @param <T>       the type parameter
+     * @param jsFunName the js fun name
+     * @param args      the args
+     * @return the t
+     * @throws ScriptException       the script exception
+     * @throws NoSuchMethodException the no such method exception
+     */
+    public <T> T execute(String jsFunName, Object... args) throws ScriptException, NoSuchMethodException {
+        return (T) invocable.invokeFunction(jsFunName, args);
     }
 
     /*public static void main(String[] args) throws ScriptException, NoSuchMethodException {

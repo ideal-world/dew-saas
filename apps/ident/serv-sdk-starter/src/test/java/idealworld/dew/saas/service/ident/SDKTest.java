@@ -21,7 +21,7 @@ import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
-import idealworld.dew.saas.service.ident.dto.app.AppCertInfoResp;
+import idealworld.dew.saas.service.ident.dto.app.AppIdentInfoResp;
 import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
 import idealworld.dew.saas.service.ident.dto.organization.ModifyOrganizationReq;
 import idealworld.dew.saas.service.ident.dto.permission.AddPermissionReq;
@@ -32,7 +32,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.AddResourceGroupReq;
 import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
 import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import idealworld.dew.saas.service.ident.service.sdk.AuthProcessor;
@@ -47,7 +47,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Date;
 
 /**
- * The type tenant test.
+ * tenant test.
  *
  * @author gudaoxuri
  */
@@ -61,39 +61,44 @@ public class SDKTest extends BasicTest {
     @Autowired
     private AuthProcessor authProcessor;
 
+    /**
+     * Test sdk.
+     *
+     * @throws InterruptedException the interrupted exception
+     */
     @Test
     public void testSDK() throws InterruptedException {
         // 租户注册
         var identOptInfo = postToEntity(sdk.getConfig().getIdent().getUrl() + "/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
-                .certKind(AccountCertKind.USERNAME)
+                .identKind(AccountIdentKind.USERNAME)
                 .ak("gudaoxuri")
                 .sk("pwd123")
                 .tenantName("测试租户")
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
-        var appId = postToEntity(sdk.getConfig().getIdent().getUrl() +"/console/app", AddAppReq.builder()
+        var appId = postToEntity(sdk.getConfig().getIdent().getUrl() + "/console/app", AddAppReq.builder()
                 .name("测试应用")
                 .icon("")
                 .build(), Long.class).getBody();
-        var appCert = getToList(sdk.getConfig().getIdent().getUrl() +"/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody().get(0);
-        System.out.println("=====================\nAK:" + appCert.getAk() + "\nSK:" + appCert.getSk() + "\n=====================");
+        var appIdent = getToList(sdk.getConfig().getIdent().getUrl() + "/console/app/" + appId + "/ident", AppIdentInfoResp.class).getBody().get(0);
+        System.out.println("=====================\nAK:" + appIdent.getAk() + "\nSK:" + appIdent.getSk() + "\n=====================");
 
         sdk.getConfig().getBasic().setTenantId(identOptInfo.getRelTenantId());
-        sdk.getConfig().getBasic().setAppAk(appCert.getAk());
-        sdk.getConfig().getBasic().setAppSk(appCert.getSk());
+        sdk.getConfig().getBasic().setAppAk(appIdent.getAk());
+        sdk.getConfig().getBasic().setAppSk(appIdent.getSk());
         sdk.init();
         authProcessor.doSub();
         // 等待2s用于建立mq连接
-       Thread.sleep(2000);
+        Thread.sleep(2000);
         var orgId = testOrganization();
         var positionCode = testPosition();
         var postId = testPost(positionCode);
         var resId = testResource();
         var permissionId = testPermission(postId, resId);
-        var certInfo = testAccount(postId);
+        var identInfo = testAccount(postId);
         Thread.sleep(1000);
-        testAuth(identOptInfo.getRelTenantId(), certInfo._0, certInfo._1, certInfo._2);
+        testAuth(identOptInfo.getRelTenantId(), identInfo._0, identInfo._1, identInfo._2);
     }
 
     private Long testOrganization() {
@@ -229,12 +234,12 @@ public class SDKTest extends BasicTest {
         return permissionId;
     }
 
-    private Tuple3<AccountCertKind, String, String> testAccount(Long postId) {
+    private Tuple3<AccountIdentKind, String, String> testAccount(Long postId) {
         // 添加当前租户的账号
         var accountId = sdk.account.addAccount(AddAccountReq.builder()
                 .name("测试用户")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test1")
                         .sk("123")
                         .build())
@@ -244,8 +249,8 @@ public class SDKTest extends BasicTest {
                 .build()).getBody();
         sdk.account.addAccount(AddAccountReq.builder()
                 .name("测试用户2")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test2")
                         .sk("123")
                         .build())
@@ -255,8 +260,8 @@ public class SDKTest extends BasicTest {
                 .build());
         sdk.account.addAccount(AddAccountReq.builder()
                 .name("测试用户3")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test3")
                         .sk("123")
                         .build())
@@ -278,8 +283,8 @@ public class SDKTest extends BasicTest {
         // 重新添加当前租户的账号
         accountId = sdk.account.addAccount(AddAccountReq.builder()
                 .name("测试用户")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test1")
                         .sk("123")
                         .build())
@@ -291,26 +296,26 @@ public class SDKTest extends BasicTest {
         var account = sdk.account.getAccountInfo(accountId).getBody();
         Assert.assertEquals("测试用户", account.getName());
         // --------------------------------------------------------------
-        // 添加当前租户某个账号的凭证
-        var accountCertId = sdk.account.addAccountCert(accountId, AddAccountCertReq.builder()
-                .kind(AccountCertKind.USERNAME)
+        // 添加当前租户某个账号的认证
+        var accountIdentId = sdk.account.addAccountIdent(accountId, AddAccountIdentReq.builder()
+                .kind(AccountIdentKind.USERNAME)
                 .ak("test")
                 .sk("123")
                 .build()).getBody();
-        // 修改当前租户某个账号的某个凭证
-        sdk.account.modifyAccountCert(accountId, accountCertId, ModifyAccountCertReq.builder()
-                .validTime(new Date(System.currentTimeMillis() + 100000L))
+        // 修改当前租户某个账号的某个认证
+        sdk.account.modifyAccountIdent(accountId, accountIdentId, ModifyAccountIdentReq.builder()
+                .validEndTime(new Date(System.currentTimeMillis() + 100000L))
                 .build());
-        // 获取当前租户某个账号的凭证列表信息
-        var accountCerts = sdk.account.findAccountCertInfo(accountId).getBody();
-        Assert.assertEquals(2, accountCerts.size());
-        // 删除当前租户某个账号的某个凭证
-        sdk.account.deleteAccountCert(accountId, accountCertId);
-        // 删除当前租户某个账号的所有凭证
-        sdk.account.deleteAccountCerts(accountId);
-        // 重新添加当前租户某个账号的凭证
-        accountCertId = sdk.account.addAccountCert(accountId, AddAccountCertReq.builder()
-                .kind(AccountCertKind.USERNAME)
+        // 获取当前租户某个账号的认证列表信息
+        var accountIdents = sdk.account.findAccountIdentInfo(accountId).getBody();
+        Assert.assertEquals(2, accountIdents.size());
+        // 删除当前租户某个账号的某个认证
+        sdk.account.deleteAccountIdent(accountId, accountIdentId);
+        // 删除当前租户某个账号的所有认证
+        sdk.account.deleteAccountIdents(accountId);
+        // 重新添加当前租户某个账号的认证
+        accountIdentId = sdk.account.addAccountIdent(accountId, AddAccountIdentReq.builder()
+                .kind(AccountIdentKind.USERNAME)
                 .ak("test")
                 .sk("123")
                 .build()).getBody();
@@ -326,15 +331,23 @@ public class SDKTest extends BasicTest {
         accountPosts = sdk.account.findAccountPostInfo(accountId).getBody();
         Assert.assertEquals(postId, accountPosts.get(0).getRelPostId());
 
-        return new Tuple3<>(AccountCertKind.USERNAME, "test", "123");
+        return new Tuple3<>(AccountIdentKind.USERNAME, "test", "123");
     }
 
-    public void testAuth(Long tenantId, AccountCertKind certKind, String ak, String sk) {
+    /**
+     * Test auth.
+     *
+     * @param tenantId  the tenant id
+     * @param identKind the ident kind
+     * @param ak        the ak
+     * @param sk        the sk
+     */
+    public void testAuth(Long tenantId, AccountIdentKind identKind, String ak, String sk) {
         var requestR = getToEntity("/mgr/account", Void.class);
         Assert.assertFalse(requestR.ok());
         // 登录
-        var identOptInfo = postToEntity(sdk.getConfig().getIdent().getUrl() +"/auth/" + tenantId + "/login", LoginReq.builder()
-                .certKind(certKind)
+        var identOptInfo = postToEntity(sdk.getConfig().getIdent().getUrl() + "/auth/" + tenantId + "/login", LoginReq.builder()
+                .identKind(identKind)
                 .ak(ak)
                 .sk(sk)
                 .build(), IdentOptInfo.class).getBody();

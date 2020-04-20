@@ -21,13 +21,13 @@ import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.dto.account.LoginReq;
 import idealworld.dew.saas.service.ident.dto.account.OAuthLoginReq;
 import idealworld.dew.saas.service.ident.dto.app.AddAppReq;
-import idealworld.dew.saas.service.ident.dto.tenant.AddTenantCertReq;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
+import idealworld.dew.saas.service.ident.dto.tenant.AddTenantIdentReq;
+import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
 import org.junit.Assert;
 import org.springframework.stereotype.Component;
 
 /**
- * The type auth test.
+ * auth test.
  *
  * @author gudaoxuri
  */
@@ -42,7 +42,7 @@ public class AuthTest extends BasicTest {
     private void testAuth(Long tenantId) {
         // 登录为普通用户
         var identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
-                .certKind(globalUserCertKind)
+                .identKind(globalUserIdentKind)
                 .ak(globalUserAk)
                 .sk(globalUserSk)
                 .build(), IdentOptInfo.class).getBody();
@@ -57,7 +57,7 @@ public class AuthTest extends BasicTest {
 
         // 登录为租户管理员
         identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
-                .certKind(globalTenantAdminCertKind)
+                .identKind(globalTenantAdminIdentKind)
                 .ak(globalTenantAdminAk)
                 .sk(globalTenantAdminSk)
                 .build(), IdentOptInfo.class).getBody();
@@ -84,21 +84,21 @@ public class AuthTest extends BasicTest {
         var oauthJson = $.json.toJson(oauth);
         // 登录为租户管理员
         var identOptInfo = postToEntity("/auth/" + tenantId + "/login", LoginReq.builder()
-                .certKind(globalTenantAdminCertKind)
+                .identKind(globalTenantAdminIdentKind)
                 .ak(globalTenantAdminAk)
                 .sk(globalTenantAdminSk)
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
-        // 添加当前租户的凭证
-        postToEntity("/console/tenant/cert", AddTenantCertReq.builder()
-                .kind(AccountCertKind.WECHAT_MP)
+        // 添加当前租户的认证
+        postToEntity("/console/tenant/ident", AddTenantIdentReq.builder()
+                .kind(AccountIdentKind.WECHAT_MP)
                 .oauthAk(oauthJson.get("wechat-mp").get("ak").asText())
                 .oauthSk(oauthJson.get("wechat-mp").get("sk").asText())
                 .build(), Long.class).getBody();
 
         // OAuth登录
         identOptInfo = postToEntity("/oauth/" + tenantId + "/login", OAuthLoginReq.builder()
-                .certKind(AccountCertKind.WECHAT_MP)
+                .identKind(AccountIdentKind.WECHAT_MP)
                 .code(oauthJson.get("wechat-mp").get("code").asText())
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);

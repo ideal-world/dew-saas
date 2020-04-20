@@ -19,10 +19,11 @@ package idealworld.dew.saas.service.ident;
 import idealworld.dew.saas.DewSAASApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.annotation.ComponentScan;
 
 /**
- * The type Dew ident application.
+ * Dew ident application.
+ *
+ * @author gudaoxuri
  */
 @SpringBootApplication
 public class TestDewIdentApplication extends DewSAASApplication {

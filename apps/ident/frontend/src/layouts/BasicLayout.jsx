@@ -1,19 +1,36 @@
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * Ant Design Pro v4 use `@ant-design/pro-layout` to handle Layout.
  * You can view component api by:
  * https://github.com/ant-design/ant-design-pro-layout
  */
-import ProLayout, { DefaultFooter } from '@ant-design/pro-layout';
-import { formatMessage } from 'umi-plugin-react/locale';
-import React, { useEffect } from 'react';
-import { Link } from 'umi';
-import { connect } from 'dva';
-import { GithubOutlined } from '@ant-design/icons';
-import { Result, Button } from 'antd';
-import Authorized from '@/utils/Authorized';
-import RightContent from '@/components/GlobalHeader/RightContent';
-import { isAntDesignPro, getAuthorityFromRouter } from '@/utils/utils';
-import logo from '../assets/logo.svg';
+import ProLayout, {DefaultFooter} from '@ant-design/pro-layout'
+import {formatMessage} from 'umi-plugin-react/locale'
+import React, {useEffect} from 'react'
+import {Link} from 'umi'
+import {connect} from 'dva'
+import {GithubOutlined} from '@ant-design/icons'
+import {Button, Result} from 'antd'
+import Authorized from '@/utils/Authorized'
+import RightContent from '@/components/GlobalHeader/RightContent'
+import {getAuthorityFromRouter, isAntDesignPro} from '@/utils/utils'
+import logo from '../assets/logo.svg'
+
 const noMatch = (
   <Result
     status="403"
@@ -25,16 +42,16 @@ const noMatch = (
       </Button>
     }
   />
-);
+)
 
 /**
  * use Authorized check all menu item
  */
 const menuDataRender = menuList =>
   menuList.map(item => {
-    const localItem = { ...item, children: item.children ? menuDataRender(item.children) : [] };
-    return Authorized.check(item.authority, localItem, null);
-  });
+    const localItem = {...item, children: item.children ? menuDataRender(item.children) : []}
+    return Authorized.check(item.authority, localItem, null)
+  })
 
 const defaultFooterDom = (
   <DefaultFooter
@@ -48,7 +65,7 @@ const defaultFooterDom = (
       },
       {
         key: 'github',
-        title: <GithubOutlined />,
+        title: <GithubOutlined/>,
         href: 'https://github.com/ant-design/ant-design-pro',
         blankTarget: true,
       },
@@ -60,11 +77,11 @@ const defaultFooterDom = (
       },
     ]}
   />
-);
+)
 
 const footerRender = () => {
   if (!isAntDesignPro()) {
-    return defaultFooterDom;
+    return defaultFooterDom
   }
 
   return (
@@ -85,8 +102,8 @@ const footerRender = () => {
         </a>
       </div>
     </>
-  );
-};
+  )
+}
 
 const BasicLayout = props => {
   const {
@@ -96,7 +113,7 @@ const BasicLayout = props => {
     location = {
       pathname: '/',
     },
-  } = props;
+  } = props
   /**
    * constructor
    */
@@ -105,9 +122,9 @@ const BasicLayout = props => {
     if (dispatch) {
       dispatch({
         type: 'user/fetchCurrent',
-      });
+      })
     }
-  }, []);
+  }, [])
   /**
    * init variables
    */
@@ -117,13 +134,13 @@ const BasicLayout = props => {
       dispatch({
         type: 'global/changeLayoutCollapsed',
         payload,
-      });
+      })
     }
-  }; // get children authority
+  } // get children authority
 
   const authorized = getAuthorityFromRouter(props.route.routes, location.pathname || '/') || {
     authority: undefined,
-  };
+  }
   return (
     <ProLayout
       logo={logo}
@@ -137,10 +154,10 @@ const BasicLayout = props => {
       onCollapse={handleMenuCollapse}
       menuItemRender={(menuItemProps, defaultDom) => {
         if (menuItemProps.isUrl || menuItemProps.children || !menuItemProps.path) {
-          return defaultDom;
+          return defaultDom
         }
 
-        return <Link to={menuItemProps.path}>{defaultDom}</Link>;
+        return <Link to={menuItemProps.path}>{defaultDom}</Link>
       }}
       breadcrumbRender={(routers = []) => [
         {
@@ -150,16 +167,16 @@ const BasicLayout = props => {
         ...routers,
       ]}
       itemRender={(route, params, routes, paths) => {
-        const first = routes.indexOf(route) === 0;
+        const first = routes.indexOf(route) === 0
         return first ? (
           <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
         ) : (
           <span>{route.breadcrumbName}</span>
-        );
+        )
       }}
       footerRender={footerRender}
       menuDataRender={menuDataRender}
-      rightContentRender={() => <RightContent />}
+      rightContentRender={() => <RightContent/>}
       {...props}
       {...settings}
     >
@@ -167,10 +184,10 @@ const BasicLayout = props => {
         {children}
       </Authorized>
     </ProLayout>
-  );
-};
+  )
+}
 
-export default connect(({ global, settings }) => ({
+export default connect(({global, settings}) => ({
   collapsed: global.collapsed,
   settings,
-}))(BasicLayout);
+}))(BasicLayout)

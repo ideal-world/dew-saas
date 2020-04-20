@@ -18,7 +18,6 @@ package idealworld.dew.saas.service.ident.service;
 
 import com.ecfront.dew.common.Resp;
 import com.querydsl.core.types.Projections;
-import idealworld.dew.saas.common.Constant;
 import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.Post;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Post service.
+ *
  * @author gudaoxuri
  */
 @Service
@@ -50,6 +51,11 @@ public class PostService extends IdentBasicService {
     @Autowired
     private PermissionService permissionService;
 
+    /**
+     * Gets tenant admin post id.
+     *
+     * @return the tenant admin post id
+     */
     @Cacheable("ident:cache:post:getTenantAdminPostId")
     public Long getTenantAdminPostId() {
         var qPost = QPost.post;
@@ -59,6 +65,11 @@ public class PostService extends IdentBasicService {
                 .fetchOne();
     }
 
+    /**
+     * Gets default post id.
+     *
+     * @return the default post id
+     */
     @Cacheable("ident:cache:post:getDefaultPostId")
     public Long getDefaultPostId() {
         var qPost = QPost.post;
@@ -68,6 +79,14 @@ public class PostService extends IdentBasicService {
                 .fetchOne();
     }
 
+    /**
+     * Add post.
+     *
+     * @param addPostReq  the add post req
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addPost(AddPostReq addPostReq, Long relAppId, Long relTenantId) {
         var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
@@ -82,17 +101,25 @@ public class PostService extends IdentBasicService {
                 .where(qPost.relOrganizationCode.eq(addPostReq.getRelOrganizationCode() != null ? addPostReq.getRelOrganizationCode() : ""))
                 .where(qPost.relPositionCode.eq(addPostReq.getRelPositionCode()))
                 .fetchCount() != 0) {
-            return StandardResp.conflict(BUSINESS_POST,"此岗位已存在");
+            return StandardResp.conflict(BUSINESS_POST, "此岗位已存在");
         }
         var position = Post.builder()
                 .relOrganizationCode(addPostReq.getRelOrganizationCode() != null ? addPostReq.getRelOrganizationCode() : "")
                 .relPositionCode(addPostReq.getRelPositionCode())
+                .sort(addPostReq.getSort() != null ? addPostReq.getSort() : 0)
                 .relAppId(relAppId)
                 .relTenantId(relTenantId)
                 .build();
         return saveEntity(position);
     }
 
+    /**
+     * Find post info.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     public Resp<List<PostInfoResp>> findPostInfo(Long relAppId, Long relTenantId) {
         var qPost = QPost.post;
         var postQuery = sqlBuilder
@@ -100,6 +127,7 @@ public class PostService extends IdentBasicService {
                         qPost.id,
                         qPost.relOrganizationCode,
                         qPost.relPositionCode,
+                        qPost.sort,
                         qPost.relAppId))
                 .from(qPost)
                 .where(qPost.relAppId.eq(relAppId))
@@ -107,14 +135,31 @@ public class PostService extends IdentBasicService {
         return findDTOs(postQuery);
     }
 
+    /**
+     * Delete post.
+     *
+     * @param postId      the post id
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> deletePost(Long postId, Long relAppId, Long relTenantId) {
-        doDeletePosts(new ArrayList<>() {{
-            add(postId);
-        }}, relAppId, relTenantId);
+        doDeletePosts(new ArrayList<>() {
+            {
+                add(postId);
+            }
+        }, relAppId, relTenantId);
         return StandardResp.success(null);
     }
 
+    /**
+     * Delete post.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Long> deletePost(Long relAppId, Long relTenantId) {
         var qPost = QPost.post;
@@ -126,10 +171,18 @@ public class PostService extends IdentBasicService {
         return doDeletePosts(deletePostIds, relAppId, relTenantId);
     }
 
+    /**
+     * Delete post by org codes.
+     *
+     * @param deleteOrgCodes the delete org codes
+     * @param relAppId       the rel app id
+     * @param relTenantId    the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Long> deletePostByOrgCodes(List<String> deleteOrgCodes, Long relAppId, Long relTenantId) {
-        if(deleteOrgCodes.isEmpty()){
-            return StandardResp.notFound(BUSINESS_POST,"没有要删除的机构");
+        if (deleteOrgCodes.isEmpty()) {
+            return StandardResp.notFound(BUSINESS_POST, "没有要删除的机构");
         }
         var qPost = QPost.post;
         var deletePostIds = sqlBuilder.select(qPost.id)
@@ -141,10 +194,18 @@ public class PostService extends IdentBasicService {
         return doDeletePosts(deletePostIds, relAppId, relTenantId);
     }
 
+    /**
+     * Delete post by position codes.
+     *
+     * @param deletePositionCodes the delete position codes
+     * @param relAppId            the rel app id
+     * @param relTenantId         the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Long> deletePostByPositionCodes(List<String> deletePositionCodes, Long relAppId, Long relTenantId) {
-        if(deletePositionCodes.isEmpty()){
-            return StandardResp.notFound(BUSINESS_POST,"没有要删除的职位");
+        if (deletePositionCodes.isEmpty()) {
+            return StandardResp.notFound(BUSINESS_POST, "没有要删除的职位");
         }
         var qPost = QPost.post;
         var deletePostIds = sqlBuilder.select(qPost.id)

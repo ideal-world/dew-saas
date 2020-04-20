@@ -22,8 +22,16 @@ import idealworld.dew.saas.common.service.BasicService;
 import idealworld.dew.saas.common.service.domain.IdEntity;
 import idealworld.dew.saas.service.ident.domain.SoftDelRecord;
 
+/**
+ * Ident basic service.
+ *
+ * @author gudaoxuri
+ */
 public abstract class IdentBasicService extends BasicService<SoftDelRecord> {
 
+    /**
+     * The constant ELECTION.
+     */
     protected static final ClusterElection ELECTION = Dew.cluster.election.instance("ident");
 
     @Override

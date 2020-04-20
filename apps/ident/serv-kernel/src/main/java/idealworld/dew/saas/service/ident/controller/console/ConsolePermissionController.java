@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 租户控制台权限管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -41,19 +43,39 @@ public class ConsolePermissionController extends BasicController {
     @Autowired
     private PermissionService permissionService;
 
+    /**
+     * 添加当前租户某个应用的权限.
+     *
+     * @param appId            the app id
+     * @param addPermissionReq the add permission req
+     * @return the resp
+     */
     @PostMapping(value = "{appId}")
     @ApiOperation(value = "添加当前租户某个应用的权限")
     public Resp<Long> addPermission(@PathVariable Long appId,
-                                    @RequestBody AddPermissionReq addPermissionReq) {
+                                    @Validated @RequestBody AddPermissionReq addPermissionReq) {
         return permissionService.addPermission(addPermissionReq, appId, getCurrentTenantId());
     }
 
+    /**
+     * 获取当前租户某个应用的权限列表信息.
+     *
+     * @param appId the app id
+     * @return the resp
+     */
     @GetMapping(value = "{appId}")
     @ApiOperation(value = "获取当前租户某个应用的权限列表信息")
     public Resp<List<PermissionInfoResp>> findPermissionInfo(@PathVariable Long appId) {
         return permissionService.findPermissionInfo(appId, getCurrentTenantId());
     }
 
+    /**
+     * 删除当前租户某个应用的某个权限.
+     *
+     * @param appId        the app id
+     * @param permissionId the permission id
+     * @return the resp
+     */
     @DeleteMapping(value = "{appId}/{permissionId}")
     @ApiOperation(value = "删除当前租户某个应用的某个权限")
     public Resp<Void> deletePermission(@PathVariable Long appId, @PathVariable Long permissionId) {

@@ -23,13 +23,13 @@ import com.querydsl.core.types.Projections;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.auth.dto.OptInfo;
 import idealworld.dew.saas.common.Constant;
+import idealworld.dew.saas.common.enumeration.CommonStatus;
 import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import idealworld.dew.saas.service.ident.IdentConfig;
 import idealworld.dew.saas.service.ident.domain.*;
 import idealworld.dew.saas.service.ident.dto.account.*;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
-import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
+import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
 import idealworld.dew.saas.service.ident.utils.KeyHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +43,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
+ * Account Service.
+ *
  * @author gudaoxuri
  */
 @Service
@@ -52,9 +54,9 @@ public class AccountService extends IdentBasicService {
     private static final String SK_KIND_VCODE_TMP_REL = "sk-kind:vocde:tmp-rel:";
     private static final String SK_KIND_VCODE_ERROR_TIMES = "sk-kind:vocde:error-times:";
 
-    private static final String BUSINESS_ACCOUNT="ACCOUNT";
-    private static final String BUSINESS_ACCOUNT_CERT="ACCOUNT_CERT";
-    private static final String BUSINESS_ACCOUNT_POST="ACCOUNT_POST";
+    private static final String BUSINESS_ACCOUNT = "ACCOUNT";
+    private static final String BUSINESS_ACCOUNT_CERT = "ACCOUNT_CERT";
+    private static final String BUSINESS_ACCOUNT_POST = "ACCOUNT_POST";
 
     @Autowired
     private IdentConfig identConfig;
@@ -63,34 +65,44 @@ public class AccountService extends IdentBasicService {
     @Autowired
     private PostService postService;
 
+    /**
+     * Login.
+     *
+     * @param loginReq    the login req
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<IdentOptInfo> login(LoginReq loginReq, Long relTenantId) {
         log.info("login : [{}] {}", relTenantId, $.json.toJsonString(loginReq));
         var qAccount = QAccount.account;
-        var qAccountCert = QAccountCert.accountCert;
-        var qTenantCert = QTenantCert.tenantCert;
+        var qAccountIdent = QAccountIdent.accountIdent;
+        var qTenantIdent = QTenantIdent.tenantIdent;
+        var now = new Date();
         var accountInfo = sqlBuilder
-                .select(qAccountCert.sk, qAccount.id, qAccount.parameters)
-                .from(qAccountCert)
-                .innerJoin(qTenantCert).on(
-                        qAccountCert.relTenantId.eq(qTenantCert.relTenantId)
-                                .and(qTenantCert.status.eq(CommonStatus.ENABLED)))
-                .leftJoin(qAccount).on(qAccountCert.relAccountId.eq(qAccount.id))
-                .where(qTenantCert.kind.eq(loginReq.getCertKind()))
-                .where(qAccountCert.kind.eq(loginReq.getCertKind()))
-                .where(qAccountCert.ak.eq(loginReq.getAk()))
-                .where(qAccountCert.validTime.after(new Date()))
+                .select(qAccountIdent.sk, qAccount.id, qAccount.openId, qAccount.parameters)
+                .from(qAccountIdent)
+                .innerJoin(qTenantIdent).on(
+                        qAccountIdent.relTenantId.eq(qTenantIdent.relTenantId)
+                                .and(qTenantIdent.status.eq(CommonStatus.ENABLED)))
+                .leftJoin(qAccount).on(qAccountIdent.relAccountId.eq(qAccount.id))
+                .where(qTenantIdent.kind.eq(loginReq.getIdentKind()))
+                .where(qAccountIdent.kind.eq(loginReq.getIdentKind()))
+                .where(qAccountIdent.ak.eq(loginReq.getAk()))
+                .where(qAccountIdent.validStartTime.before(now))
+                .where(qAccountIdent.validEndTime.after(now))
                 .where(qAccount.relTenantId.eq(relTenantId))
                 .where(qAccount.status.eq(CommonStatus.ENABLED))
                 .fetchOne();
         if (accountInfo == null) {
             log.warn("Login Fail: [{}] AK {} not exist or expired", relTenantId, loginReq.getAk());
-            return StandardResp.notFound(BUSINESS_ACCOUNT,"登录凭证 %s 不存在或已过期",loginReq.getAk());
+            return StandardResp.notFound(BUSINESS_ACCOUNT, "登录认证 %s 不存在或已过期", loginReq.getAk());
         }
-        var certSk = accountInfo.get(0, String.class);
+        var identSk = accountInfo.get(0, String.class);
         var accountId = accountInfo.get(1, Long.class);
-        var parameters = accountInfo.get(2, String.class);
-        var validateR = validateSK(loginReq.getCertKind(), loginReq.getAk(), loginReq.getSk(), certSk, relTenantId);
+        var openId = accountInfo.get(2, String.class);
+        var parameters = accountInfo.get(3, String.class);
+        var validateR = validateSK(loginReq.getIdentKind(), loginReq.getAk(), loginReq.getSk(), identSk, relTenantId);
         if (!validateR.ok()) {
             log.warn("Login Fail: [{}] SK {} un-match", relTenantId, loginReq.getAk());
             return StandardResp.error(validateR);
@@ -98,8 +110,7 @@ public class AccountService extends IdentBasicService {
         log.info("Login Success:  [{}] ak {}", relTenantId, loginReq.getAk());
         String token = KeyHelper.generateToken();
         var optInfo = new IdentOptInfo()
-                // 转成String避免转化成Integer
-                .setAccountCode(accountId + "")
+                .setAccountCode(openId)
                 .setToken(token)
                 .setRoleInfo(findRoleInfo(accountId));
         optInfo.setRelTenantId(relTenantId);
@@ -111,46 +122,63 @@ public class AccountService extends IdentBasicService {
         return StandardResp.success(optInfo);
     }
 
+    /**
+     * Logout.
+     *
+     * @param openId the open id
+     * @param token  the token
+     * @return the resp
+     */
     @Transactional
-    public Resp<Void> logout(Long accountId, String token) {
-        log.info("Logout Account {} by token {}", accountId, token);
+    public Resp<Void> logout(String openId, String token) {
+        log.info("Logout Account {} by token {}", openId, token);
         Dew.auth.removeOptInfo(token);
         return StandardResp.success(null);
     }
 
+    /**
+     * Add account ext.
+     *
+     * @param addAccountReq the add account req
+     * @param relTenantId   the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addAccountExt(AddAccountReq addAccountReq, Long relTenantId) {
-        var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountReq.getCertReq().getKind(),
-                addAccountReq.getCertReq().getSk(), relTenantId);
+        var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountReq.getIdentReq().getKind(),
+                addAccountReq.getIdentReq().getSk(), relTenantId);
         if (!checkValidRuleAndReturnValidTimeR.ok()) {
             return StandardResp.error(checkValidRuleAndReturnValidTimeR);
         }
-        var processR = certProcessSK(addAccountReq.getCertReq().getKind(),
-                addAccountReq.getCertReq().getAk(),
-                addAccountReq.getCertReq().getSk(),
+        var processR = identProcessSK(addAccountReq.getIdentReq().getKind(),
+                addAccountReq.getIdentReq().getAk(),
+                addAccountReq.getIdentReq().getSk(),
                 relTenantId);
         if (!processR.ok()) {
             return StandardResp.error(processR);
         }
-        var qAccountCert = QAccountCert.accountCert;
-        if (sqlBuilder.select(qAccountCert.id)
-                .from(qAccountCert)
-                .where(qAccountCert.relTenantId.eq(relTenantId))
-                .where(qAccountCert.kind.eq(addAccountReq.getCertReq().getKind()))
-                .where(qAccountCert.ak.eq(addAccountReq.getCertReq().getAk()))
+        var qAccountIdent = QAccountIdent.accountIdent;
+        if (sqlBuilder.select(qAccountIdent.id)
+                .from(qAccountIdent)
+                .where(qAccountIdent.relTenantId.eq(relTenantId))
+                .where(qAccountIdent.kind.eq(addAccountReq.getIdentReq().getKind()))
+                .where(qAccountIdent.ak.eq(addAccountReq.getIdentReq().getAk()))
                 .fetchCount() != 0) {
-            return StandardResp.conflict(BUSINESS_ACCOUNT_CERT,"凭证已存在");
+            return StandardResp.conflict(BUSINESS_ACCOUNT_CERT, "认证已存在");
         }
         log.info("Add Account : [{}] {}", relTenantId, $.json.toJsonString(addAccountReq));
         var account = Account.builder()
+                .openId($.field.createUUID())
                 .name(addAccountReq.getName())
                 .avatar(addAccountReq.getAvatar() != null ? addAccountReq.getAvatar() : "")
                 .parameters(addAccountReq.getParameters() != null ? addAccountReq.getParameters() : "{}")
+                // TODO 父账号
+                .parentId(Constant.OBJECT_UNDEFINED)
                 .status(CommonStatus.ENABLED)
                 .relTenantId(relTenantId)
                 .build();
         saveEntity(account);
-        doAddAccountCert(addAccountReq.getCertReq(), processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), account.getId(), relTenantId);
+        doAddAccountIdent(addAccountReq.getIdentReq(), processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), account.getId(), relTenantId);
         if (addAccountReq.getPostReq() == null) {
             addAccountReq.setPostReq(AddAccountPostReq.builder()
                     .relPostId(postService.getDefaultPostId())
@@ -160,6 +188,13 @@ public class AccountService extends IdentBasicService {
         return StandardResp.success(account.getId());
     }
 
+    /**
+     * Gets account info.
+     *
+     * @param accountId   the account id
+     * @param relTenantId the rel tenant id
+     * @return the account info
+     */
     public Resp<AccountInfoResp> getAccountInfo(Long accountId, Long relTenantId) {
         var qAccount = QAccount.account;
         var qAccountCreateUser = QAccount.account;
@@ -168,6 +203,7 @@ public class AccountService extends IdentBasicService {
                 .select(Projections.bean(
                         AccountInfoResp.class,
                         qAccount.id,
+                        qAccount.openId,
                         qAccount.name,
                         qAccount.avatar,
                         qAccount.parameters,
@@ -177,13 +213,21 @@ public class AccountService extends IdentBasicService {
                         qAccountCreateUser.name.as("createUserName"),
                         qAccountUpdateUser.name.as("updateUserName")))
                 .from(qAccount)
-                .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.id))
-                .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.id))
+                .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.openId))
+                .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.openId))
                 .where(qAccount.id.eq(accountId))
                 .where(qAccount.relTenantId.eq(relTenantId));
         return getDTO(query);
     }
 
+    /**
+     * Page account info.
+     *
+     * @param pageNumber  the page number
+     * @param pageSize    the page size
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     public Resp<Page<AccountInfoResp>> pageAccountInfo(Long pageNumber, Integer pageSize, Long relTenantId) {
         var qAccount = QAccount.account;
         var qAccountCreateUser = QAccount.account;
@@ -192,6 +236,7 @@ public class AccountService extends IdentBasicService {
                 .select(Projections.bean(
                         AccountInfoResp.class,
                         qAccount.id,
+                        qAccount.openId,
                         qAccount.name,
                         qAccount.avatar,
                         qAccount.parameters,
@@ -201,12 +246,35 @@ public class AccountService extends IdentBasicService {
                         qAccountCreateUser.name.as("createUserName"),
                         qAccountUpdateUser.name.as("updateUserName")))
                 .from(qAccount)
-                .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.id))
-                .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.id))
+                .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.openId))
+                .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.openId))
                 .where(qAccount.relTenantId.eq(relTenantId));
         return pageDTOs(query, pageNumber, pageSize);
     }
 
+    /**
+     * Gets open id.
+     *
+     * @param accountId the account id
+     * @return the open id
+     */
+    protected Resp<String> getOpenId(Long accountId) {
+        var qAccount = QAccount.account;
+        var openId = sqlBuilder.select(qAccount.openId)
+                .from(qAccount)
+                .where(qAccount.id.eq(accountId))
+                .fetchOne();
+        return StandardResp.success(openId);
+    }
+
+    /**
+     * Modify account.
+     *
+     * @param modifyAccountReq the modify account req
+     * @param accountId        the account id
+     * @param relTenantId      the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> modifyAccount(ModifyAccountReq modifyAccountReq, Long accountId, Long relTenantId) {
         var qAccount = QAccount.account;
@@ -228,9 +296,16 @@ public class AccountService extends IdentBasicService {
         return updateEntity(updateClause);
     }
 
+    /**
+     * Delete account.
+     *
+     * @param accountId   the account id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> deleteAccount(Long accountId, Long relTenantId) {
-        deleteAccountCerts(accountId, relTenantId);
+        deleteAccountIdents(accountId, relTenantId);
         deleteAccountPosts(accountId, relTenantId);
         var qAccount = QAccount.account;
         return deleteEntity(sqlBuilder
@@ -240,9 +315,15 @@ public class AccountService extends IdentBasicService {
         );
     }
 
+    /**
+     * Delete accounts.
+     *
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Void> deleteAccounts(Long relTenantId) {
-        deleteAccountCerts(relTenantId);
+        deleteAccountIdents(relTenantId);
         deleteAccountPosts(relTenantId);
         var qAccount = QAccount.account;
         return softDelEntity(sqlBuilder
@@ -251,6 +332,13 @@ public class AccountService extends IdentBasicService {
         );
     }
 
+    /**
+     * Check account membership.
+     *
+     * @param accountId   the account id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     protected Resp<Void> checkAccountMembership(Long accountId, Long relTenantId) {
         var qAccount = QAccount.account;
         var num = sqlBuilder
@@ -259,143 +347,226 @@ public class AccountService extends IdentBasicService {
                 .where(qAccount.relTenantId.eq(relTenantId))
                 .fetchCount();
         return num != 0 ? StandardResp.success(null)
-                : StandardResp.unAuthorized(BUSINESS_ACCOUNT,"用户:%s 不属于租户:%s", accountId, relTenantId);
+                : StandardResp.unAuthorized(BUSINESS_ACCOUNT, "用户:%s 不属于租户:%s", accountId, relTenantId);
     }
 
-    // ========================== Cert ==============================
+    // ========================== Ident ==============================
 
+    /**
+     * Add account ident.
+     *
+     * @param addAccountIdentReq the add account ident req
+     * @param relAccountId       the rel account id
+     * @param relTenantId        the rel tenant id
+     * @return the resp
+     */
     @Transactional
-    public Resp<Long> addAccountCert(AddAccountCertReq addAccountCertReq,
-                                     Long relAccountId, Long relTenantId) {
+    public Resp<Long> addAccountIdent(AddAccountIdentReq addAccountIdentReq,
+                                      Long relAccountId, Long relTenantId) {
         var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
         if (!membershipCheckR.ok()) {
             return StandardResp.error(membershipCheckR);
         }
-        var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountCertReq.getKind(),
-                addAccountCertReq.getSk(), relTenantId);
+        var checkValidRuleAndReturnValidTimeR = tenantService.checkValidRuleAndReturnValidTime(addAccountIdentReq.getKind(),
+                addAccountIdentReq.getSk(), relTenantId);
         if (!checkValidRuleAndReturnValidTimeR.ok()) {
             return StandardResp.error(checkValidRuleAndReturnValidTimeR);
         }
-        var qAccountCert = QAccountCert.accountCert;
-        if (sqlBuilder.select(qAccountCert.id)
-                .from(qAccountCert)
-                .where(qAccountCert.relTenantId.eq(relTenantId))
-                .where(qAccountCert.kind.eq(addAccountCertReq.getKind()))
-                .where(qAccountCert.ak.eq(addAccountCertReq.getAk()))
+        var qAccountIdent = QAccountIdent.accountIdent;
+        if (sqlBuilder.select(qAccountIdent.id)
+                .from(qAccountIdent)
+                .where(qAccountIdent.relTenantId.eq(relTenantId))
+                .where(qAccountIdent.kind.eq(addAccountIdentReq.getKind()))
+                .where(qAccountIdent.ak.eq(addAccountIdentReq.getAk()))
                 .fetchCount() != 0) {
-            return StandardResp.conflict(BUSINESS_ACCOUNT_CERT,"凭证已存在");
+            return StandardResp.conflict(BUSINESS_ACCOUNT_CERT, "认证已存在");
         }
-        log.info("Add Account Cert : [{}] {} : {}", relTenantId, relAccountId, $.json.toJsonString(addAccountCertReq));
-        var processR = certProcessSK(addAccountCertReq.getKind(),
-                addAccountCertReq.getAk(),
-                addAccountCertReq.getSk(),
+        log.info("Add Account Ident : [{}] {} : {}", relTenantId, relAccountId, $.json.toJsonString(addAccountIdentReq));
+        var processR = identProcessSK(addAccountIdentReq.getKind(),
+                addAccountIdentReq.getAk(),
+                addAccountIdentReq.getSk(),
                 relTenantId);
         if (!processR.ok()) {
             return StandardResp.error(processR);
         }
-        return doAddAccountCert(addAccountCertReq, processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), relAccountId, relTenantId);
+        return doAddAccountIdent(addAccountIdentReq, processR.getBody(), checkValidRuleAndReturnValidTimeR.getBody(), relAccountId, relTenantId);
     }
 
-    private Resp<Long> doAddAccountCert(AddAccountCertReq addAccountCertReq, String processedSk, Date validTime,
-                                        Long relAccountId, Long relTenantId) {
-        var accountCert = AccountCert.builder()
-                .kind(addAccountCertReq.getKind())
-                .ak(addAccountCertReq.getAk())
+    private Resp<Long> doAddAccountIdent(AddAccountIdentReq addAccountIdentReq, String processedSk, Date validTime,
+                                         Long relAccountId, Long relTenantId) {
+        var accountIdent = AccountIdent.builder()
+                .kind(addAccountIdentReq.getKind())
+                .ak(addAccountIdentReq.getAk())
                 .sk(processedSk)
-                .validTime(validTime)
+                .validStartTime(new Date())
+                .validEndTime(validTime)
+                .validTimes(-1L)
                 .relAccountId(relAccountId)
                 .relTenantId(relTenantId)
                 .build();
-        return saveEntity(accountCert);
+        return saveEntity(accountIdent);
     }
 
-    public Resp<List<AccountCertInfoResp>> findAccountCertInfo(Long relAccountId, Long relTenantId) {
+    /**
+     * Find account ident info.
+     *
+     * @param relAccountId the rel account id
+     * @param relTenantId  the rel tenant id
+     * @return the resp
+     */
+    public Resp<List<AccountIdentInfoResp>> findAccountIdentInfo(Long relAccountId, Long relTenantId) {
         var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
         if (!membershipCheckR.ok()) {
             return StandardResp.error(membershipCheckR);
         }
-        var qAccountCert = QAccountCert.accountCert;
+        var qAccountIdent = QAccountIdent.accountIdent;
         var qAccountCreateUser = QAccount.account;
         var qAccountUpdateUser = QAccount.account;
         var query = sqlBuilder
                 .select(Projections.bean(
-                        AccountCertInfoResp.class,
-                        qAccountCert.id,
-                        qAccountCert.kind,
-                        qAccountCert.ak,
-                        qAccountCert.sk,
-                        qAccountCert.validTime,
-                        qAccountCert.createTime,
-                        qAccountCert.updateTime,
+                        AccountIdentInfoResp.class,
+                        qAccountIdent.id,
+                        qAccountIdent.kind,
+                        qAccountIdent.ak,
+                        qAccountIdent.sk,
+                        qAccountIdent.validStartTime,
+                        qAccountIdent.validEndTime,
+                        qAccountIdent.validTimes,
+                        qAccountIdent.createTime,
+                        qAccountIdent.updateTime,
                         qAccountCreateUser.name.as("createUserName"),
                         qAccountUpdateUser.name.as("updateUserName")))
-                .from(qAccountCert)
-                .leftJoin(qAccountCreateUser).on(qAccountCert.createUser.eq(qAccountCreateUser.id))
-                .leftJoin(qAccountUpdateUser).on(qAccountCert.updateUser.eq(qAccountUpdateUser.id))
-                .where(qAccountCert.relAccountId.eq(relAccountId));
+                .from(qAccountIdent)
+                .leftJoin(qAccountCreateUser).on(qAccountIdent.createUser.eq(qAccountCreateUser.openId))
+                .leftJoin(qAccountUpdateUser).on(qAccountIdent.updateUser.eq(qAccountUpdateUser.openId))
+                .where(qAccountIdent.relAccountId.eq(relAccountId));
         return findDTOs(query);
     }
 
-    public Resp<String> getAccountCertAk(Long relAccountId, String accountCertKind, Long relTenantId) {
-        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
-        if (!membershipCheckR.ok()) {
-            return StandardResp.error(membershipCheckR);
-        }
-        var qAccountCert = QAccountCert.accountCert;
+    /**
+     * Gets account ident ak.
+     *
+     * @param accountOpenId    the account open id
+     * @param accountIdentKind the account ident kind
+     * @param relTenantId      the rel tenant id
+     * @return the account ident ak
+     */
+    public Resp<String> getAccountIdentAk(String accountOpenId, String accountIdentKind, Long relTenantId) {
+        var qAccountIdent = QAccountIdent.accountIdent;
+        var qAccount = QAccount.account;
+        var now = new Date();
         var query = sqlBuilder
-                .select(qAccountCert.ak)
-                .from(qAccountCert)
-                .where(qAccountCert.relAccountId.eq(relAccountId))
-                .where(qAccountCert.kind.eq(AccountCertKind.parse(accountCertKind)))
-                .where(qAccountCert.validTime.gt(new Date()));
+                .select(qAccountIdent.ak)
+                .from(qAccountIdent)
+                .leftJoin(qAccount).on(qAccountIdent.id.eq(qAccountIdent.relAccountId))
+                .where(qAccount.openId.eq(accountOpenId))
+                .where(qAccount.relTenantId.eq(relTenantId))
+                .where(qAccountIdent.kind.eq(AccountIdentKind.parse(accountIdentKind)))
+                .where(qAccountIdent.validStartTime.before(now))
+                .where(qAccountIdent.validEndTime.after(now));
         return getDTO(query);
     }
 
+    /**
+     * Modify account ident.
+     *
+     * @param modifyAccountIdentReq the modify account ident req
+     * @param accountIdentId        the account ident id
+     * @param relAccountId          the rel account id
+     * @param relTenantId           the rel tenant id
+     * @return the resp
+     */
     @Transactional
-    public Resp<Void> modifyAccountCert(ModifyAccountCertReq modifyAccountCertReq, Long accountCertId,
-                                        Long relAccountId, Long relTenantId) {
+    public Resp<Void> modifyAccountIdent(ModifyAccountIdentReq modifyAccountIdentReq, Long accountIdentId,
+                                         Long relAccountId, Long relTenantId) {
         var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
         if (!membershipCheckR.ok()) {
             return StandardResp.error(membershipCheckR);
         }
-        var qAccountCert = QAccountCert.accountCert;
-        var updateClause = sqlBuilder.update(qAccountCert)
-                .where(qAccountCert.id.eq(accountCertId))
-                .where(qAccountCert.relAccountId.eq(relAccountId));
-        if (modifyAccountCertReq.getValidTime() != null) {
-            updateClause.set(qAccountCert.validTime, modifyAccountCertReq.getValidTime());
+        var qAccountIdent = QAccountIdent.accountIdent;
+        var updateClause = sqlBuilder.update(qAccountIdent)
+                .where(qAccountIdent.id.eq(accountIdentId))
+                .where(qAccountIdent.relAccountId.eq(relAccountId));
+        if (modifyAccountIdentReq.getSk() != null) {
+            var accountIdentInfo = sqlBuilder.select(qAccountIdent.kind, qAccountIdent.ak)
+                    .from(qAccountIdent)
+                    .where(qAccountIdent.id.eq(accountIdentId))
+                    .fetchOne();
+            var accountIdentKind = accountIdentInfo.get(0, AccountIdentKind.class);
+            var accountIdentAk = accountIdentInfo.get(1, String.class);
+            var checkR = tenantService.checkValidRule(accountIdentKind, modifyAccountIdentReq.getSk(), relTenantId);
+            if (!checkR.ok()) {
+                return StandardResp.error(checkR);
+            }
+            var processedSkR = identProcessSK(accountIdentKind, accountIdentAk, modifyAccountIdentReq.getSk(), relTenantId);
+            if (!processedSkR.ok()) {
+                return StandardResp.error(processedSkR);
+            }
+            updateClause.set(qAccountIdent.sk, processedSkR.getBody());
+        }
+        if (modifyAccountIdentReq.getValidStartTime() != null) {
+            updateClause.set(qAccountIdent.validStartTime, modifyAccountIdentReq.getValidStartTime());
+        }
+        if (modifyAccountIdentReq.getValidEndTime() != null) {
+            updateClause.set(qAccountIdent.validEndTime, modifyAccountIdentReq.getValidEndTime());
+        }
+        if (modifyAccountIdentReq.getValidTimes() != null) {
+            updateClause.set(qAccountIdent.validTimes, modifyAccountIdentReq.getValidTimes());
         }
         return updateEntity(updateClause);
     }
 
+    /**
+     * Delete account idents.
+     *
+     * @param relAccountId the rel account id
+     * @param relTenantId  the rel tenant id
+     * @return the resp
+     */
     @Transactional
-    public Resp<Long> deleteAccountCerts(Long relAccountId, Long relTenantId) {
-        var qAccountCert = QAccountCert.accountCert;
+    public Resp<Long> deleteAccountIdents(Long relAccountId, Long relTenantId) {
+        var qAccountIdent = QAccountIdent.accountIdent;
         return deleteEntities(sqlBuilder
-                .delete(qAccountCert)
-                .where(qAccountCert.relTenantId.eq(relTenantId))
-                .where(qAccountCert.relAccountId.eq(relAccountId)));
+                .delete(qAccountIdent)
+                .where(qAccountIdent.relTenantId.eq(relTenantId))
+                .where(qAccountIdent.relAccountId.eq(relAccountId)));
     }
 
-    @Transactional
-    public Resp<Void> deleteAccountCert(Long accountCertId, Long relAccountId, Long relTenantId) {
-        var qAccountCert = QAccountCert.accountCert;
-        return deleteEntity(sqlBuilder
-                .delete(qAccountCert)
-                .where(qAccountCert.id.eq(accountCertId))
-                .where(qAccountCert.relTenantId.eq(relTenantId))
-                .where(qAccountCert.relAccountId.eq(relAccountId)));
-    }
-
-    private Resp<Long> deleteAccountCerts(Long relTenantId) {
-        var qAccountCert = QAccountCert.accountCert;
+    private Resp<Long> deleteAccountIdents(Long relTenantId) {
+        var qAccountIdent = QAccountIdent.accountIdent;
         return softDelEntities(sqlBuilder
-                .selectFrom(qAccountCert)
-                .where(qAccountCert.relTenantId.eq(relTenantId)));
+                .selectFrom(qAccountIdent)
+                .where(qAccountIdent.relTenantId.eq(relTenantId)));
+    }
+
+    /**
+     * Delete account ident.
+     *
+     * @param accountIdentId the account ident id
+     * @param relAccountId   the rel account id
+     * @param relTenantId    the rel tenant id
+     * @return the resp
+     */
+    @Transactional
+    public Resp<Void> deleteAccountIdent(Long accountIdentId, Long relAccountId, Long relTenantId) {
+        var qAccountIdent = QAccountIdent.accountIdent;
+        return deleteEntity(sqlBuilder
+                .delete(qAccountIdent)
+                .where(qAccountIdent.id.eq(accountIdentId))
+                .where(qAccountIdent.relTenantId.eq(relTenantId))
+                .where(qAccountIdent.relAccountId.eq(relAccountId)));
     }
 
     // ========================== Post ==============================
 
+    /**
+     * Add account post.
+     *
+     * @param addAccountPostReq the add account post req
+     * @param relAccountId      the rel account id
+     * @param relTenantId       the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addAccountPost(AddAccountPostReq addAccountPostReq, Long relAccountId, Long relTenantId) {
         var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
@@ -408,15 +579,23 @@ public class AccountService extends IdentBasicService {
                 .where(qAccountPost.relAccountId.eq(relAccountId))
                 .where(qAccountPost.relPostId.eq(addAccountPostReq.getRelPostId()))
                 .fetchCount() != 0) {
-            return StandardResp.conflict(BUSINESS_ACCOUNT_POST,"关联岗位已存在");
+            return StandardResp.conflict(BUSINESS_ACCOUNT_POST, "关联岗位已存在");
         }
-        var accountCert = AccountPost.builder()
+        var accountIdent = AccountPost.builder()
                 .relPostId(addAccountPostReq.getRelPostId())
+                .sort(addAccountPostReq.getSort() != null ? addAccountPostReq.getSort() : 0)
                 .relAccountId(relAccountId)
                 .build();
-        return saveEntity(accountCert);
+        return saveEntity(accountIdent);
     }
 
+    /**
+     * Find account post info.
+     *
+     * @param relAccountId the rel account id
+     * @param relTenantId  the rel tenant id
+     * @return the resp
+     */
     public Resp<List<AccountPostInfoResp>> findAccountPostInfo(Long relAccountId, Long relTenantId) {
         var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
         if (!membershipCheckR.ok()) {
@@ -427,24 +606,21 @@ public class AccountService extends IdentBasicService {
                 .select(Projections.bean(
                         AccountPostInfoResp.class,
                         qAccountPost.id,
-                        qAccountPost.relPostId))
+                        qAccountPost.relPostId,
+                        qAccountPost.sort))
                 .from(qAccountPost)
                 .where(qAccountPost.relAccountId.eq(relAccountId));
         return findDTOs(query);
     }
 
-    @Transactional
-    public Resp<Long> deleteAccountPosts(Long relAccountId, Long relTenantId) {
-        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
-        if (!membershipCheckR.ok()) {
-            return StandardResp.error(membershipCheckR);
-        }
-        var qAccountPost = QAccountPost.accountPost;
-        return deleteEntities(sqlBuilder
-                .delete(qAccountPost)
-                .where(qAccountPost.relAccountId.eq(relAccountId)));
-    }
-
+    /**
+     * Delete account post.
+     *
+     * @param accountPostId the account post id
+     * @param relAccountId  the rel account id
+     * @param relTenantId   the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> deleteAccountPost(Long accountPostId, Long relAccountId, Long relTenantId) {
         var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
@@ -459,6 +635,48 @@ public class AccountService extends IdentBasicService {
         );
     }
 
+    /**
+     * Delete account posts.
+     *
+     * @param relAccountId the rel account id
+     * @param relTenantId  the rel tenant id
+     * @return the resp
+     */
+    @Transactional
+    public Resp<Long> deleteAccountPosts(Long relAccountId, Long relTenantId) {
+        var membershipCheckR = checkAccountMembership(relAccountId, relTenantId);
+        if (!membershipCheckR.ok()) {
+            return StandardResp.error(membershipCheckR);
+        }
+        var qAccountPost = QAccountPost.accountPost;
+        return deleteEntities(sqlBuilder
+                .delete(qAccountPost)
+                .where(qAccountPost.relAccountId.eq(relAccountId)));
+    }
+
+    /**
+     * Delete account posts.
+     *
+     * @param postIds the post ids
+     * @return the resp
+     */
+    @Transactional
+    protected Resp<Long> deleteAccountPosts(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return StandardResp.notFound(BUSINESS_ACCOUNT_POST, "没有要删除的岗位");
+        }
+        var qAccountPost = QAccountPost.accountPost;
+        return deleteEntities(sqlBuilder
+                .delete(qAccountPost)
+                .where(qAccountPost.relPostId.in(postIds)));
+    }
+
+    /**
+     * Delete account posts.
+     *
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Long> deleteAccountPosts(Long relTenantId) {
         var qAccount = QAccount.account;
@@ -472,19 +690,15 @@ public class AccountService extends IdentBasicService {
                 .where(qAccountPost.relAccountId.in(accountIds)));
     }
 
-    @Transactional
-    protected Resp<Long> deleteAccountPosts(List<Long> postIds) {
-        if (postIds.isEmpty()) {
-            return StandardResp.notFound(BUSINESS_ACCOUNT_POST,"没有要删除的岗位");
-        }
-        var qAccountPost = QAccountPost.accountPost;
-        return deleteEntities(sqlBuilder
-                .delete(qAccountPost)
-                .where(qAccountPost.relPostId.in(postIds)));
-    }
 
     // ========================== Others ==============================
 
+    /**
+     * Update account tenant.
+     *
+     * @param accountId   the account id
+     * @param newTenantId the new tenant id
+     */
     protected void updateAccountTenant(Long accountId, Long newTenantId) {
         var qAccount = QAccount.account;
         updateEntity(sqlBuilder
@@ -492,29 +706,35 @@ public class AccountService extends IdentBasicService {
                 .set(qAccount.relTenantId, newTenantId)
                 .where(qAccount.id.eq(accountId))
         );
-        var qAccountCert = QAccountCert.accountCert;
+        var qAccountIdent = QAccountIdent.accountIdent;
         updateEntity(sqlBuilder
-                .update(qAccountCert)
-                .set(qAccountCert.relTenantId, newTenantId)
-                .where(qAccountCert.relAccountId.eq(accountId))
+                .update(qAccountIdent)
+                .set(qAccountIdent.relTenantId, newTenantId)
+                .where(qAccountIdent.relAccountId.eq(accountId))
         );
     }
 
-    public void certSendVC(String ak, Long tenantId) {
+    /**
+     * Send vc.
+     *
+     * @param ak       the ak
+     * @param tenantId the tenant id
+     */
+    public void identSendVC(String ak, Long tenantId) {
         String tmpSk = (int) ((Math.random() * 9 + 1) * 1000) + "";
         Dew.cluster.cache.setex(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak, tmpSk, identConfig.getSecurity().getSkKindByVCodeExpireSec());
     }
 
-    private Resp<String> certProcessSK(AccountCertKind certKind, String ak, String sk, Long tenantId) {
-        switch (certKind) {
+    private Resp<String> identProcessSK(AccountIdentKind identKind, String ak, String sk, Long tenantId) {
+        switch (identKind) {
             case EMAIL:
             case PHONE:
                 String tmpSk = Dew.cluster.cache.get(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 if (tmpSk == null) {
-                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码不存在或已过期");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT, "验证码不存在或已过期");
                 }
                 if (!tmpSk.equalsIgnoreCase(sk)) {
-                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码错误");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT, "验证码错误");
                 }
                 return StandardResp.success("");
             case USERNAME:
@@ -524,30 +744,30 @@ public class AccountService extends IdentBasicService {
         }
     }
 
-    private Resp<Void> validateSK(AccountCertKind certKind,
+    private Resp<Void> validateSK(AccountIdentKind identKind,
                                   String ak, String inputSk, String storageSk, Long tenantId) {
-        switch (certKind) {
+        switch (identKind) {
             case EMAIL:
             case PHONE:
                 String tmpSk = Dew.cluster.cache.get(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 if (tmpSk == null) {
-                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码不存在或已过期，请重新获取");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT, "验证码不存在或已过期，请重新获取");
                 }
                 if (!tmpSk.equalsIgnoreCase(inputSk)) {
                     if (Dew.cluster.cache.incrBy(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak, 1)
                             >= identConfig.getSecurity().getSkKindByVCodeMaxErrorTimes()) {
                         Dew.cluster.cache.del(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                         Dew.cluster.cache.del(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak);
-                        return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码不存在或已过期，请重新获取");
+                        return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT, "验证码不存在或已过期，请重新获取");
                     }
-                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"验证码错误");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT, "验证码错误");
                 }
                 Dew.cluster.cache.del(SK_KIND_VCODE_TMP_REL + tenantId + ":" + ak);
                 Dew.cluster.cache.del(SK_KIND_VCODE_ERROR_TIMES + tenantId + ":" + ak);
                 return StandardResp.success(null);
             case USERNAME:
                 if (!$.security.digest.validate(ak + inputSk, storageSk, "SHA-512")) {
-                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT,"密码错误");
+                    return StandardResp.badRequest(BUSINESS_ACCOUNT_CERT, "密码错误");
                 } else {
                     return StandardResp.success(null);
                 }
@@ -556,7 +776,13 @@ public class AccountService extends IdentBasicService {
         }
     }
 
-    public Set<OptInfo.RoleInfo> findRoleInfo(Long accountId) {
+    /**
+     * Find role info set.
+     *
+     * @param accountId the account id
+     * @return the set
+     */
+    protected Set<OptInfo.RoleInfo> findRoleInfo(Long accountId) {
         var qAccountPost = QAccountPost.accountPost;
         var qPost = QPost.post;
         var qPosition = QPosition.position;

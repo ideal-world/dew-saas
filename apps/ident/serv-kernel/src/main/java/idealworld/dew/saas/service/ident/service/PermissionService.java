@@ -41,12 +41,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
+ * Permission service.
+ *
  * @author gudaoxuri
  */
 @Service
 public class PermissionService extends IdentBasicService {
 
+    /**
+     * The constant IDENT_PERMISSION_SUB_LIST.
+     */
     public static final String IDENT_PERMISSION_SUB_LIST = "ident:cache:permission:app:";
+    /**
+     * The constant IDENT_PERMISSION_SUB_APPS.
+     */
     public static final String IDENT_PERMISSION_SUB_APPS = "ident:mq:permission:app:";
 
     private static final int HEARTBEAT_DELAY_FIX = 60;
@@ -57,6 +65,14 @@ public class PermissionService extends IdentBasicService {
     @Autowired
     private AppService appService;
 
+    /**
+     * Add permission.
+     *
+     * @param addPermissionReq the add permission req
+     * @param relAppId         the rel app id
+     * @param relTenantId      the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addPermission(AddPermissionReq addPermissionReq, Long relAppId, Long relTenantId) {
         var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
@@ -69,7 +85,7 @@ public class PermissionService extends IdentBasicService {
                 .where(qPermission.relPostId.eq(addPermissionReq.getRelPostId()))
                 .where(qPermission.relResourceId.eq(addPermissionReq.getRelResourceId()))
                 .fetchCount() != 0) {
-            return StandardResp.conflict(BUSINESS_PERMISSION,"此权限已存在");
+            return StandardResp.conflict(BUSINESS_PERMISSION, "此权限已存在");
         }
         var permission = Permission.builder()
                 .relPostId(addPermissionReq.getRelPostId())
@@ -79,13 +95,22 @@ public class PermissionService extends IdentBasicService {
                 .build();
         var saveR = saveEntity(permission);
         if (saveR.ok()) {
-            onPermissionChanged(new ArrayList<>() {{
-                add(permission.getId());
-            }}, relAppId, false);
+            onPermissionChanged(new ArrayList<>() {
+                {
+                    add(permission.getId());
+                }
+            }, relAppId, false);
         }
         return saveR;
     }
 
+    /**
+     * Find permission info.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     public Resp<List<PermissionInfoResp>> findPermissionInfo(Long relAppId, Long relTenantId) {
         var qPermission = QPermission.permission;
         var positionQuery = sqlBuilder
@@ -100,6 +125,14 @@ public class PermissionService extends IdentBasicService {
         return findDTOs(positionQuery);
     }
 
+    /**
+     * Delete permission.
+     *
+     * @param permissionId the permission id
+     * @param relAppId     the rel app id
+     * @param relTenantId  the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> deletePermission(Long permissionId, Long relAppId, Long relTenantId) {
         var qPermission = QPermission.permission;
@@ -108,12 +141,22 @@ public class PermissionService extends IdentBasicService {
                 .where(qPermission.relAppId.eq(relAppId))
                 .where(qPermission.relTenantId.eq(relTenantId))
                 .execute();
-        onPermissionChanged(new ArrayList<>() {{
-            add(permissionId);
-        }}, relAppId, true);
+        onPermissionChanged(new ArrayList<>() {
+            {
+                add(permissionId);
+            }
+        }, relAppId, true);
         return StandardResp.success(null);
     }
 
+    /**
+     * Delete permission by post ids.
+     *
+     * @param postIds     the post ids
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Void> deletePermissionByPostIds(List<Long> postIds, Long relAppId, Long relTenantId) {
         var qPermission = QPermission.permission;
@@ -131,10 +174,18 @@ public class PermissionService extends IdentBasicService {
         return StandardResp.success(null);
     }
 
+    /**
+     * Delete permission by resource ids.
+     *
+     * @param resourceIds the resource ids
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Void> deletePermissionByResourceIds(List<Long> resourceIds, Long relAppId, Long relTenantId) {
         if (resourceIds.isEmpty()) {
-            return StandardResp.notFound(BUSINESS_PERMISSION,"没有要删除的资源");
+            return StandardResp.notFound(BUSINESS_PERMISSION, "没有要删除的资源");
         }
         var qPermission = QPermission.permission;
         var deletePermissionIds = sqlBuilder.select(qPermission.id)
@@ -154,6 +205,13 @@ public class PermissionService extends IdentBasicService {
         return StandardResp.success(null);
     }
 
+    /**
+     * Sub permissions.
+     *
+     * @param appId              the app id
+     * @param heartbeatPeriodSec the heartbeat period sec
+     * @return the resp
+     */
     public Resp<String> subPermissions(Long appId, Integer heartbeatPeriodSec) {
         Dew.cluster.cache.setex(IDENT_PERMISSION_SUB_LIST + appId, IDENT_PERMISSION_SUB_APPS + appId,
                 heartbeatPeriodSec + HEARTBEAT_DELAY_FIX);
@@ -166,12 +224,25 @@ public class PermissionService extends IdentBasicService {
         return StandardResp.success(IDENT_PERMISSION_SUB_APPS + appId);
     }
 
+    /**
+     * Sub heartbeat.
+     *
+     * @param appId     the app id
+     * @param periodSec the period sec
+     * @return the resp
+     */
     public Resp<Void> subHeartbeat(Long appId, Integer periodSec) {
         Dew.cluster.cache.setex(IDENT_PERMISSION_SUB_LIST + appId, IDENT_PERMISSION_SUB_APPS + appId,
                 periodSec + HEARTBEAT_DELAY_FIX);
         return StandardResp.success(null);
     }
 
+    /**
+     * Un sub permission.
+     *
+     * @param appId the app id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> unSubPermission(Long appId) {
         Dew.cluster.cache.del(IDENT_PERMISSION_SUB_LIST + appId);
@@ -241,9 +312,11 @@ public class PermissionService extends IdentBasicService {
                                         .build()
                                 );
                     } else {
-                        return new ArrayList<PermissionExtInfo>() {{
-                            add(info);
-                        }}.stream();
+                        return new ArrayList<PermissionExtInfo>() {
+                            {
+                                add(info);
+                            }
+                        }.stream();
                     }
                 })
                 .map(info -> {

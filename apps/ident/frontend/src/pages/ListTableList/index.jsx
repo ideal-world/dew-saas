@@ -1,82 +1,99 @@
-import { DownOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Dropdown, Menu, message } from 'antd';
-import React, { useState, useRef } from 'react';
-import { PageHeaderWrapper } from '@ant-design/pro-layout';
-import ProTable from '@ant-design/pro-table';
-import CreateForm from './components/CreateForm';
-import UpdateForm from './components/UpdateForm';
-import { queryRule, updateRule, addRule, removeRule } from './service';
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {DownOutlined, PlusOutlined} from '@ant-design/icons'
+import {Button, Dropdown, Menu, message} from 'antd'
+import React, {useRef, useState} from 'react'
+import {PageHeaderWrapper} from '@ant-design/pro-layout'
+import ProTable from '@ant-design/pro-table'
+import CreateForm from './components/CreateForm'
+import UpdateForm from './components/UpdateForm'
+import {addRule, queryRule, removeRule, updateRule} from './service'
+
 /**
  * 添加节点
  * @param fields
  */
 
 const handleAdd = async fields => {
-  const hide = message.loading('正在添加');
+  const hide = message.loading('正在添加')
 
   try {
-    await addRule({ ...fields });
-    hide();
-    message.success('添加成功');
-    return true;
+    await addRule({...fields})
+    hide()
+    message.success('添加成功')
+    return true
   } catch (error) {
-    hide();
-    message.error('添加失败请重试！');
-    return false;
+    hide()
+    message.error('添加失败请重试！')
+    return false
   }
-};
+}
 /**
  * 更新节点
  * @param fields
  */
 
 const handleUpdate = async fields => {
-  const hide = message.loading('正在配置');
+  const hide = message.loading('正在配置')
 
   try {
     await updateRule({
       name: fields.name,
       desc: fields.desc,
       key: fields.key,
-    });
-    hide();
-    message.success('配置成功');
-    return true;
+    })
+    hide()
+    message.success('配置成功')
+    return true
   } catch (error) {
-    hide();
-    message.error('配置失败请重试！');
-    return false;
+    hide()
+    message.error('配置失败请重试！')
+    return false
   }
-};
+}
 /**
  *  删除节点
  * @param selectedRows
  */
 
 const handleRemove = async selectedRows => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
+  const hide = message.loading('正在删除')
+  if (!selectedRows) return true
 
   try {
     await removeRule({
       key: selectedRows.map(row => row.key),
-    });
-    hide();
-    message.success('删除成功，即将刷新');
-    return true;
+    })
+    hide()
+    message.success('删除成功，即将刷新')
+    return true
   } catch (error) {
-    hide();
-    message.error('删除失败，请重试');
-    return false;
+    hide()
+    message.error('删除失败，请重试')
+    return false
   }
-};
+}
 
 const TableList = () => {
-  const [sorter, setSorter] = useState('');
-  const [createModalVisible, handleModalVisible] = useState(false);
-  const [updateModalVisible, handleUpdateModalVisible] = useState(false);
-  const [stepFormValues, setStepFormValues] = useState({});
-  const actionRef = useRef();
+  const [sorter, setSorter] = useState('')
+  const [createModalVisible, handleModalVisible] = useState(false)
+  const [updateModalVisible, handleUpdateModalVisible] = useState(false)
+  const [stepFormValues, setStepFormValues] = useState({})
+  const actionRef = useRef()
   const columns = [
     {
       title: 'ID',
@@ -121,7 +138,7 @@ const TableList = () => {
       hideInSearch: true,
       valueType: 'string',
     },
-  ];
+  ]
   return (
     <PageHeaderWrapper>
       <ProTable
@@ -129,18 +146,18 @@ const TableList = () => {
         actionRef={actionRef}
         rowKey="key"
         onChange={(_, _filter, _sorter) => {
-          const sorterResult = _sorter;
+          const sorterResult = _sorter
           console.log(sorterResult)
           if (sorterResult.field) {
-            setSorter(`${sorterResult.field}_${sorterResult.order}`);
+            setSorter(`${sorterResult.field}_${sorterResult.order}`)
           }
         }}
         params={{
           sorter,
         }}
-        toolBarRender={(action, { selectedRows }) => [
+        toolBarRender={(action, {selectedRows}) => [
           <Button type="primary" onClick={() => handleModalVisible(true)}>
-            <PlusOutlined /> 新建
+            <PlusOutlined/> 新建
           </Button>,
           selectedRows && selectedRows.length > 0 && (
             <Dropdown
@@ -148,8 +165,8 @@ const TableList = () => {
                 <Menu
                   onClick={async e => {
                     if (e.key === 'remove') {
-                      await handleRemove(selectedRows);
-                      action.reload();
+                      await handleRemove(selectedRows)
+                      action.reload()
                     }
                   }}
                   selectedKeys={[]}
@@ -160,7 +177,7 @@ const TableList = () => {
               }
             >
               <Button>
-                批量操作 <DownOutlined />
+                批量操作 <DownOutlined/>
               </Button>
             </Dropdown>
           ),
@@ -188,13 +205,13 @@ const TableList = () => {
       <CreateForm onCancel={() => handleModalVisible(false)} modalVisible={createModalVisible}>
         <ProTable
           onSubmit={async value => {
-            const success = await handleAdd(value);
+            const success = await handleAdd(value)
 
             if (success) {
-              handleModalVisible(false);
+              handleModalVisible(false)
 
               if (actionRef.current) {
-                actionRef.current.reload();
+                actionRef.current.reload()
               }
             }
           }}
@@ -207,27 +224,27 @@ const TableList = () => {
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
           onSubmit={async value => {
-            const success = await handleUpdate(value);
+            const success = await handleUpdate(value)
 
             if (success) {
-              handleModalVisible(false);
-              setStepFormValues({});
+              handleModalVisible(false)
+              setStepFormValues({})
 
               if (actionRef.current) {
-                actionRef.current.reload();
+                actionRef.current.reload()
               }
             }
           }}
           onCancel={() => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
+            handleUpdateModalVisible(false)
+            setStepFormValues({})
           }}
           updateModalVisible={updateModalVisible}
           values={stepFormValues}
         />
       ) : null}
     </PageHeaderWrapper>
-  );
-};
+  )
+}
 
-export default TableList;
+export default TableList

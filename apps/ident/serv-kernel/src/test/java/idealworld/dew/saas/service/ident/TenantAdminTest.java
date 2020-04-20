@@ -36,8 +36,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.AddResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import idealworld.dew.saas.service.ident.dto.tenant.*;
-import idealworld.dew.saas.service.ident.enumeration.AccountCertKind;
-import idealworld.dew.saas.service.ident.enumeration.CommonStatus;
+import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
 import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
 import org.junit.Assert;
@@ -46,13 +45,18 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 
 /**
- * The type tenant test.
+ * tenant test.
  *
  * @author gudaoxuri
  */
 @Component
 public class TenantAdminTest extends BasicTest {
 
+    /**
+     * Test all long.
+     *
+     * @return the long
+     */
     public Long testAll() {
         var tenantId = testTenant();
         var appId = testApp();
@@ -69,7 +73,7 @@ public class TenantAdminTest extends BasicTest {
         // 租户注册
         var identOptInfo = postToEntity("/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
-                .certKind(globalTenantAdminCertKind)
+                .identKind(globalTenantAdminIdentKind)
                 .ak(globalTenantAdminAk)
                 .sk(globalTenantAdminSk)
                 .tenantName("测试租户")
@@ -88,28 +92,28 @@ public class TenantAdminTest extends BasicTest {
         // 重新注册租户
         identOptInfo = postToEntity("/tenant/register", RegisterTenantReq.builder()
                 .accountName("孤岛旭日")
-                .certKind(AccountCertKind.USERNAME)
+                .identKind(AccountIdentKind.USERNAME)
                 .ak("gudaoxuri")
                 .sk("pwd123")
                 .tenantName("测试租户")
                 .build(), IdentOptInfo.class).getBody();
         setIdentOptInfo(identOptInfo);
 
-        // 添加当前租户的凭证
-        var tenantCertId = postToEntity("/console/tenant/cert", AddTenantCertReq.builder()
-                .kind(AccountCertKind.PHONE)
+        // 添加当前租户的认证
+        var tenantIdentId = postToEntity("/console/tenant/ident", AddTenantIdentReq.builder()
+                .kind(AccountIdentKind.PHONE)
                 .build(), Long.class).getBody();
-        // 获取当前租户的凭证列表信息
-        var tenantCert = getToList("/console/tenant/cert", TenantCertInfoResp.class).getBody();
-        Assert.assertEquals(2, tenantCert.size());
-        Assert.assertEquals(AccountCertKind.USERNAME, tenantCert.get(1).getKind());
-        // 修改当前租户的某个凭证
-        patchToEntity("/console/tenant/cert/" + tenantCert.get(1).getId(), ModifyTenantCertReq.builder()
+        // 获取当前租户的认证列表信息
+        var tenantIdent = getToList("/console/tenant/ident", TenantIdentInfoResp.class).getBody();
+        Assert.assertEquals(2, tenantIdent.size());
+        Assert.assertEquals(AccountIdentKind.USERNAME, tenantIdent.get(1).getKind());
+        // 修改当前租户的某个认证
+        patchToEntity("/console/tenant/ident/" + tenantIdent.get(1).getId(), ModifyTenantIdentReq.builder()
                 .validRuleNote("至少4个字符，至少1个大写字母、小写字母、数字、特殊字符")
                 .validRule("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[^\\w\\s]).{4,}$")
                 .build(), Void.class);
-        // 删除当前租户的某个凭证
-        delete("/console/tenant/cert/" + tenantCertId);
+        // 删除当前租户的某个认证
+        delete("/console/tenant/ident/" + tenantIdentId);
 
         return identOptInfo.getRelTenantId();
     }
@@ -142,25 +146,25 @@ public class TenantAdminTest extends BasicTest {
                 .name("测试应用")
                 .icon("")
                 .build(), Long.class).getBody();
-        // 添加当前租户某个应用的凭证
-        var appCertId = postToEntity("/console/app/" + appId + "/cert", AddAppCertReq.builder()
-                .note("临时凭证")
+        // 添加当前租户某个应用的认证
+        var appIdentId = postToEntity("/console/app/" + appId + "/ident", AddAppIdentReq.builder()
+                .note("临时认证")
                 .build(), Long.class).getBody();
-        // 修改当前租户某个应用的某个凭证
-        patchToEntity("/console/app/" + appId + "/cert/" + appCertId, ModifyAppCertReq.builder()
-                .note("临时凭证1")
+        // 修改当前租户某个应用的某个认证
+        patchToEntity("/console/app/" + appId + "/ident/" + appIdentId, ModifyAppIdentReq.builder()
+                .note("临时认证1")
                 .build(), Void.class);
-        // 获取当前租户某个应用的凭证列表信息
-        var appCerts = getToList("/console/app/" + appId + "/cert", AppCertInfoResp.class).getBody();
-        Assert.assertEquals(2, appCerts.size());
-        Assert.assertEquals("临时凭证1", appCerts.get(1).getNote());
-        // 删除当前租户某个应用的某个凭证
-        delete("/console/app/" + appId + "/cert/" + appCertId);
-        // 删除当前租户某个应用的所有凭证
-        delete("/console/app/" + appId + "/cert/");
-        // 重新添加当前租户某个应用的凭证
-        postToEntity("/console/app/" + appId + "/cert", AddAppCertReq.builder()
-                .note("默认凭证")
+        // 获取当前租户某个应用的认证列表信息
+        var appIdents = getToList("/console/app/" + appId + "/ident", AppIdentInfoResp.class).getBody();
+        Assert.assertEquals(2, appIdents.size());
+        Assert.assertEquals("临时认证1", appIdents.get(1).getNote());
+        // 删除当前租户某个应用的某个认证
+        delete("/console/app/" + appId + "/ident/" + appIdentId);
+        // 删除当前租户某个应用的所有认证
+        delete("/console/app/" + appId + "/ident/");
+        // 重新添加当前租户某个应用的认证
+        postToEntity("/console/app/" + appId + "/ident", AddAppIdentReq.builder()
+                .note("默认认证")
                 .build(), Long.class).getBody();
         return appId;
     }
@@ -303,8 +307,8 @@ public class TenantAdminTest extends BasicTest {
         // 添加当前租户的账号
         var addAccountR = postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test1")
                         .sk("123")
                         .build())
@@ -315,8 +319,8 @@ public class TenantAdminTest extends BasicTest {
         Assert.assertTrue(addAccountR.getCode().startsWith(StandardCode.BAD_REQUEST.toString()));
         var accountId = postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test1")
                         .sk("Aa10#")
                         .build())
@@ -326,8 +330,8 @@ public class TenantAdminTest extends BasicTest {
                 .build(), Long.class).getBody();
         postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户2")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test2")
                         .sk("Aa10#")
                         .build())
@@ -337,8 +341,8 @@ public class TenantAdminTest extends BasicTest {
                 .build(), Long.class).getBody();
         postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户3")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test3")
                         .sk("Aa10#")
                         .build())
@@ -355,13 +359,14 @@ public class TenantAdminTest extends BasicTest {
         Assert.assertEquals(4, accounts.getRecordTotal());
         Assert.assertEquals(2, accounts.getPageTotal());
         Assert.assertEquals("测试用户1", accounts.getObjects().get(1).getName());
+        Assert.assertNotNull(accounts.getObjects().get(1).getOpenId());
         // 删除当前租户的某个账号
         delete("/console/account/" + accountId);
         // 重新添加当前租户的账号
         accountId = postToEntity("/console/account", AddAccountReq.builder()
                 .name("测试用户")
-                .certReq(AddAccountCertReq.builder()
-                        .kind(AccountCertKind.USERNAME)
+                .identReq(AddAccountIdentReq.builder()
+                        .kind(AccountIdentKind.USERNAME)
                         .ak("test1")
                         .sk("Aa10#")
                         .build())
@@ -373,26 +378,26 @@ public class TenantAdminTest extends BasicTest {
         var account = getToEntity("/console/account/" + accountId, AccountInfoResp.class).getBody();
         Assert.assertEquals("测试用户", account.getName());
         // --------------------------------------------------------------
-        // 添加当前租户某个账号的凭证
-        var accountCertId = postToEntity("/console/account/" + accountId + "/cert", AddAccountCertReq.builder()
-                .kind(AccountCertKind.USERNAME)
+        // 添加当前租户某个账号的认证
+        var accountIdentId = postToEntity("/console/account/" + accountId + "/ident", AddAccountIdentReq.builder()
+                .kind(AccountIdentKind.USERNAME)
                 .ak("test")
                 .sk("Aa10#")
                 .build(), Long.class).getBody();
-        // 修改当前租户某个账号的某个凭证
-        patchToEntity("/console/account/" + accountId + "/cert/" + accountCertId, ModifyAccountCertReq.builder()
-                .validTime(new Date(System.currentTimeMillis() + 100000L))
+        // 修改当前租户某个账号的某个认证
+        patchToEntity("/console/account/" + accountId + "/ident/" + accountIdentId, ModifyAccountIdentReq.builder()
+                .validEndTime(new Date(System.currentTimeMillis() + 100000L))
                 .build(), Void.class);
-        // 获取当前租户某个账号的凭证列表信息
-        var accountCerts = getToList("/console/account/" + accountId + "/cert", AccountCertInfoResp.class).getBody();
-        Assert.assertEquals(2, accountCerts.size());
-        // 删除当前租户某个账号的某个凭证
-        delete("/console/account/" + accountId + "/cert/" + accountCertId);
-        // 删除当前租户某个账号的所有凭证
-        delete("/console/account/" + accountId + "/cert");
-        // 重新添加当前租户某个账号的凭证
-        accountCertId = postToEntity("/console/account/" + accountId + "/cert", AddAccountCertReq.builder()
-                .kind(AccountCertKind.USERNAME)
+        // 获取当前租户某个账号的认证列表信息
+        var accountIdents = getToList("/console/account/" + accountId + "/ident", AccountIdentInfoResp.class).getBody();
+        Assert.assertEquals(2, accountIdents.size());
+        // 删除当前租户某个账号的某个认证
+        delete("/console/account/" + accountId + "/ident/" + accountIdentId);
+        // 删除当前租户某个账号的所有认证
+        delete("/console/account/" + accountId + "/ident");
+        // 重新添加当前租户某个账号的认证
+        accountIdentId = postToEntity("/console/account/" + accountId + "/ident", AddAccountIdentReq.builder()
+                .kind(AccountIdentKind.USERNAME)
                 .ak(globalUserAk)
                 .sk(globalUserSk)
                 .build(), Long.class).getBody();

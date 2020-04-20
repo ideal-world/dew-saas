@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
-import { Form, Button, DatePicker, Input, Modal, Radio, Select, Steps } from 'antd';
-const FormItem = Form.Item;
-const { Step } = Steps;
-const { TextArea } = Input;
-const { Option } = Select;
-const RadioGroup = Radio.Group;
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import React, {useState} from 'react'
+import {Button, DatePicker, Form, Input, Modal, Radio, Select, Steps} from 'antd'
+
+const FormItem = Form.Item
+const {Step} = Steps
+const {TextArea} = Input
+const {Option} = Select
+const RadioGroup = Radio.Group
 const formLayout = {
   labelCol: {
     span: 7,
@@ -12,7 +29,7 @@ const formLayout = {
   wrapperCol: {
     span: 13,
   },
-};
+}
 
 const UpdateForm = props => {
   const [formVals, setFormVals] = useState({
@@ -24,30 +41,30 @@ const UpdateForm = props => {
     type: '1',
     time: '',
     frequency: 'month',
-  });
-  const [currentStep, setCurrentStep] = useState(0);
-  const [form] = Form.useForm();
+  })
+  const [currentStep, setCurrentStep] = useState(0)
+  const [form] = Form.useForm()
   const {
     onSubmit: handleUpdate,
     onCancel: handleUpdateModalVisible,
     updateModalVisible,
     values,
-  } = props;
+  } = props
 
-  const forward = () => setCurrentStep(currentStep + 1);
+  const forward = () => setCurrentStep(currentStep + 1)
 
-  const backward = () => setCurrentStep(currentStep - 1);
+  const backward = () => setCurrentStep(currentStep - 1)
 
   const handleNext = async () => {
-    const fieldsValue = await form.validateFields();
-    setFormVals({ ...formVals, ...fieldsValue });
+    const fieldsValue = await form.validateFields()
+    setFormVals({...formVals, ...fieldsValue})
 
     if (currentStep < 2) {
-      forward();
+      forward()
     } else {
-      handleUpdate(formVals);
+      handleUpdate(formVals)
     }
-  };
+  }
 
   const renderContent = () => {
     if (currentStep === 1) {
@@ -80,7 +97,7 @@ const UpdateForm = props => {
             </RadioGroup>
           </FormItem>
         </>
-      );
+      )
     }
 
     if (currentStep === 2) {
@@ -116,7 +133,7 @@ const UpdateForm = props => {
             </Select>
           </FormItem>
         </>
-      );
+      )
     }
 
     return (
@@ -131,7 +148,7 @@ const UpdateForm = props => {
             },
           ]}
         >
-          <Input placeholder="请输入" />
+          <Input placeholder="请输入"/>
         </FormItem>
         <FormItem
           name="desc"
@@ -144,11 +161,11 @@ const UpdateForm = props => {
             },
           ]}
         >
-          <TextArea rows={4} placeholder="请输入至少五个字符" />
+          <TextArea rows={4} placeholder="请输入至少五个字符"/>
         </FormItem>
       </>
-    );
-  };
+    )
+  }
 
   const renderFooter = () => {
     if (currentStep === 1) {
@@ -167,7 +184,7 @@ const UpdateForm = props => {
             下一步
           </Button>
         </>
-      );
+      )
     }
 
     if (currentStep === 2) {
@@ -186,7 +203,7 @@ const UpdateForm = props => {
             完成
           </Button>
         </>
-      );
+      )
     }
 
     return (
@@ -196,8 +213,8 @@ const UpdateForm = props => {
           下一步
         </Button>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <Modal
@@ -219,9 +236,9 @@ const UpdateForm = props => {
         size="small"
         current={currentStep}
       >
-        <Step title="基本信息" />
-        <Step title="配置规则属性" />
-        <Step title="设定调度周期" />
+        <Step title="基本信息"/>
+        <Step title="配置规则属性"/>
+        <Step title="设定调度周期"/>
       </Steps>
       <Form
         {...formLayout}
@@ -238,7 +255,7 @@ const UpdateForm = props => {
         {renderContent()}
       </Form>
     </Modal>
-  );
-};
+  )
+}
 
-export default UpdateForm;
+export default UpdateForm

@@ -37,7 +37,6 @@ import java.nio.charset.StandardCharsets;
  * App Servlet拦截器.
  *
  * @author gudaoxuri
- * @author gjason
  */
 @Component
 @Slf4j
@@ -65,7 +64,7 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
             return false;
         }
         var ak = authorization.split(":")[0];
-        var legalSkAndAppIdR = interceptService.getAppCertByAk(ak);
+        var legalSkAndAppIdR = interceptService.getAppIdentByAk(ak);
         if (!legalSkAndAppIdR.ok()) {
             ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
                     "认证错误，请检查AK是否合法",

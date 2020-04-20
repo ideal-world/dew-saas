@@ -1,4 +1,4 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration =\
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 idealworld.dew.saas.service.ident.service.sdk.SDKConfig,\
 idealworld.dew.saas.service.ident.service.sdk.SDKAutoConfiguration,\
 idealworld.dew.saas.service.ident.service.sdk.AuthProcessor

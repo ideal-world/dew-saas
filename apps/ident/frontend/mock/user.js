@@ -1,5 +1,21 @@
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 function getFakeCaptcha(req, res) {
-  return res.json('captcha-xxx');
+  return res.json('captcha-xxx')
 } // 代码中会兼容本地 service mock 以及部署站点的静态数据
 
 export default {
@@ -76,15 +92,15 @@ export default {
     },
   ],
   'POST /api/login/account': (req, res) => {
-    const { password, userName, type } = req.body;
+    const {password, userName, type} = req.body
 
     if (password === 'ant.design' && userName === 'admin') {
       res.send({
         status: 'ok',
         type,
         currentAuthority: 'admin',
-      });
-      return;
+      })
+      return
     }
 
     if (password === 'ant.design' && userName === 'user') {
@@ -92,8 +108,8 @@ export default {
         status: 'ok',
         type,
         currentAuthority: 'user',
-      });
-      return;
+      })
+      return
     }
 
     if (type === 'mobile') {
@@ -101,21 +117,21 @@ export default {
         status: 'ok',
         type,
         currentAuthority: 'admin',
-      });
-      return;
+      })
+      return
     }
 
     res.send({
       status: 'error',
       type,
       currentAuthority: 'guest',
-    });
+    })
   },
   'POST /api/register': (req, res) => {
     res.send({
       status: 'ok',
       currentAuthority: 'user',
-    });
+    })
   },
   'GET /api/500': (req, res) => {
     res.status(500).send({
@@ -124,7 +140,7 @@ export default {
       error: 'error',
       message: 'error',
       path: '/base/category/list',
-    });
+    })
   },
   'GET /api/404': (req, res) => {
     res.status(404).send({
@@ -133,7 +149,7 @@ export default {
       error: 'Not Found',
       message: 'No message available',
       path: '/base/category/list/2121212',
-    });
+    })
   },
   'GET /api/403': (req, res) => {
     res.status(403).send({
@@ -142,7 +158,7 @@ export default {
       error: 'Unauthorized',
       message: 'Unauthorized',
       path: '/base/category/list',
-    });
+    })
   },
   'GET /api/401': (req, res) => {
     res.status(401).send({
@@ -151,7 +167,7 @@ export default {
       error: 'Unauthorized',
       message: 'Unauthorized',
       path: '/base/category/list',
-    });
+    })
   },
   'GET  /api/login/captcha': getFakeCaptcha,
-};
+}

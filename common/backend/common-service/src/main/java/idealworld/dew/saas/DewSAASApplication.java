@@ -21,18 +21,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.EntityManager;
 
 /**
- * The type Dew saas application.
+ * Dew saas application.
+ *
+ * @author gudaoxuri
  */
 @EnableCaching
 @SpringBootApplication
 public class DewSAASApplication {
 
+    /**
+     * Jpa query jpa query factory.
+     *
+     * @param entityManager the entity manager
+     * @return the jpa query factory
+     */
     @Bean
     @Autowired
     public JPAQueryFactory jpaQuery(EntityManager entityManager) {

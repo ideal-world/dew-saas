@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 租户控制台岗位管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -41,18 +43,38 @@ public class ConsolePostController extends BasicController {
     @Autowired
     private PostService postService;
 
+    /**
+     * 添加当前租户某个应用的岗位.
+     *
+     * @param appId      the app id
+     * @param addPostReq the add post req
+     * @return the resp
+     */
     @PostMapping(value = "{appId}")
     @ApiOperation(value = "添加当前租户某个应用的岗位")
-    public Resp<Long> addPost(@PathVariable Long appId, @RequestBody AddPostReq addPostReq) {
+    public Resp<Long> addPost(@PathVariable Long appId, @Validated @RequestBody AddPostReq addPostReq) {
         return postService.addPost(addPostReq, appId, getCurrentTenantId());
     }
 
+    /**
+     * 获取当前租户某个应用的岗位列表信息.
+     *
+     * @param appId the app id
+     * @return the resp
+     */
     @GetMapping(value = "{appId}")
     @ApiOperation(value = "获取当前租户某个应用的岗位列表信息")
     public Resp<List<PostInfoResp>> findPostInfo(@PathVariable Long appId) {
         return postService.findPostInfo(appId, getCurrentTenantId());
     }
 
+    /**
+     * 删除当前租户某个应用的某个岗位.
+     *
+     * @param appId  the app id
+     * @param postId the post id
+     * @return the resp
+     */
     @DeleteMapping(value = "{appId}/{postId}")
     @ApiOperation(value = "删除当前租户某个应用的某个岗位", notes = "删除岗位，关联账号岗位、权限")
     public Resp<Void> deletePost(@PathVariable Long appId, @PathVariable Long postId) {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package idealworld.dew.saas.common.sdk;
 
 import com.ecfront.dew.common.$;
@@ -15,32 +31,66 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Common sdk.
+ *
+ * @param <E> the type parameter
+ * @author gudaoxuri
+ */
 @Slf4j
 public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcessor {
 
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
-
-    private HttpHelper httpHelper;
+    /**
+     * The Base url.
+     */
     protected String baseUrl;
+    /**
+     * The Config.
+     */
     protected E config;
+    private HttpHelper httpHelper;
     private String serviceUrl;
 
-    public void setConfig(E config) {
-        this.config = config;
-    }
-
+    /**
+     * Sets service url.
+     *
+     * @param serviceUrl the service url
+     */
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
     }
 
+    /**
+     * Gets config.
+     *
+     * @return the config
+     */
     public E getConfig() {
         return config;
     }
 
+    /**
+     * Sets config.
+     *
+     * @param config the config
+     */
+    public void setConfig(E config) {
+        this.config = config;
+    }
+
+    /**
+     * Is initialized.
+     *
+     * @return the result
+     */
     public boolean isInitialized() {
         return INITIALIZED.get();
     }
 
+    /**
+     * Init.
+     */
     public synchronized void init() {
         if (INITIALIZED.get()) {
             return;

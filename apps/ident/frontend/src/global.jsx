@@ -1,8 +1,25 @@
-import { Button, message, notification } from 'antd';
-import React from 'react';
-import { formatMessage } from 'umi-plugin-react/locale';
-import defaultSettings from '../config/defaultSettings';
-const { pwa } = defaultSettings; // if pwa is true
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Button, message, notification} from 'antd'
+import React from 'react'
+import {formatMessage} from 'umi-plugin-react/locale'
+import defaultSettings from '../config/defaultSettings'
+
+const {pwa} = defaultSettings // if pwa is true
 
 if (pwa) {
   // Notify user if offline now
@@ -11,58 +28,58 @@ if (pwa) {
       formatMessage({
         id: 'app.pwa.offline',
       }),
-    );
-  }); // Pop up a prompt on the page asking the user if they want to use the latest version
+    )
+  }) // Pop up a prompt on the page asking the user if they want to use the latest version
 
   window.addEventListener('sw.updated', event => {
-    const e = event;
+    const e = event
 
     const reloadSW = async () => {
       // Check if there is sw whose state is waiting in ServiceWorkerRegistration
       // https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
-      const worker = e.detail && e.detail.waiting;
+      const worker = e.detail && e.detail.waiting
 
       if (!worker) {
-        return true;
+        return true
       } // Send skip-waiting event to waiting SW with MessageChannel
 
       await new Promise((resolve, reject) => {
-        const channel = new MessageChannel();
+        const channel = new MessageChannel()
 
         channel.port1.onmessage = msgEvent => {
           if (msgEvent.data.error) {
-            reject(msgEvent.data.error);
+            reject(msgEvent.data.error)
           } else {
-            resolve(msgEvent.data);
+            resolve(msgEvent.data)
           }
-        };
+        }
 
         worker.postMessage(
           {
             type: 'skip-waiting',
           },
           [channel.port2],
-        );
-      }); // Refresh current page to use the updated HTML and other assets after SW has skiped waiting
+        )
+      }) // Refresh current page to use the updated HTML and other assets after SW has skiped waiting
 
-      window.location.reload(true);
-      return true;
-    };
+      window.location.reload(true)
+      return true
+    }
 
-    const key = `open${Date.now()}`;
+    const key = `open${Date.now()}`
     const btn = (
       <Button
         type="primary"
         onClick={() => {
-          notification.close(key);
-          reloadSW();
+          notification.close(key)
+          reloadSW()
         }}
       >
         {formatMessage({
           id: 'app.pwa.serviceworker.updated.ok',
         })}
       </Button>
-    );
+    )
     notification.open({
       message: formatMessage({
         id: 'app.pwa.serviceworker.updated',
@@ -72,30 +89,31 @@ if (pwa) {
       }),
       btn,
       key,
-      onClose: async () => {},
-    });
-  });
+      onClose: async () => {
+      },
+    })
+  })
 } else if ('serviceWorker' in navigator) {
   // unregister service worker
-  const { serviceWorker } = navigator;
+  const {serviceWorker} = navigator
 
   if (serviceWorker.getRegistrations) {
     serviceWorker.getRegistrations().then(sws => {
       sws.forEach(sw => {
-        sw.unregister();
-      });
-    });
+        sw.unregister()
+      })
+    })
   }
 
   serviceWorker.getRegistration().then(sw => {
-    if (sw) sw.unregister();
-  }); // remove all caches
+    if (sw) sw.unregister()
+  }) // remove all caches
 
   if (window.caches && window.caches.keys) {
     caches.keys().then(keys => {
       keys.forEach(key => {
-        caches.delete(key);
-      });
-    });
+        caches.delete(key)
+      })
+    })
   }
 }

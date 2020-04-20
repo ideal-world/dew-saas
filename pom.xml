@@ -115,7 +115,7 @@
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
-               <!-- <updatePolicy>interval:10</updatePolicy>-->
+                <!-- <updatePolicy>interval:10</updatePolicy>-->
                 <checksumPolicy>warn</checksumPolicy>
             </snapshots>
         </repository>

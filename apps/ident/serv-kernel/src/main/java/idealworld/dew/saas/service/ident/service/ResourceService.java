@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Resource service.
+ *
  * @author gudaoxuri
  */
 @Service
@@ -50,6 +52,14 @@ public class ResourceService extends IdentBasicService {
     @Autowired
     private PermissionService permissionService;
 
+    /**
+     * Add resource group.
+     *
+     * @param addResourceGroupReq the add resource group req
+     * @param relAppId            the rel app id
+     * @param relTenantId         the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addResourceGroup(AddResourceGroupReq addResourceGroupReq, Long relAppId, Long relTenantId) {
         var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
@@ -70,6 +80,14 @@ public class ResourceService extends IdentBasicService {
         return saveEntity(resource);
     }
 
+    /**
+     * Add resource.
+     *
+     * @param addResourceReq the add resource req
+     * @param relAppId       the rel app id
+     * @param relTenantId    the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addResource(AddResourceReq addResourceReq, Long relAppId, Long relTenantId) {
         var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
@@ -99,6 +117,15 @@ public class ResourceService extends IdentBasicService {
         return saveEntity(resource);
     }
 
+    /**
+     * Modify resource.
+     *
+     * @param modifyResourceReq the modify resource req
+     * @param resourceId        the resource id
+     * @param relAppId          the rel app id
+     * @param relTenantId       the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> modifyResource(ModifyResourceReq modifyResourceReq, Long resourceId,
                                      Long relAppId, Long relTenantId) {
@@ -131,6 +158,14 @@ public class ResourceService extends IdentBasicService {
         return updateEntity(resourceUpdate);
     }
 
+    /**
+     * Gets resource.
+     *
+     * @param resourceId  the resource id
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resource
+     */
     public Resp<ResourceInfoResp> getResource(Long resourceId, Long relAppId, Long relTenantId) {
         var qResource = QResource.resource;
         var resourceQuery = sqlBuilder
@@ -151,6 +186,13 @@ public class ResourceService extends IdentBasicService {
         return getDTO(resourceQuery);
     }
 
+    /**
+     * Find resources.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     public Resp<List<ResourceInfoResp>> findResources(Long relAppId, Long relTenantId) {
         var qResource = QResource.resource;
         var resourceQuery = sqlBuilder
@@ -170,6 +212,14 @@ public class ResourceService extends IdentBasicService {
         return findDTOs(resourceQuery);
     }
 
+    /**
+     * Delete resource.
+     *
+     * @param resourceId  the resource id
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> deleteResource(Long resourceId, Long relAppId, Long relTenantId) {
         var deleteResInfos = findResourceAndGroup(resourceId);
@@ -198,6 +248,12 @@ public class ResourceService extends IdentBasicService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Find resource by group list.
+     *
+     * @param resourceGroupId the resource group id
+     * @return the list
+     */
     protected List<ResourceInfoResp> findResourceByGroup(Long resourceGroupId) {
         var qResource = QResource.resource;
         return sqlBuilder
@@ -219,9 +275,11 @@ public class ResourceService extends IdentBasicService {
                     if (res.getKind() == ResourceKind.GROUP) {
                         return findResourceByGroup(res.getId()).stream();
                     } else {
-                        return new ArrayList<ResourceInfoResp>() {{
-                            add(res);
-                        }}.stream();
+                        return new ArrayList<ResourceInfoResp>() {
+                            {
+                                add(res);
+                            }
+                        }.stream();
                     }
                 })
                 .collect(Collectors.toList());

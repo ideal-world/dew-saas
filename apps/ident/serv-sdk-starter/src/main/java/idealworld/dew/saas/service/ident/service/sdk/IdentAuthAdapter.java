@@ -17,9 +17,10 @@
 package idealworld.dew.saas.service.ident.service.sdk;
 
 import com.ecfront.dew.common.StandardCode;
-import com.ecfront.dew.common.exception.RTException;
+import com.ecfront.dew.common.exception.RTUnsupportedEncodingException;
 import group.idealworld.dew.core.auth.AuthAdapter;
 import group.idealworld.dew.core.auth.dto.OptInfo;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,6 @@ import java.util.Optional;
  * Ident鉴权适配器.
  *
  * @author gudaoxuri
- * @author gjason
  */
 @Component
 @Slf4j
@@ -49,19 +49,21 @@ public class IdentAuthAdapter implements AuthAdapter {
             if (resp.getCode().equalsIgnoreCase(StandardCode.UNAUTHORIZED.toString())) {
                 return Optional.empty();
             }
-            throw new RTException("获取登录信息错误[" + resp.getCode() + "] " + resp.getMessage());
+            throw StandardResp.e(
+                    StandardResp.unAuthorized("IDENT_SDK",
+                            "获取登录信息错误[" + resp.getCode() + "] " + resp.getMessage()));
         }
         return Optional.of((E) resp.getBody());
     }
 
     @Override
     public void removeOptInfo(String token) {
-        throw new UnsupportedOperationException("不支持删除登录信息");
+        throw new RTUnsupportedEncodingException("不支持删除登录信息");
     }
 
     @Override
     public <E extends OptInfo<E>> void setOptInfo(E optInfo) {
-        throw new UnsupportedOperationException("不支持设置登录信息");
+        throw new RTUnsupportedEncodingException("不支持设置登录信息");
     }
 
 }

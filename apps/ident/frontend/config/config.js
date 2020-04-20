@@ -1,13 +1,28 @@
-import defaultSettings from './defaultSettings'; // https://umijs.org/config/
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import slash from 'slash2';
-import themePluginConfig from './themePluginConfig';
-import proxy from './proxy';
-const { pwa } = defaultSettings; // preview.pro.ant.design only do not use in your production ;
+import defaultSettings from './defaultSettings' // https://umijs.org/config/
+import slash from 'slash2'
+import proxy from './proxy'
+
+const {pwa} = defaultSettings // preview.pro.ant.design only do not use in your production ;
 // preview.pro.ant.design 专用环境变量，请不要在你的项目中使用它。
 
-const { ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION, REACT_APP_ENV } = process.env;
-const isAntDesignProPreview = ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site';
+const {ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION, REACT_APP_ENV} = process.env
+const isAntDesignProPreview = ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site'
 const plugins = [
   ['umi-plugin-antd-icon-config', {}],
   [
@@ -32,11 +47,11 @@ const plugins = [
       },
       pwa: pwa
         ? {
-            workboxPluginMode: 'InjectManifest',
-            workboxOptions: {
-              importWorkboxFrom: 'local',
-            },
-          }
+          workboxPluginMode: 'InjectManifest',
+          workboxOptions: {
+            importWorkboxFrom: 'local',
+          },
+        }
         : false, // default close dll, because issue https://github.com/ant-design/ant-design-pro/issues/4665
       // dll features https://webpack.js.org/plugins/dll-plugin/
       // dll: {
@@ -54,7 +69,7 @@ const plugins = [
       autoAddMenu: true,
     },
   ],
-]; // if (isAntDesignProPreview) {
+] // if (isAntDesignProPreview) {
 //   // 针对 preview.pro.ant.design 的 GA 统计代码
 //   plugins.push([
 //     'umi-plugin-ga',
@@ -184,25 +199,25 @@ export default {
         context.resourcePath.includes('ant.design.pro.less') ||
         context.resourcePath.includes('global.less')
       ) {
-        return localName;
+        return localName
       }
 
-      const match = context.resourcePath.match(/src(.*)/);
+      const match = context.resourcePath.match(/src(.*)/)
 
       if (match && match[1]) {
-        const antdProPath = match[1].replace('.less', '');
+        const antdProPath = match[1].replace('.less', '')
         const arr = slash(antdProPath)
           .split('/')
           .map(a => a.replace(/([A-Z])/g, '-$1'))
-          .map(a => a.toLowerCase());
-        return `antd-pro${arr.join('-')}-${localName}`.replace(/--/g, '-');
+          .map(a => a.toLowerCase())
+        return `antd-pro${arr.join('-')}-${localName}`.replace(/--/g, '-')
       }
 
-      return localName;
+      return localName
     },
   },
   manifest: {
     basePath: '/',
   },
   proxy: proxy[REACT_APP_ENV || 'dev'],
-};
+}

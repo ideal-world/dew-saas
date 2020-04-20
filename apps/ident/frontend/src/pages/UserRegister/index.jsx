@@ -1,38 +1,54 @@
-import { Form } from '@ant-design/compatible';
-import '@ant-design/compatible/assets/index.css';
-import { Button, Col, Input, Popover, Progress, Row, Select, message } from 'antd';
-import { FormattedMessage, formatMessage } from 'umi-plugin-react/locale';
-import React, { Component } from 'react';
-import Link from 'umi/link';
-import { connect } from 'dva';
-import router from 'umi/router';
-import styles from './style.less';
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-const FormItem = Form.Item;
-const { Option } = Select;
-const InputGroup = Input.Group;
+import {Form} from '@ant-design/compatible'
+import '@ant-design/compatible/assets/index.css'
+import {Button, Input, message, Popover, Progress, Select} from 'antd'
+import {formatMessage, FormattedMessage} from 'umi-plugin-react/locale'
+import React, {Component} from 'react'
+import Link from 'umi/link'
+import {connect} from 'dva'
+import router from 'umi/router'
+import styles from './style.less'
+
+const FormItem = Form.Item
+const {Option} = Select
+const InputGroup = Input.Group
 const passwordStatusMap = {
   ok: (
     <div className={styles.success}>
-      <FormattedMessage id="userregister.strength.strong" />
+      <FormattedMessage id="userregister.strength.strong"/>
     </div>
   ),
   pass: (
     <div className={styles.warning}>
-      <FormattedMessage id="userregister.strength.medium" />
+      <FormattedMessage id="userregister.strength.medium"/>
     </div>
   ),
   poor: (
     <div className={styles.error}>
-      <FormattedMessage id="userregister.strength.short" />
+      <FormattedMessage id="userregister.strength.short"/>
     </div>
   ),
-};
+}
 const passwordProgressMap = {
   ok: 'success',
   pass: 'normal',
   poor: 'exception',
-};
+}
 
 class UserRegister extends Component {
   state = {
@@ -41,97 +57,97 @@ class UserRegister extends Component {
     visible: false,
     help: '',
     // prefix: '86',
-  };
+  }
 
-  interval = undefined;
+  interval = undefined
 
   componentDidUpdate() {
-    const { userRegister, form } = this.props;
-    const account = form.getFieldValue('ak');
+    const {userRegister, form} = this.props
+    const account = form.getFieldValue('ak')
     // model中的state
-    console.info(userRegister);
+    console.info(userRegister)
     if (userRegister.status === '200') {
-      message.success('注册成功！');
+      message.success('注册成功！')
       router.push({
         pathname: '/user/register-result',
         state: {
           account,
         },
-      });
+      })
     }
   }
 
   componentWillUnmount() {
-    clearInterval(this.interval);
+    clearInterval(this.interval)
   }
 
   onGetCaptcha = () => {
-    let count = 59;
+    let count = 59
     this.setState({
       count,
-    });
+    })
     this.interval = window.setInterval(() => {
-      count -= 1;
+      count -= 1
       this.setState({
         count,
-      });
+      })
 
       if (count === 0) {
-        clearInterval(this.interval);
+        clearInterval(this.interval)
       }
-    }, 1000);
-  };
+    }, 1000)
+  }
 
   getPasswordStatus = () => {
-    const { form } = this.props;
-    const value = form.getFieldValue('sk');
+    const {form} = this.props
+    const value = form.getFieldValue('sk')
 
     if (value && value.length > 9) {
-      return 'ok';
+      return 'ok'
     }
 
     if (value && value.length > 5) {
-      return 'pass';
+      return 'pass'
     }
 
-    return 'poor';
-  };
+    return 'poor'
+  }
 
   handleSubmit = e => {
-    e.preventDefault();
-    const { form, dispatch } = this.props;
+    e.preventDefault()
+    const {form, dispatch} = this.props
     form.validateFields(
       {
         force: true,
       },
       (err, values) => {
         if (!err) {
-          const { prefix } = this.state;
+          const {prefix} = this.state
           dispatch({
             type: 'userRegister/submit',
-            payload: { ...values, prefix },
-          });
+            payload: {...values, prefix},
+          })
         }
       },
-    );
-  };
+    )
+  }
 
   checkConfirm = (rule, value, callback) => {
-    const { form } = this.props;
+    const {form} = this.props
 
     if (value && value !== form.getFieldValue('sk')) {
       callback(
         formatMessage({
           id: 'userregister.password.twice',
         }),
-      );
+      )
     } else {
-      callback();
+      callback()
     }
-  };
+  }
 
   checkPassword = (rule, value, callback) => {
-    const { visible, confirmDirty } = this.state;
+    const {visible, confirmDirty} = this.state
 
     if (!value) {
       this.setState({
@@ -139,45 +155,45 @@ class UserRegister extends Component {
           id: 'userregister.password.required',
         }),
         visible: !!value,
-      });
-      callback('error');
+      })
+      callback('error')
     } else {
       this.setState({
         help: '',
-      });
+      })
 
       if (!visible) {
         this.setState({
           visible: !!value,
-        });
+        })
       }
 
       if (value.length < 6) {
-        callback('error');
+        callback('error')
       } else {
-        const { form } = this.props;
+        const {form} = this.props
 
         if (value && confirmDirty) {
           form.validateFields(['confirm'], {
             force: true,
-          });
+          })
         }
 
-        callback();
+        callback()
       }
     }
-  };
+  }
 
   changePrefix = value => {
     this.setState({
       prefix: value,
-    });
-  };
+    })
+  }
 
   renderPasswordProgress = () => {
-    const { form } = this.props;
-    const value = form.getFieldValue('password');
-    const passwordStatus = this.getPasswordStatus();
+    const {form} = this.props
+    const value = form.getFieldValue('password')
+    const passwordStatus = this.getPasswordStatus()
     return value && value.length ? (
       <div className={styles[`progress-${passwordStatus}`]}>
         <Progress
@@ -188,17 +204,17 @@ class UserRegister extends Component {
           showInfo={false}
         />
       </div>
-    ) : null;
-  };
+    ) : null
+  }
 
   render() {
-    const { form, submitting } = this.props;
-    const { getFieldDecorator } = form;
-    const { count, prefix, help, visible } = this.state;
+    const {form, submitting} = this.props
+    const {getFieldDecorator} = form
+    const {count, prefix, help, visible} = this.state
     return (
       <div className={styles.main}>
         <h3>
-          <FormattedMessage id="userregister.register.register" />
+          <FormattedMessage id="userregister.register.register"/>
         </h3>
         <Form onSubmit={this.handleSubmit}>
           <FormItem className={styles.len}>
@@ -265,10 +281,10 @@ class UserRegister extends Component {
             <Popover
               getPopupContainer={node => {
                 if (node && node.parentNode) {
-                  return node.parentNode;
+                  return node.parentNode
                 }
 
-                return node;
+                return node
               }}
               content={
                 <div
@@ -283,7 +299,7 @@ class UserRegister extends Component {
                       marginTop: 10,
                     }}
                   >
-                    <FormattedMessage id="userregister.strength.msg" />
+                    <FormattedMessage id="userregister.strength.msg"/>
                   </div>
                 </div>
               }
@@ -343,8 +359,8 @@ class UserRegister extends Component {
                   }),
                 },
                 {
-                  min:1,max:100,
-                  message:formatMessage({
+                  min: 1, max: 100,
+                  message: formatMessage({
                     id: 'userregister.tenantName.length',
                   }),
                 }
@@ -366,19 +382,19 @@ class UserRegister extends Component {
               type="primary"
               htmlType="submit"
             >
-              <FormattedMessage id="userregister.register.register" />
+              <FormattedMessage id="userregister.register.register"/>
             </Button>
             <Link className={styles.login} to="/user/login">
-              <FormattedMessage id="userregister.register.sign-in" />
+              <FormattedMessage id="userregister.register.sign-in"/>
             </Link>
           </FormItem>
         </Form>
       </div>
-    );
+    )
   }
 }
 
-export default connect(({ userRegister, loading }) => ({
+export default connect(({userRegister, loading}) => ({
   userRegister,
   submitting: loading.effects['userRegister/submit'],
-}))(Form.create()(UserRegister));
+}))(Form.create()(UserRegister))

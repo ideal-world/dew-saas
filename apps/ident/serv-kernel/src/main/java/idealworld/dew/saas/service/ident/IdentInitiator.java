@@ -33,6 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Ident initiator.
+ *
  * @author gudaoxuri
  */
 @Service
@@ -53,7 +55,7 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
         DewContext.setOptInfoClazz(IdentOptInfo.class);
         initPermissionData();
         interceptService.cacheTenantAndAppStatus();
-        interceptService.cacheAppCerts();
+        interceptService.cacheAppIdents();
     }
 
     private void initPermissionData() {
@@ -67,6 +69,7 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
                 .code(identConfig.getSecurity().getSystemAdminPositionCode())
                 .name(identConfig.getSecurity().getSystemAdminPositionName())
                 .icon("")
+                .sort(0)
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
@@ -74,6 +77,7 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
                 .code(identConfig.getSecurity().getTenantAdminPositionCode())
                 .name(identConfig.getSecurity().getTenantAdminPositionName())
                 .icon("")
+                .sort(0)
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
@@ -81,6 +85,7 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
                 .code(identConfig.getSecurity().getDefaultPositionCode())
                 .name(identConfig.getSecurity().getDefaultPositionName())
                 .icon("")
+                .sort(0)
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
@@ -88,18 +93,21 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
         saveEntity(Post.builder()
                 .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getSystemAdminPositionCode())
+                .sort(0)
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
         saveEntity(Post.builder()
                 .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getTenantAdminPositionCode())
+                .sort(0)
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
         saveEntity(Post.builder()
                 .relOrganizationCode("")
                 .relPositionCode(identConfig.getSecurity().getDefaultPositionCode())
+                .sort(0)
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());

@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Organization service.
+ *
  * @author gudaoxuri
  */
 @Service
@@ -47,6 +49,14 @@ public class OrganizationService extends IdentBasicService {
     @Autowired
     private PostService postService;
 
+    /**
+     * Add organization.
+     *
+     * @param addOrganizationReq the add organization req
+     * @param relAppId           the rel app id
+     * @param relTenantId        the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> AddOrganization(AddOrganizationReq addOrganizationReq, Long relAppId, Long relTenantId) {
         var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
@@ -62,9 +72,10 @@ public class OrganizationService extends IdentBasicService {
                 .fetchCount() != 0) {
             return StandardResp.conflict(BUSINESS_ORG, "此机构编码已存在");
         }
-        var appCert = Organization.builder()
+        var appIdent = Organization.builder()
                 .kind(addOrganizationReq.getKind())
                 .code(addOrganizationReq.getCode())
+                .busCode(addOrganizationReq.getBusCode() != null ? addOrganizationReq.getBusCode() : "")
                 .name(addOrganizationReq.getName())
                 .icon(addOrganizationReq.getIcon() != null ? addOrganizationReq.getIcon() : "")
                 .parameters(addOrganizationReq.getParameters() != null ? addOrganizationReq.getParameters() : "{}")
@@ -73,18 +84,26 @@ public class OrganizationService extends IdentBasicService {
                 .relAppId(relAppId)
                 .relTenantId(relTenantId)
                 .build();
-        return saveEntity(appCert);
+        return saveEntity(appIdent);
     }
 
+    /**
+     * Find organization info.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     public Resp<List<OrganizationInfoResp>> findOrganizationInfo(Long relAppId, Long relTenantId) {
         var qOrganization = QOrganization.organization;
         var qAccountCreateUser = QAccount.account;
         var qAccountUpdateUser = QAccount.account;
-        var OrganizationQuery = sqlBuilder
+        var qOrganizationQuery = sqlBuilder
                 .select(Projections.bean(
                         OrganizationInfoResp.class,
                         qOrganization.id,
                         qOrganization.code,
+                        qOrganization.busCode,
                         qOrganization.kind,
                         qOrganization.name,
                         qOrganization.icon,
@@ -98,13 +117,22 @@ public class OrganizationService extends IdentBasicService {
                         qAccountCreateUser.name.as("createUserName"),
                         qAccountUpdateUser.name.as("updateUserName")))
                 .from(qOrganization)
-                .leftJoin(qAccountCreateUser).on(qOrganization.createUser.eq(qAccountCreateUser.id))
-                .leftJoin(qAccountUpdateUser).on(qOrganization.updateUser.eq(qAccountUpdateUser.id))
+                .leftJoin(qAccountCreateUser).on(qOrganization.createUser.eq(qAccountCreateUser.openId))
+                .leftJoin(qAccountUpdateUser).on(qOrganization.updateUser.eq(qAccountUpdateUser.openId))
                 .where(qOrganization.relAppId.eq(relAppId))
                 .where(qOrganization.relTenantId.eq(relTenantId));
-        return findDTOs(OrganizationQuery);
+        return findDTOs(qOrganizationQuery);
     }
 
+    /**
+     * Modify organization.
+     *
+     * @param modifyOrganizationReq the modify organization req
+     * @param organizationId        the organization id
+     * @param relAppId              the rel app id
+     * @param relTenantId           the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> modifyOrganization(ModifyOrganizationReq modifyOrganizationReq, Long organizationId,
                                          Long relAppId, Long relTenantId) {
@@ -115,6 +143,9 @@ public class OrganizationService extends IdentBasicService {
                 .where(qOrganization.relTenantId.eq(relTenantId));
         if (modifyOrganizationReq.getKind() != null) {
             updateClause.set(qOrganization.kind, modifyOrganizationReq.getKind());
+        }
+        if (modifyOrganizationReq.getBusCode() != null) {
+            updateClause.set(qOrganization.busCode, modifyOrganizationReq.getBusCode());
         }
         if (modifyOrganizationReq.getName() != null) {
             updateClause.set(qOrganization.name, modifyOrganizationReq.getName());
@@ -134,6 +165,14 @@ public class OrganizationService extends IdentBasicService {
         return updateEntity(updateClause);
     }
 
+    /**
+     * Delete organization.
+     *
+     * @param organizationId the organization id
+     * @param relAppId       the rel app id
+     * @param relTenantId    the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> deleteOrganization(Long organizationId, Long relAppId, Long relTenantId) {
         var qOrganization = QOrganization.organization;
@@ -162,6 +201,13 @@ public class OrganizationService extends IdentBasicService {
                 .where(qOrganization.relTenantId.eq(relTenantId)));
     }
 
+    /**
+     * Delete organization.
+     *
+     * @param appId       the app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Long> deleteOrganization(Long appId, Long relTenantId) {
         var qOrganization = QOrganization.organization;

@@ -1,60 +1,76 @@
-import React, { Component } from 'react';
-import { Tag, message } from 'antd';
-import { connect } from 'dva';
-import groupBy from 'lodash/groupBy';
-import moment from 'moment';
-import NoticeIcon from '../NoticeIcon';
-import styles from './index.less';
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import React, {Component} from 'react'
+import {message, Tag} from 'antd'
+import {connect} from 'dva'
+import groupBy from 'lodash/groupBy'
+import moment from 'moment'
+import NoticeIcon from '../NoticeIcon'
+import styles from './index.less'
 
 class GlobalHeaderRight extends Component {
   componentDidMount() {
-    const { dispatch } = this.props;
+    const {dispatch} = this.props
 
     if (dispatch) {
       dispatch({
         type: 'global/fetchNotices',
-      });
+      })
     }
   }
 
   changeReadState = clickedItem => {
-    const { id } = clickedItem;
-    const { dispatch } = this.props;
+    const {id} = clickedItem
+    const {dispatch} = this.props
 
     if (dispatch) {
       dispatch({
         type: 'global/changeNoticeReadState',
         payload: id,
-      });
+      })
     }
-  };
+  }
   handleNoticeClear = (title, key) => {
-    const { dispatch } = this.props;
-    message.success(`${'清空了'} ${title}`);
+    const {dispatch} = this.props
+    message.success(`${'清空了'} ${title}`)
 
     if (dispatch) {
       dispatch({
         type: 'global/clearNotices',
         payload: key,
-      });
+      })
     }
-  };
+  }
   getNoticeData = () => {
-    const { notices = [] } = this.props;
+    const {notices = []} = this.props
 
     if (notices.length === 0) {
-      return {};
+      return {}
     }
 
     const newNotices = notices.map(notice => {
-      const newNotice = { ...notice };
+      const newNotice = {...notice}
 
       if (newNotice.datetime) {
-        newNotice.datetime = moment(notice.datetime).fromNow();
+        newNotice.datetime = moment(notice.datetime).fromNow()
       }
 
       if (newNotice.id) {
-        newNotice.key = newNotice.id;
+        newNotice.key = newNotice.id
       }
 
       if (newNotice.extra && newNotice.status) {
@@ -63,7 +79,7 @@ class GlobalHeaderRight extends Component {
           processing: 'blue',
           urgent: 'red',
           doing: 'gold',
-        }[newNotice.status];
+        }[newNotice.status]
         newNotice.extra = (
           <Tag
             color={color}
@@ -73,39 +89,39 @@ class GlobalHeaderRight extends Component {
           >
             {newNotice.extra}
           </Tag>
-        );
+        )
       }
 
-      return newNotice;
-    });
-    return groupBy(newNotices, 'type');
-  };
+      return newNotice
+    })
+    return groupBy(newNotices, 'type')
+  }
   getUnreadData = noticeData => {
-    const unreadMsg = {};
+    const unreadMsg = {}
     Object.keys(noticeData).forEach(key => {
-      const value = noticeData[key];
+      const value = noticeData[key]
 
       if (!unreadMsg[key]) {
-        unreadMsg[key] = 0;
+        unreadMsg[key] = 0
       }
 
       if (Array.isArray(value)) {
-        unreadMsg[key] = value.filter(item => !item.read).length;
+        unreadMsg[key] = value.filter(item => !item.read).length
       }
-    });
-    return unreadMsg;
-  };
+    })
+    return unreadMsg
+  }
 
   render() {
-    const { currentUser, fetchingNotices, onNoticeVisibleChange } = this.props;
-    const noticeData = this.getNoticeData();
-    const unreadMsg = this.getUnreadData(noticeData);
+    const {currentUser, fetchingNotices, onNoticeVisibleChange} = this.props
+    const noticeData = this.getNoticeData()
+    const unreadMsg = this.getUnreadData(noticeData)
     return (
       <NoticeIcon
         className={styles.action}
         count={currentUser && currentUser.unreadCount}
         onItemClick={item => {
-          this.changeReadState(item);
+          this.changeReadState(item)
         }}
         loading={fetchingNotices}
         clearText="清空"
@@ -140,14 +156,14 @@ class GlobalHeaderRight extends Component {
           showViewMore
         />
       </NoticeIcon>
-    );
+    )
   }
 }
 
-export default connect(({ user, global, loading }) => ({
+export default connect(({user, global, loading}) => ({
   currentUser: user.currentUser,
   collapsed: global.collapsed,
   fetchingMoreNotices: loading.effects['global/fetchMoreNotices'],
   fetchingNotices: loading.effects['global/fetchNotices'],
   notices: global.notices,
-}))(GlobalHeaderRight);
+}))(GlobalHeaderRight)

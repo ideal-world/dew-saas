@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package idealworld.dew.saas.common.service.domain;
 
 import group.idealworld.dew.Dew;
@@ -12,6 +28,8 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
+ * Basic soft del entity.
+ *
  * @author gudaoxuri
  */
 @MappedSuperclass
@@ -20,16 +38,33 @@ import java.util.Date;
 @NoArgsConstructor
 public class BasicSoftDelEntity extends IdEntity {
 
-    @Column(nullable = false)
+    /**
+     * The Kind.
+     */
+    @Column(nullable = false,
+            columnDefinition = "varchar(255) comment '对象类型'")
     protected String kind;
 
-    @Column(nullable = false)
+    /**
+     * The Entity name.
+     */
+    @Column(nullable = false,
+            columnDefinition = "varchar(255) comment '对象名称'")
     protected String entityName;
 
-    @Column(nullable = false)
-    protected Long recordId;
+    /**
+     * The Record id.
+     */
+    @Column(nullable = false,
+            columnDefinition = "varchar(255) comment '记录Id'")
+    protected String recordId;
 
-    @Column(nullable = false)
+    /**
+     * The Content.
+     */
+    @Lob
+    @Column(nullable = false,
+            columnDefinition = "text comment '删除内容，Json格式'")
     protected String content;
 
     /**
@@ -37,24 +72,28 @@ public class BasicSoftDelEntity extends IdEntity {
      */
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column
+    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP comment '删除时间'")
     protected Date deleteTime;
 
     /**
      * The Create user.
      */
-    @Column(nullable = false)
-    protected Long deleteUser;
+    @Column(nullable = false,
+            columnDefinition = "varchar(255) comment '删除者OpenId'")
+    protected String deleteUser;
 
+    /**
+     * Add user.
+     */
     @PrePersist
     public void addUser() {
         Dew.auth.getOptInfo().ifPresent(optInfo -> {
             if (StringUtils.isEmpty(this.getDeleteUser())) {
-                this.setDeleteUser(Long.valueOf((String) optInfo.getAccountCode()));
+                this.setDeleteUser((String) optInfo.getAccountCode());
             }
         });
         if (StringUtils.isEmpty(this.getDeleteUser())) {
-            this.setDeleteUser(Constant.OBJECT_UNDEFINED);
+            this.setDeleteUser(Constant.OBJECT_UNDEFINED + "");
         }
     }
 

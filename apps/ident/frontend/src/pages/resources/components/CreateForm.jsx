@@ -1,12 +1,28 @@
-import {Button, Input, message, Modal,} from 'antd';
-import React from 'react';
-import {Form} from '@ant-design/compatible';
-import {connect} from "dva";
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Button, Input, Modal,} from 'antd'
+import React from 'react'
+import {Form} from '@ant-design/compatible'
+import {connect} from "dva"
 
 class CreateForm extends React.Component {
 
   componentDidUpdate() {
-    const {userResource} = this.props;
+    const {userResource} = this.props
     // if (userResource.code === '200') {
     //   message.success('创建资源成功！');
     //   this.props.modalVisible(false);
@@ -14,7 +30,7 @@ class CreateForm extends React.Component {
   }
 
   handleSubmit = e => {
-    e.preventDefault();
+    e.preventDefault()
     const {dispatch, form} = this.props
     form.validateFields(
       {
@@ -26,15 +42,15 @@ class CreateForm extends React.Component {
           dispatch({
             type: 'userResource/submit',
             payload: {...values},
-          });
+          })
         }
       },
-    );
-  };
+    )
+  }
 
   render() {
-    const {modalVisible, onCancel, form, submitting} = this.props;
-    const {getFieldDecorator} = form;
+    const {modalVisible, onCancel, form, submitting} = this.props
+    const {getFieldDecorator} = form
     return (<Modal
         destroyOnClose
         title="新建资源"
@@ -95,9 +111,9 @@ class CreateForm extends React.Component {
       </Modal>
     )
   };
-};
+}
 
 export default connect(({userResource, loading}) => ({
   userResource,
   submitting: loading.effects['userResource/submit'],
-}))(Form.create()(CreateForm));
+}))(Form.create()(CreateForm))

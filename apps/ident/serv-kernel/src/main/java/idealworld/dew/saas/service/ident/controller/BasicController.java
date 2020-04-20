@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,28 @@
 
 package idealworld.dew.saas.service.ident.controller;
 
-import com.ecfront.dew.common.exception.RTException;
 import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.dto.IdentOptInfo;
 
+/**
+ * Basic controller.
+ *
+ * @author gudaoxuri
+ */
 public abstract class BasicController {
 
+    /**
+     * Gets current tenant id.
+     *
+     * @return the current tenant id
+     */
     protected Long getCurrentTenantId() {
         return Dew.auth.getOptInfo()
                 .map(info -> ((IdentOptInfo) info).getRelTenantId())
-                .orElseThrow(() -> new RTException("用户未登录"));
-    }
-
-    protected Long getCurrentAccountId() {
-        return Dew.auth.getOptInfo()
-                .map(info -> Long.valueOf((String) info.getAccountCode()))
-                .orElseThrow(() -> new RTException("用户未登录"));
+                .orElseThrow(() -> StandardResp.e(
+                        StandardResp.unAuthorized("BASIC", "用户未登录")
+                ));
     }
 
 }

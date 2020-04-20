@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Position service.
+ *
  * @author gudaoxuri
  */
 @Service
@@ -44,6 +46,14 @@ public class PositionService extends IdentBasicService {
     @Autowired
     private PostService postService;
 
+    /**
+     * Add position.
+     *
+     * @param addPositionReq the add position req
+     * @param relAppId       the rel app id
+     * @param relTenantId    the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Long> addPosition(AddPositionReq addPositionReq, Long relAppId, Long relTenantId) {
         var membershipCheckR = appService.checkAppMembership(relAppId, relTenantId);
@@ -57,18 +67,28 @@ public class PositionService extends IdentBasicService {
                 .where(qPosition.relAppId.eq(relAppId))
                 .where(qPosition.code.eq(addPositionReq.getCode()))
                 .fetchCount() != 0) {
-            return StandardResp.conflict(BUSINESS_POSITION,"职位已存在");
+            return StandardResp.conflict(BUSINESS_POSITION, "职位已存在");
         }
         var position = Position.builder()
                 .code(addPositionReq.getCode())
                 .name(addPositionReq.getName())
                 .icon(addPositionReq.getIcon() != null ? addPositionReq.getIcon() : "")
+                .sort(addPositionReq.getSort() != null ? addPositionReq.getSort() : 0)
                 .relAppId(relAppId)
                 .relTenantId(relTenantId)
                 .build();
         return saveEntity(position);
     }
 
+    /**
+     * Modify position.
+     *
+     * @param modifyPositionReq the modify position req
+     * @param positionId        the position id
+     * @param relAppId          the rel app id
+     * @param relTenantId       the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> modifyPosition(ModifyPositionReq modifyPositionReq, Long positionId,
                                      Long relAppId, Long relTenantId) {
@@ -83,9 +103,20 @@ public class PositionService extends IdentBasicService {
         if (modifyPositionReq.getIcon() != null) {
             positionUpdate.set(qPosition.icon, modifyPositionReq.getIcon());
         }
+        if (modifyPositionReq.getSort() != null) {
+            positionUpdate.set(qPosition.sort, modifyPositionReq.getSort());
+        }
         return updateEntity(positionUpdate);
     }
 
+    /**
+     * Gets position.
+     *
+     * @param positionId  the position id
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the position
+     */
     public Resp<PositionInfoResp> getPosition(Long positionId, Long relAppId, Long relTenantId) {
         var qPosition = QPosition.position;
         var positionQuery = sqlBuilder
@@ -94,6 +125,7 @@ public class PositionService extends IdentBasicService {
                         qPosition.code,
                         qPosition.name,
                         qPosition.icon,
+                        qPosition.sort,
                         qPosition.relAppId))
                 .from(qPosition)
                 .where(qPosition.id.eq(positionId))
@@ -102,6 +134,13 @@ public class PositionService extends IdentBasicService {
         return getDTO(positionQuery);
     }
 
+    /**
+     * Find position info.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     public Resp<List<PositionInfoResp>> findPositionInfo(Long relAppId, Long relTenantId) {
         var qPosition = QPosition.position;
         var positionQuery = sqlBuilder
@@ -110,6 +149,7 @@ public class PositionService extends IdentBasicService {
                         qPosition.code,
                         qPosition.name,
                         qPosition.icon,
+                        qPosition.sort,
                         qPosition.relAppId))
                 .from(qPosition)
                 .where(qPosition.relAppId.eq(relAppId))
@@ -117,6 +157,14 @@ public class PositionService extends IdentBasicService {
         return findDTOs(positionQuery);
     }
 
+    /**
+     * Delete position.
+     *
+     * @param positionId  the position id
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     public Resp<Void> deletePosition(Long positionId, Long relAppId, Long relTenantId) {
         var qPosition = QPosition.position;
@@ -128,9 +176,11 @@ public class PositionService extends IdentBasicService {
                 .where(qPosition.relTenantId.eq(relTenantId))
                 .fetchOne();
         // 删除岗位、账号岗位、权限
-        postService.deletePostByPositionCodes(new ArrayList<>() {{
-            add(positionCode);
-        }}, relAppId, relTenantId);
+        postService.deletePostByPositionCodes(new ArrayList<>() {
+            {
+                add(positionCode);
+            }
+        }, relAppId, relTenantId);
         // 删除职位
         return deleteEntity(sqlBuilder
                 .delete(qPosition)
@@ -140,6 +190,13 @@ public class PositionService extends IdentBasicService {
         );
     }
 
+    /**
+     * Delete positions.
+     *
+     * @param relAppId    the rel app id
+     * @param relTenantId the rel tenant id
+     * @return the resp
+     */
     @Transactional
     protected Resp<Long> deletePositions(Long relAppId, Long relTenantId) {
         var qPosition = QPosition.position;

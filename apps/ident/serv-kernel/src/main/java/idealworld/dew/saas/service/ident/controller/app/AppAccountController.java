@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 应用控制台账号管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -46,13 +48,26 @@ public class AppAccountController extends BasicController {
     @Autowired
     private AppHandlerInterceptor appHandlerInterceptor;
 
+    /**
+     * 添加当前租户的账号.
+     *
+     * @param addAccountReq the add account req
+     * @return the resp
+     */
     @PostMapping(value = "")
     @ApiOperation(value = "添加当前租户的账号")
-    public Resp<Long> addAccount(@RequestBody AddAccountReq addAccountReq) {
+    public Resp<Long> addAccount(@Validated @RequestBody AddAccountReq addAccountReq) {
         return accountService.addAccountExt(addAccountReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 获取当前租户的账号列表信息.
+     *
+     * @param pageNumber the page number
+     * @param pageSize   the page size
+     * @return the resp
+     */
     @GetMapping(value = "")
     @ApiOperation(value = "获取当前租户的账号列表信息")
     @ApiImplicitParams({
@@ -67,6 +82,12 @@ public class AppAccountController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 获取当前租户的某个账号信息.
+     *
+     * @param accountId the account id
+     * @return the account info
+     */
     @GetMapping(value = "{accountId}")
     @ApiOperation(value = "获取当前租户的某个账号信息")
     public Resp<AccountInfoResp> getAccountInfo(@PathVariable Long accountId) {
@@ -74,83 +95,132 @@ public class AppAccountController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 修改当前租户的某个账号.
+     *
+     * @param accountId        the account id
+     * @param modifyAccountReq the modify account req
+     * @return the resp
+     */
     @PatchMapping(value = "{accountId}")
     @ApiOperation(value = "修改当前租户的某个账号")
     public Resp<Void> modifyAccount(@PathVariable Long accountId,
-                                    @RequestBody ModifyAccountReq modifyAccountReq) {
+                                    @Validated @RequestBody ModifyAccountReq modifyAccountReq) {
         return accountService.modifyAccount(modifyAccountReq, accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 删除当前租户的某个账号.
+     *
+     * @param accountId the account id
+     * @return the resp
+     */
     @DeleteMapping(value = "{accountId}")
-    @ApiOperation(value = "删除当前租户的某个账号", notes = "删除账号，关联的账号凭证、账号岗位")
+    @ApiOperation(value = "删除当前租户的某个账号", notes = "删除账号，关联的账号认证、账号岗位")
     public Resp<Void> deleteAccount(@PathVariable Long accountId) {
         return accountService.deleteAccount(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    // ========================== Cert ==============================
+    // ========================== Ident ==============================
 
-    @PostMapping(value = "{accountId}/cert")
-    @ApiOperation(value = "添加当前租户某个账号的凭证")
-    public Resp<Long> addAccountCert(@PathVariable Long accountId,
-                                     @RequestBody AddAccountCertReq addAccountCertReq) {
-        return accountService.addAccountCert(addAccountCertReq, accountId,
+    /**
+     * 添加当前租户某个账号的认证.
+     *
+     * @param accountId          the account id
+     * @param addAccountIdentReq the add account ident req
+     * @return the resp
+     */
+    @PostMapping(value = "{accountId}/ident")
+    @ApiOperation(value = "添加当前租户某个账号的认证")
+    public Resp<Long> addAccountIdent(@PathVariable Long accountId,
+                                      @Validated @RequestBody AddAccountIdentReq addAccountIdentReq) {
+        return accountService.addAccountIdent(addAccountIdentReq, accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @GetMapping(value = "{accountId}/cert")
-    @ApiOperation(value = "获取当前租户某个账号的凭证列表信息")
-    public Resp<List<AccountCertInfoResp>> findAccountCertInfo(@PathVariable Long accountId) {
-        return accountService.findAccountCertInfo(accountId,
+    /**
+     * 获取当前租户某个账号的认证列表信息.
+     *
+     * @param accountId the account id
+     * @return the resp
+     */
+    @GetMapping(value = "{accountId}/ident")
+    @ApiOperation(value = "获取当前租户某个账号的认证列表信息")
+    public Resp<List<AccountIdentInfoResp>> findAccountIdentInfo(@PathVariable Long accountId) {
+        return accountService.findAccountIdentInfo(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @GetMapping(value = "{accountId}/cert-ak")
-    @ApiOperation(value = "获取当前租户某个账号的某个凭证AK")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "accountCertKind", value = "凭证类型", paramType = "query", dataType = "string", required = true)
-    })
-    public Resp<String> getAccountCertInfo(@PathVariable Long accountId,
-                                           @RequestParam(value = "accountCertKind") String accountCertKind) {
-        return accountService.getAccountCertAk(accountId, accountCertKind,
+    /**
+     * 修改当前租户某个账号的某个认证.
+     *
+     * @param accountId             the account id
+     * @param accountIdentId        the account ident id
+     * @param modifyAccountIdentReq the modify account ident req
+     * @return the resp
+     */
+    @PatchMapping(value = "{accountId}/ident/{accountIdentId}")
+    @ApiOperation(value = "修改当前租户某个账号的某个认证")
+    public Resp<Void> modifyAccountIdent(@PathVariable Long accountId,
+                                         @PathVariable Long accountIdentId,
+                                         @Validated @RequestBody ModifyAccountIdentReq modifyAccountIdentReq) {
+        return accountService.modifyAccountIdent(modifyAccountIdentReq, accountIdentId, accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @PatchMapping(value = "{accountId}/cert/{accountCertId}")
-    @ApiOperation(value = "修改当前租户某个账号的某个凭证")
-    public Resp<Void> modifyAccountCert(@PathVariable Long accountId,
-                                        @PathVariable Long accountCertId,
-                                        @RequestBody ModifyAccountCertReq modifyAccountCertReq) {
-        return accountService.modifyAccountCert(modifyAccountCertReq, accountCertId, accountId,
+    /**
+     * 删除当前租户某个账号的某个认证.
+     *
+     * @param accountId      the account id
+     * @param accountIdentId the account ident id
+     * @return the resp
+     */
+    @DeleteMapping(value = "{accountId}/ident/{accountIdentId}")
+    @ApiOperation(value = "删除当前租户某个账号的某个认证")
+    public Resp<Void> deleteAccountIdent(@PathVariable Long accountId,
+                                         @PathVariable Long accountIdentId) {
+        return accountService.deleteAccountIdent(accountIdentId, accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
-    @DeleteMapping(value = "{accountId}/cert/{accountCertId}")
-    @ApiOperation(value = "删除当前租户某个账号的某个凭证")
-    public Resp<Void> deleteAccountCert(@PathVariable Long accountId,
-                                        @PathVariable Long accountCertId) {
-        return accountService.deleteAccountCert(accountCertId, accountId,
-                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
-    }
-
-    @DeleteMapping(value = "{accountId}/cert")
-    @ApiOperation(value = "删除当前租户某个账号的所有凭证")
-    public Resp<Long> deleteAccountCerts(@PathVariable Long accountId) {
-        return accountService.deleteAccountCerts(accountId,
+    /**
+     * 删除当前租户某个账号的所有认证.
+     *
+     * @param accountId the account id
+     * @return the resp
+     */
+    @DeleteMapping(value = "{accountId}/ident")
+    @ApiOperation(value = "删除当前租户某个账号的所有认证")
+    public Resp<Long> deleteAccountIdents(@PathVariable Long accountId) {
+        return accountService.deleteAccountIdents(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
     // ========================== Post ==============================
 
+    /**
+     * 添加当前租户某个账号的岗位.
+     *
+     * @param accountId         the account id
+     * @param addAccountPostReq the add account post req
+     * @return the resp
+     */
     @PostMapping(value = "{accountId}/post")
     @ApiOperation(value = "添加当前租户某个账号的岗位")
     public Resp<Long> addAccountPost(@PathVariable Long accountId,
-                                     @RequestBody AddAccountPostReq addAccountPostReq) {
+                                     @Validated @RequestBody AddAccountPostReq addAccountPostReq) {
         return accountService.addAccountPost(addAccountPostReq, accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 获取当前租户某个账号的岗位列表信息.
+     *
+     * @param accountId the account id
+     * @return the resp
+     */
     @GetMapping(value = "{accountId}/post")
     @ApiOperation(value = "获取当前租户某个账号的岗位列表信息")
     public Resp<List<AccountPostInfoResp>> findAccountPostInfo(@PathVariable Long accountId) {
@@ -158,6 +228,13 @@ public class AppAccountController extends BasicController {
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
 
+    /**
+     * 删除当前租户某个账号的某个岗位.
+     *
+     * @param accountId     the account id
+     * @param accountPostId the account post id
+     * @return the resp
+     */
     @DeleteMapping(value = "{accountId}/post/{accountPostId}")
     @ApiOperation(value = "删除当前租户某个账号的某个岗位")
     public Resp<Void> deleteAccountPost(@PathVariable Long accountId,

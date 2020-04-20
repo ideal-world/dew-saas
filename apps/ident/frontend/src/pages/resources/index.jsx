@@ -1,55 +1,58 @@
-import React, {useRef} from 'react';
-import styles from './index.less';
-import {queryResource} from './service';
-import {Button,Tree} from 'antd';
-import {PlusOutlined} from '@ant-design/icons';
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import React from 'react'
+import styles from './index.less'
+import {queryResource} from './service'
+import {Button, Tree} from 'antd'
+import {PlusOutlined} from '@ant-design/icons'
 import CreateForm from './components/CreateForm'
 
 
-const {DirectoryTree} = Tree;
+const {DirectoryTree} = Tree
 
 const build = (result, value) => {
   for (let i = 0; i < result.length; i++) {
-    let v = result[i];
+    let v = result[i]
 
     if (v['key'] === value.parentId) {
-      v['key'] = value.id;
-      v['title'] = value.id;
+      v['key'] = value.id
+      v['title'] = value.id
 
       if (v['children'] === undefined) {
-        console.info('sss');
-        v['children'] = [];
+        console.info('sss')
+        v['children'] = []
       }
 
       v['children'].push({
         key: value.id,
         title: value.name,
-      });
+      })
     } else {
       if (v['children'] != null) {
-        build(v['children'], value);
+        build(v['children'], value)
       }
     }
   }
-};
-
-
+}
 
 
 class Resource extends React.Component {
-  handleModalVisible = (value) => {
-    this.setState({createModalVisible: value});
-  };
-  onSelect = (keys, event) => {
-  console.info(event)
-    this.setState({createTreeNode: {key:keys[0],title:event.node.title}})
-  };
-  onExpand = () => {
-    console.log('Trigger Expand');
-  };
-
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       treeData: [
         {
@@ -87,12 +90,25 @@ class Resource extends React.Component {
       ],
       createModalVisible: false,
       handleModalVisible: this.handleModalVisible(false),
-      createTreeNode: {key:'',title:''}
-    };
+      createTreeNode: {key: '', title: ''}
+    }
+  }
+
+  handleModalVisible = (value) => {
+    this.setState({createModalVisible: value})
+  }
+
+  onSelect = (keys, event) => {
+    console.info(event)
+    this.setState({createTreeNode: {key: keys[0], title: event.node.title}})
+  }
+
+  onExpand = () => {
+    console.log('Trigger Expand')
   }
 
   componentDidMount() {
-   queryResource()
+    queryResource()
       .then(resp => {
         if (resp.code === '200') {
           const data = [
@@ -111,39 +127,39 @@ class Resource extends React.Component {
               id: 2,
               parentId: 0,
             },
-          ];
+          ]
 
           const compare = (x, y) => {
-            return x.parentId - y.parentId;
-          };
+            return x.parentId - y.parentId
+          }
 
-          const sortData = data.sort(compare); // console.log();
+          const sortData = data.sort(compare) // console.log();
 
-          const result = [];
-          console.info(sortData);
+          const result = []
+          console.info(sortData)
           sortData.forEach(value => {
-            const d = {};
+            const d = {}
 
             if (value.parentId === 0) {
-              d['key'] = value.id;
-              d['title'] = value.id;
-              result.push(d);
+              d['key'] = value.id
+              d['title'] = value.id
+              result.push(d)
             } else {
-              build(result, value);
+              build(result, value)
             }
-          });
-          console.log(result);
+          })
+          console.log(result)
         } else {
-          console.info(e);
+          console.info(e)
         }
       })
       .catch(e => {
-        console.info(e);
-      });
+        console.info(e)
+      })
   }
 
   render() {
-    const formRef = React.createRef();
+    const formRef = React.createRef()
     return (
       <div className={styles.container}>
         <div id="components-tree-demo-directory">
@@ -160,11 +176,12 @@ class Resource extends React.Component {
             treeData={this.state.treeData}
           />
         </div>
-        <CreateForm fromRef={formRef} parentNode={this.state.createTreeNode} onCancel={() => this.handleModalVisible(false)} modalVisible={this.state.createModalVisible}>
+        <CreateForm fromRef={formRef} parentNode={this.state.createTreeNode}
+                    onCancel={() => this.handleModalVisible(false)} modalVisible={this.state.createModalVisible}>
         </CreateForm>
       </div>
-    );
+    )
   }
 }
 
-export default Resource;
+export default Resource

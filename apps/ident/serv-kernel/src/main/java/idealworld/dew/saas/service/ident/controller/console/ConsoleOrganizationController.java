@@ -1,5 +1,5 @@
 /*
- * Copyright 2019. the original author or authors.
+ * Copyright 2020. the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
+ * 租户控制台机构管理操作.
+ *
  * @author gudaoxuri
  */
 @RestController
@@ -42,28 +44,56 @@ public class ConsoleOrganizationController extends BasicController {
     @Autowired
     private OrganizationService organizationService;
 
+    /**
+     * 添加当前租户某个应用的机构.
+     *
+     * @param appId              the app id
+     * @param addOrganizationReq the add organization req
+     * @return the resp
+     */
     @PostMapping(value = "{appId}")
     @ApiOperation(value = "添加当前租户某个应用的机构")
     public Resp<Long> addOrganization(@PathVariable Long appId,
-                                      @RequestBody AddOrganizationReq addOrganizationReq) {
+                                      @Validated @RequestBody AddOrganizationReq addOrganizationReq) {
         return organizationService.AddOrganization(addOrganizationReq, appId, getCurrentTenantId());
     }
 
+    /**
+     * 获取当前租户某个应用的机构列表信息.
+     *
+     * @param appId the app id
+     * @return the resp
+     */
     @GetMapping(value = "{appId}")
     @ApiOperation(value = "获取当前租户某个应用的机构列表信息")
     public Resp<List<OrganizationInfoResp>> findOrganizationInfo(@PathVariable Long appId) {
         return organizationService.findOrganizationInfo(appId, getCurrentTenantId());
     }
 
+    /**
+     * 修改当前租户某个应用的某个机构.
+     *
+     * @param appId                 the app id
+     * @param organizationId        the organization id
+     * @param modifyOrganizationReq the modify organization req
+     * @return the resp
+     */
     @PatchMapping(value = "{appId}/{organizationId}")
     @ApiOperation(value = "修改当前租户某个应用的某个机构")
     public Resp<Void> modifyOrganization(@PathVariable Long appId,
                                          @PathVariable Long organizationId,
-                                         @RequestBody ModifyOrganizationReq modifyOrganizationReq) {
+                                         @Validated @RequestBody ModifyOrganizationReq modifyOrganizationReq) {
         return organizationService.modifyOrganization(modifyOrganizationReq,
                 organizationId, appId, getCurrentTenantId());
     }
 
+    /**
+     * 删除当前租户某个应用的某个机构.
+     *
+     * @param appId          the app id
+     * @param organizationId the organization id
+     * @return the resp
+     */
     @DeleteMapping(value = "{appId}/{organizationId}")
     @ApiOperation(value = "删除当前租户某个应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
     public Resp<Long> deleteOrganization(@PathVariable Long appId, @PathVariable Long organizationId) {
