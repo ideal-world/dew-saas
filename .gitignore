@@ -33,4 +33,5 @@ node_modules/
 *.secret
 apps/date
 apps/starfk
+apps/xyy
 

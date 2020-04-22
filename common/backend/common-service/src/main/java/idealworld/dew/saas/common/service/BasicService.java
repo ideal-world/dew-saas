@@ -47,7 +47,7 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
     @Autowired
     protected JPAQueryFactory sqlBuilder;
     @Autowired
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
 
     /**
      * Save entity.
@@ -57,6 +57,17 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
      */
     protected Resp<Long> saveEntity(IdEntity idEntity) {
         entityManager.persist(idEntity);
+        return StandardResp.success(idEntity.getId());
+    }
+
+    /**
+     * Update entity.
+     *
+     * @param idEntity the id entity
+     * @return the resp
+     */
+    protected Resp<Long> updateEntity(IdEntity idEntity) {
+        entityManager.merge(idEntity);
         return StandardResp.success(idEntity.getId());
     }
 

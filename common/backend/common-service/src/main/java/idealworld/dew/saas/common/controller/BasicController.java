@@ -14,34 +14,29 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.common.service.domain;
+package idealworld.dew.saas.common.controller;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import java.io.Serializable;
+import group.idealworld.dew.Dew;
+import idealworld.dew.saas.common.resp.StandardResp;
 
 /**
- * Id entity.
+ * Basic controller.
  *
  * @author gudaoxuri
  */
-@MappedSuperclass
-@Data
-@SuperBuilder
-@NoArgsConstructor
-public class IdEntity implements Serializable {
+public abstract class BasicController {
 
     /**
-     * The Id.
+     * Gets current account id.
+     *
+     * @return the current account id
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    protected String getCurrentOpenId() {
+        return Dew.auth.getOptInfo()
+                .map(info -> (String) info.getAccountCode())
+                .orElseThrow(() -> StandardResp.e(
+                        StandardResp.unAuthorized("BASIC", "用户未登录")
+                ));
+    }
 
 }
