@@ -1,0 +1,102 @@
+/*
+ * Copyright 2020. the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package idealworld.dew.saas.common.hwc.api.moderation;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+/**
+ * The enum Image category.
+ */
+public enum ImageCategory {
+    /**
+     * Politics category.
+     */
+    POLITICS("politics", "涉及政治人物"),
+    /**
+     * Porn category.
+     */
+    PORN("porn", "涉黄"),
+    /**
+     * Porn category.
+     */
+    TERRORISM("terrorism", "涉政暴恐"),
+    /**
+     * Ad category.
+     */
+    AD("ad", "广告");
+
+    /**
+     * From key optional.
+     *
+     * @param key the key
+     * @return the optional
+     */
+    public static Optional<ImageCategory> fromKey(String key) {
+        return Arrays.stream(values())
+                .filter(e -> e.key.equalsIgnoreCase(key))
+                .findFirst();
+    }
+
+    private String key;
+    private String value;
+
+    ImageCategory(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    /**
+     * Gets key.
+     *
+     * @return the key
+     */
+    public String getKey() {
+        return key;
+    }
+
+    /**
+     * Sets key.
+     *
+     * @param key the key
+     * @return the key
+     */
+    public ImageCategory setKey(String key) {
+        this.key = key;
+        return this;
+    }
+
+    /**
+     * Gets value.
+     *
+     * @return the value
+     */
+    public String getValue() {
+        return value;
+    }
+
+    /**
+     * Sets value.
+     *
+     * @param value the value
+     * @return the value
+     */
+    public ImageCategory setValue(String value) {
+        this.value = value;
+        return this;
+    }
+}
