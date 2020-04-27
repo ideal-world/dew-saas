@@ -33,7 +33,8 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "ident_account_ident", indexes = {
-        @Index(columnList = "relTenantId,relAccountId,kind,ak", unique = true),
+        @Index(columnList = "relTenantId,kind,ak", unique = true),
+        @Index(columnList = "relTenantId,relAccountId,kind,ak"),
         @Index(columnList = "relTenantId,relAccountId,kind,ak,validStartTime,validEndTime"),
         @Index(columnList = "relAccountId,kind,validStartTime,validEndTime")
 })

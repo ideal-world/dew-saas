@@ -14,45 +14,25 @@
  * limitations under the License.
  */
 
-package idealworld.dew.saas.service.ident.service.sdk;
+package idealworld.dew.saas.common.wechat;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
 /**
- * Sdk auto configuration.
+ * The type Wechat common service configuration.
  *
  * @author gudaoxuri
  */
 @Configuration
 @Slf4j
-public class SDKAutoConfiguration {
-
-    @Autowired
-    private SDKConfig sdkConfig;
-
-    /**
-     * Ident sdk ident sdk.
-     *
-     * @return the ident sdk
-     */
-    @Bean
-    public IdentSDK identSDK() {
-        var identSdk = IdentSDK.builder(sdkConfig);
-        if (!sdkConfig.isLazyInit()) {
-            identSdk.init();
-        }
-        return identSdk;
-    }
+public class WechatCommonServiceConfiguration {
 
     @PostConstruct
     public void init() {
         log.info("Load Auto Configuration : {}", this.getClass().getName());
     }
-
 
 }

@@ -95,6 +95,7 @@ public class OAuthService extends IdentBasicService {
                 .from(qAccountIdent)
                 .where(qAccountIdent.kind.eq(oauthLoginReq.getIdentKind()))
                 .where(qAccountIdent.ak.eq(oauthUserInfoR.getBody().getOpenid()))
+                .where(qAccountIdent.relTenantId.eq(tenantId))
                 .fetchOne();
         if (accountId == null) {
             accountId = accountService.addAccountExt(AddAccountReq.builder()

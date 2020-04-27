@@ -81,6 +81,11 @@
             </dependency>
             <dependency>
                 <groupId>group.idealworld.dew</groupId>
+                <artifactId>saas-wechat-common-service</artifactId>
+                <version>${dew-saas.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>group.idealworld.dew</groupId>
                 <artifactId>saas-huaweicloud-sdk</artifactId>
                 <version>${dew-saas.version}</version>
             </dependency>
@@ -97,6 +102,7 @@
         <module>common/backend/common</module>
         <module>common/backend/common-sdk</module>
         <module>common/backend/common-service</module>
+        <module>common/backend/wechat-common-service</module>
         <module>common/backend/huaweicloud-sdk</module>
         <module>apps/ident</module>
         <!--测试项目-->

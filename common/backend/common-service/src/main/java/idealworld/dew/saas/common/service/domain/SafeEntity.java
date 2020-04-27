@@ -22,11 +22,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import java.util.Date;
 
 /**
@@ -58,19 +59,15 @@ public abstract class SafeEntity extends IdEntity {
     /**
      * The Create time.
      */
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP comment '创建时间'")
-    // @Column(columnDefinition = "datetime(6) comment '创建时间'")
+    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP comment '创建时间'",
+            insertable = false, updatable = false)
     protected Date createTime;
 
     /**
      * The Update time.
      */
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '最后一次修改时间'")
-    // @Column(columnDefinition = "datetime(6) comment '最后一次修改时间'")
+    @Column(columnDefinition = "timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP comment '最后一次修改时间'",
+            insertable = false, updatable = false)
     protected Date updateTime;
 
     /**

@@ -25,7 +25,6 @@ import idealworld.dew.saas.service.ident.domain.QPost;
 import idealworld.dew.saas.service.ident.dto.post.AddPostReq;
 import idealworld.dew.saas.service.ident.dto.post.PostInfoResp;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +55,6 @@ public class PostService extends IdentBasicService {
      *
      * @return the tenant admin post id
      */
-    @Cacheable("ident:cache:post:getTenantAdminPostId")
     public Long getTenantAdminPostId() {
         var qPost = QPost.post;
         return sqlBuilder.select(qPost.id)
@@ -70,7 +68,6 @@ public class PostService extends IdentBasicService {
      *
      * @return the default post id
      */
-    @Cacheable("ident:cache:post:getDefaultPostId")
     public Long getDefaultPostId() {
         var qPost = QPost.post;
         return sqlBuilder.select(qPost.id)

@@ -458,7 +458,7 @@ public class AccountService extends IdentBasicService {
         var query = sqlBuilder
                 .select(qAccountIdent.ak)
                 .from(qAccountIdent)
-                .leftJoin(qAccount).on(qAccountIdent.id.eq(qAccountIdent.relAccountId))
+                .leftJoin(qAccount).on(qAccount.id.eq(qAccountIdent.relAccountId))
                 .where(qAccount.openId.eq(accountOpenId))
                 .where(qAccount.relTenantId.eq(relTenantId))
                 .where(qAccountIdent.kind.eq(AccountIdentKind.parse(accountIdentKind)))
