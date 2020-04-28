@@ -85,9 +85,8 @@ public class OAuthService extends IdentBasicService {
             return StandardResp.error(oauthUserInfoR);
         }
         var lock = Dew.cluster.lock.instance("date:oauth:account:add:" + oauthUserInfoR.getBody().getOpenid());
-        if (lock.tryLock(5000, 5000)) {
-            // 空方法，新请求等待5s后才能操作
-            // 5s后释放锁
+        if (!lock.tryLock(0, 5000)) {
+            return StandardResp.locked(BUSINESS_OAUTH, "相同的操作进行中，请稍后再试");
         }
         log.info("OAuth Login : [{}] {}", tenantId, $.json.toJsonString(oauthLoginReq));
         var qAccountIdent = QAccountIdent.accountIdent;
@@ -133,6 +132,7 @@ public class OAuthService extends IdentBasicService {
         }
         optInfo.setParameters($.json.toMap(parameters, String.class, Object.class));
         Dew.auth.setOptInfo(optInfo);
+        lock.unLock();
         return StandardResp.success(optInfo);
     }
 
