@@ -99,10 +99,6 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
                 || serviceUrl.isBlank()) {
             throw new RTException("参数错误：缺少服务地址");
         }
-        if (config.getBasic().getTenantId() == null
-                || config.getBasic().getTenantId() < 1) {
-            throw new RTException("参数错误：缺少[basic.tenantId]");
-        }
         if (config.getBasic().getAppAk() == null
                 || config.getBasic().getAppAk().isBlank()) {
             throw new RTException("参数错误：缺少[basic.appAk]");

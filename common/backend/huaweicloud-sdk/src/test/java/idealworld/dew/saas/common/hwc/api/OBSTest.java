@@ -43,6 +43,6 @@ public class OBSTest extends BasicTest {
         obs.delete("/test/d.jpg");
 
         System.out.println(obs.signByPostRequest("/a/a.mp4", 3600));
-        System.out.println(obs.signUrl("GET", "", "/a/a.mp4", 3600));
+        System.out.println(obs.signUrl("GET", "", "/test/example.jpg", 3600));
     }
 }

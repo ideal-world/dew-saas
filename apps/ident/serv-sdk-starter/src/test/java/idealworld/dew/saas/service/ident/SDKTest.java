@@ -84,7 +84,6 @@ public class SDKTest extends BasicTest {
         var appIdent = getToList(sdk.getConfig().getIdent().getUrl() + "/console/app/" + appId + "/ident", AppIdentInfoResp.class).getBody().get(0);
         System.out.println("=====================\nAK:" + appIdent.getAk() + "\nSK:" + appIdent.getSk() + "\n=====================");
 
-        sdk.getConfig().getBasic().setTenantId(identOptInfo.getRelTenantId());
         sdk.getConfig().getBasic().setAppAk(appIdent.getAk());
         sdk.getConfig().getBasic().setAppSk(appIdent.getSk());
         sdk.init();
