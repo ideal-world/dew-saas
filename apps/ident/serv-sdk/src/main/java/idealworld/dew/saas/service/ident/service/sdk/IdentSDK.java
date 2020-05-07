@@ -108,7 +108,7 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
                 {
                     put(IdentSDK.super.config.getIdent().getTokenFlag(), token);
                 }
-            }, optInfoClazz);
+            }, optInfoClazz, config.getIdent().getCacheSecByGetOptInfo());
         }
 
         /**

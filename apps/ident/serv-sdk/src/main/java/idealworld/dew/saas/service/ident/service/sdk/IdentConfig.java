@@ -53,6 +53,8 @@ public class IdentConfig extends CommonConfig {
         private Integer aliveHeartbeatPeriodSec = 60;
         @Builder.Default
         private String tokenFlag = "Dew-Token";
+        @Builder.Default
+        private Integer cacheSecByGetOptInfo = 30;
 
     }
 

@@ -43,7 +43,7 @@ public class WechatCommonSubscribeController extends BasicController {
      * The Subscribe service.
      */
     @Autowired
-    protected WechatCommonSubscribeService wechatCommonSubscribeService;
+    private WechatCommonSubscribeService wechatCommonSubscribeService;
 
     /**
      * Counter.

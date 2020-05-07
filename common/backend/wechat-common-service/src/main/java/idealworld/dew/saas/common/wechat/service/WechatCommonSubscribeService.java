@@ -22,6 +22,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.cluster.ClusterElection;
 import group.idealworld.dew.core.cluster.VoidProcessFun;
+import idealworld.dew.saas.common.CommonConfig;
 import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.wechat.domain.QSubscribeInfo;
 import idealworld.dew.saas.common.wechat.domain.SubscribeInfo;
@@ -48,10 +49,14 @@ import java.util.Map;
 @Slf4j
 public class WechatCommonSubscribeService {
 
+    public static final int DISABLED_OR_NOTFOUND_COUNTER = -1;
+
     private static final ClusterElection ELECTION = Dew.cluster.election.instance("dew.saas.wechat.sub");
 
     private static final String BUSINESS_SUB = "SUB";
 
+    @Autowired
+    private CommonConfig commonConfig;
     @Autowired
     private JPAQueryFactory sqlBuilder;
     @Autowired
@@ -67,6 +72,9 @@ public class WechatCommonSubscribeService {
      * @return the resp
      */
     public Resp<Integer> counter(String templateId, String currentOpenId) {
+        if (!commonConfig.getWechat().getSubscribe()) {
+            return StandardResp.success(DISABLED_OR_NOTFOUND_COUNTER);
+        }
         var qSubscribeInfo = QSubscribeInfo.subscribeInfo;
         var counter = sqlBuilder.select(qSubscribeInfo.balanceCounter)
                 .from(qSubscribeInfo)
@@ -74,7 +82,7 @@ public class WechatCommonSubscribeService {
                 .where(qSubscribeInfo.templateId.eq(templateId))
                 .fetchOne();
         if (counter == null) {
-            return StandardResp.success(-1);
+            return StandardResp.success(DISABLED_OR_NOTFOUND_COUNTER);
         }
         return StandardResp.success(counter);
     }

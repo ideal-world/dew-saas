@@ -16,6 +16,7 @@
 
 package idealworld.dew.saas.common.utils;
 
+import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
 
@@ -156,12 +157,42 @@ public abstract class ResponseProcessor {
      *
      * @param <E>           the type parameter
      * @param url           the url
+     * @param responseClazz the response clazz
+     * @param cacheSec      the cache sec
+     * @return the to entity
+     */
+    public <E> Resp<E> getToEntity(String url, Class<E> responseClazz, int cacheSec) {
+        var response = CacheHelper.getOrElse(url, cacheSec, () -> exchange("GET", url, null, new HashMap<>()));
+        return Resp.generic(response, responseClazz);
+    }
+
+    /**
+     * Gets to entity.
+     *
+     * @param <E>           the type parameter
+     * @param url           the url
      * @param header        the header
      * @param responseClazz the response clazz
      * @return the to entity
      */
     public <E> Resp<E> getToEntity(String url, Map<String, String> header, Class<E> responseClazz) {
         var response = exchange("GET", url, null, header);
+        return Resp.generic(response, responseClazz);
+    }
+
+    /**
+     * Gets to entity.
+     *
+     * @param <E>           the type parameter
+     * @param url           the url
+     * @param header        the header
+     * @param responseClazz the response clazz
+     * @param cacheSec      the cache sec
+     * @return the to entity
+     */
+    public <E> Resp<E> getToEntity(String url, Map<String, String> header, Class<E> responseClazz, int cacheSec) {
+        var response = CacheHelper.getOrElse(url + "|" + $.json.toJsonString(header),
+                cacheSec, () -> exchange("GET", url, null, header));
         return Resp.generic(response, responseClazz);
     }
 
@@ -175,6 +206,21 @@ public abstract class ResponseProcessor {
      */
     public <E> Resp<List<E>> getToList(String url, Class<E> responseClazz) {
         var response = exchange("GET", url, null, new HashMap<>());
+        return Resp.genericList(response, responseClazz);
+    }
+
+    /**
+     * Gets to list.
+     *
+     * @param <E>           the type parameter
+     * @param url           the url
+     * @param responseClazz the response clazz
+     * @param cacheSec      the cache sec
+     * @return the to list
+     */
+    public <E> Resp<List<E>> getToList(String url, Class<E> responseClazz, int cacheSec) {
+        var response = CacheHelper.getOrElse(url,
+                cacheSec, () -> exchange("GET", url, null, new HashMap<>()));
         return Resp.genericList(response, responseClazz);
     }
 
@@ -195,6 +241,29 @@ public abstract class ResponseProcessor {
             url += "?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
         }
         var response = exchange("GET", url, null, new HashMap<>());
+        return Resp.genericPage(response, responseClazz);
+    }
+
+    /**
+     * Gets to page.
+     *
+     * @param <E>           the type parameter
+     * @param url           the url
+     * @param pageNumber    the page number
+     * @param pageSize      the page size
+     * @param responseClazz the response clazz
+     * @param cacheSec      the cache sec
+     * @return the to page
+     */
+    public <E> Resp<Page<E>> getToPage(String url, Long pageNumber, Integer pageSize, Class<E> responseClazz, int cacheSec) {
+        if (url.contains("?")) {
+            url += "&pageNumber=" + pageNumber + "&pageSize=" + pageSize;
+        } else {
+            url += "?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
+        }
+        String finalUrl = url;
+        var response = CacheHelper.getOrElse(finalUrl,
+                cacheSec, () -> exchange("GET", finalUrl, null, new HashMap<>()));
         return Resp.genericPage(response, responseClazz);
     }
 
