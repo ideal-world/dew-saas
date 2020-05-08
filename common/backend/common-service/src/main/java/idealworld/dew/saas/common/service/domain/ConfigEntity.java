@@ -32,7 +32,7 @@ import javax.persistence.MappedSuperclass;
 @Data
 @SuperBuilder
 @NoArgsConstructor
-public class ConfigEntity extends SafeEntity {
+public abstract class ConfigEntity extends SafeEntity {
 
     /**
      * The Key.

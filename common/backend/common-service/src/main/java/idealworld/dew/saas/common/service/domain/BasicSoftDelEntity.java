@@ -36,7 +36,7 @@ import java.util.Date;
 @Data
 @SuperBuilder
 @NoArgsConstructor
-public class BasicSoftDelEntity extends IdEntity {
+public abstract class BasicSoftDelEntity extends IdEntity {
 
     /**
      * The Kind.

@@ -20,27 +20,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import java.io.Serializable;
 
 /**
- * Id entity.
+ * PK entity.
  *
+ * @param <E> the type parameter
  * @author gudaoxuri
  */
 @MappedSuperclass
 @Data
 @SuperBuilder
 @NoArgsConstructor
-public abstract class IdEntity extends PkEntity<Long> {
+public abstract class PkEntity<E extends Serializable> implements Serializable {
 
-    /**
-     * The Id.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    protected Long id;
+    public abstract E getId();
 
 }

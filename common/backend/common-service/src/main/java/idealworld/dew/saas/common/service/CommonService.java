@@ -25,50 +25,55 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.domain.BasicSoftDelEntity;
-import idealworld.dew.saas.common.service.domain.IdEntity;
+import idealworld.dew.saas.common.service.domain.PkEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Basic service.
  *
  * @param <D> the type parameter
+ * @param <P> the type parameter
  * @author gudaoxuri
  */
 @Slf4j
-public abstract class BasicService<D extends BasicSoftDelEntity> {
+public abstract class CommonService<D extends BasicSoftDelEntity, P extends Serializable> {
 
     /**
      * The Sql builder.
      */
     @Autowired
     protected JPAQueryFactory sqlBuilder;
+    /**
+     * The Entity manager.
+     */
     @Autowired
     protected EntityManager entityManager;
 
     /**
      * Save entity.
      *
-     * @param idEntity the id entity
+     * @param pkEntity the pk entity
      * @return the resp
      */
-    protected Resp<Long> saveEntity(IdEntity idEntity) {
-        entityManager.persist(idEntity);
-        return StandardResp.success(idEntity.getId());
+    protected Resp<P> saveEntity(PkEntity<P> pkEntity) {
+        entityManager.persist(pkEntity);
+        return StandardResp.success(pkEntity.getId());
     }
 
     /**
      * Update entity.
      *
-     * @param idEntity the id entity
+     * @param pkEntity the pk entity
      * @return the resp
      */
-    protected Resp<Long> updateEntity(IdEntity idEntity) {
-        entityManager.merge(idEntity);
-        return StandardResp.success(idEntity.getId());
+    protected Resp<P> updateEntity(PkEntity<P> pkEntity) {
+        entityManager.merge(pkEntity);
+        return StandardResp.success(pkEntity.getId());
     }
 
     /**
@@ -130,7 +135,7 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
      * @param jpaQuery the jpa query
      * @return the resp
      */
-    protected <E extends IdEntity> Resp<Void> softDelEntity(JPAQuery<E> jpaQuery) {
+    protected <E extends PkEntity<P>> Resp<Void> softDelEntity(JPAQuery<E> jpaQuery) {
         var entity = jpaQuery.fetchOne();
         if (entity == null) {
             log.warn("没有需要软删的记录 {}", jpaQuery.toString());
@@ -142,7 +147,7 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
         basicSoftDelEntity.setEntityName(jpaQuery.getType().getSimpleName());
         basicSoftDelEntity.setRecordId(entity.getId() + "");
         basicSoftDelEntity.setContent($.json.toJsonString(entity));
-        saveEntity(basicSoftDelEntity);
+        entityManager.persist(basicSoftDelEntity);
         entityManager.remove(entity);
         return StandardResp.success(null);
     }
@@ -154,7 +159,7 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
      * @param jpaQuery the jpa query
      * @return the resp
      */
-    protected <E extends IdEntity> Resp<Long> softDelEntities(JPAQuery<E> jpaQuery) {
+    protected <E extends PkEntity<P>> Resp<Long> softDelEntities(JPAQuery<E> jpaQuery) {
         log.info("Soft Delete entities {} , cond : {}", jpaQuery.getType().getSimpleName(), jpaQuery.toString());
         var deleteCounts = jpaQuery.fetch()
                 .stream()
@@ -164,7 +169,7 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
                     basicSoftDelEntity.setEntityName(jpaQuery.getType().getSimpleName());
                     basicSoftDelEntity.setRecordId(entity.getId() + "");
                     basicSoftDelEntity.setContent($.json.toJsonString(entity));
-                    saveEntity(basicSoftDelEntity);
+                    entityManager.persist(basicSoftDelEntity);
                     entityManager.remove(entity);
                     return entity.getId();
                 })
@@ -186,7 +191,7 @@ public abstract class BasicService<D extends BasicSoftDelEntity> {
      * @param deleteEntity the delete entity
      * @return the del
      */
-    protected abstract <E extends IdEntity> D softDelPackage(E deleteEntity);
+    protected abstract <E extends PkEntity<P>> D softDelPackage(E deleteEntity);
 
     /**
      * Gets dto.

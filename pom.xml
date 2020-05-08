@@ -106,6 +106,7 @@
         <module>common/backend/huaweicloud-sdk</module>
         <module>apps/ident</module>
         <!--测试项目-->
+        <module>apps/starfk</module>
         <module>apps/date</module>
         <module>apps/xyy</module>
     </modules>

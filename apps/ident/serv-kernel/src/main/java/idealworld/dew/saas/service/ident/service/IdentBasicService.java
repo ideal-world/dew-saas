@@ -18,8 +18,8 @@ package idealworld.dew.saas.service.ident.service;
 
 import group.idealworld.dew.Dew;
 import group.idealworld.dew.core.cluster.ClusterElection;
-import idealworld.dew.saas.common.service.BasicService;
-import idealworld.dew.saas.common.service.domain.IdEntity;
+import idealworld.dew.saas.common.service.CommonService;
+import idealworld.dew.saas.common.service.domain.PkEntity;
 import idealworld.dew.saas.service.ident.domain.SoftDelRecord;
 
 /**
@@ -27,7 +27,7 @@ import idealworld.dew.saas.service.ident.domain.SoftDelRecord;
  *
  * @author gudaoxuri
  */
-public abstract class IdentBasicService extends BasicService<SoftDelRecord> {
+public abstract class IdentBasicService extends CommonService<SoftDelRecord, Long> {
 
     /**
      * The constant ELECTION.
@@ -40,7 +40,7 @@ public abstract class IdentBasicService extends BasicService<SoftDelRecord> {
     }
 
     @Override
-    protected <E extends IdEntity> SoftDelRecord softDelPackage(E deleteEntity) {
+    protected <E extends PkEntity<Long>> SoftDelRecord softDelPackage(E deleteEntity) {
         return SoftDelRecord.builder().build();
     }
 

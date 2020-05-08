@@ -49,9 +49,7 @@ public class Organization extends SafeEntity {
     private OrganizationKind kind;
 
     @Column(nullable = false,
-            columnDefinition = "varchar(1000) comment '机构编码，同租户、应用下唯一\n" +
-                    "5位数字一组，带上下级关系'")
-    // TODO 规则未实现
+            columnDefinition = "varchar(1000) comment '机构编码，同租户、应用下唯一'")
     private String code;
 
     @Column(nullable = false,
