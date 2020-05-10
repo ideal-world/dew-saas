@@ -141,20 +141,14 @@ public class WechatCommonSubscribeService {
             return;
         }
         log.info("Send Message template : {} to {}", templateId, openId);
-        if (redirectPage.contains("?")) {
-            redirectPage += "&";
-        } else {
-            redirectPage += "?";
-        }
-        String finalRedirectPage = redirectPage;
         var qSubscribeInfo = QSubscribeInfo.subscribeInfo;
         var wechatContent = new HashMap<String, Map<String, String>>();
-        content.entrySet().forEach(entry -> wechatContent.put(entry.getKey(), new HashMap<>() {
+        content.forEach((key, value) -> wechatContent.put(key, new HashMap<>() {
             {
-                put("value", entry.getValue());
+                put("value", value);
             }
         }));
-        var resp = sendMessage(templateId, openId, finalRedirectPage + "instId=" + openId, wechatContent);
+        var resp = sendMessage(templateId, openId, redirectPage, wechatContent);
         if (resp.ok()) {
             // 剩余次数减1
             var updateCount = sqlBuilder.update(qSubscribeInfo)
