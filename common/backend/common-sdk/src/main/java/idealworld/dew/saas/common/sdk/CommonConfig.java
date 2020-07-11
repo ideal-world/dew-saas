@@ -64,13 +64,7 @@ public class CommonConfig {
     public static class Perf {
 
         @Builder.Default
-        private int maxTotal = 200;
-        @Builder.Default
-        private int maxPerRoute = 20;
-        @Builder.Default
-        private int defaultConnectTimeoutMS = 10000;
-        @Builder.Default
-        private int defaultSocketTimeoutMS = 50000;
+        private int defaultCTimeoutMS = 10000;
 
     }
 

@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.tenant;
 
 import idealworld.dew.saas.common.enumeration.CommonStatus;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,44 +32,44 @@ import java.util.Date;
  */
 @Data
 @Builder
-@ApiModel("租户信息")
+@Schema(title = "租户信息")
 public class TenantInfoResp implements Serializable {
 
     /**
      * The Create user name.
      */
-    @ApiModelProperty(value = "创建者", required = true)
+    @Schema(title = "创建者", required = true)
     protected String createUserName;
     /**
      * The Update user name.
      */
-    @ApiModelProperty(value = "最后一次修改者", required = true)
+    @Schema(title = "最后一次修改者", required = true)
     protected String updateUserName;
     /**
      * The Create time.
      */
-    @ApiModelProperty(value = "创建时间", required = true)
+    @Schema(title = "创建时间", required = true)
     protected Date createTime;
     /**
      * The Update time.
      */
-    @ApiModelProperty(value = "最后一次修改时间", required = true)
+    @Schema(title = "最后一次修改时间", required = true)
     protected Date updateTime;
-    @ApiModelProperty(value = "租户Id", required = true)
+    @Schema(title = "租户Id", required = true)
     private Long id;
-    @ApiModelProperty(value = "租户名称", required = true)
+    @Schema(title = "租户名称", required = true)
     private String name;
-    @ApiModelProperty(value = "租户图标")
+    @Schema(title = "租户图标")
     private String icon;
-    @ApiModelProperty(value = "是否开放账号注册", required = true)
+    @Schema(title = "是否开放账号注册", required = true)
     private Boolean allowAccountRegister;
-    @ApiModelProperty(value = "是否是全局账号", required = true)
+    @Schema(title = "是否是全局账号", required = true)
     private Boolean globalAccount;
-    @ApiModelProperty(value = "是否允许跨租户", required = true)
+    @Schema(title = "是否允许跨租户", required = true)
     private Boolean allowCrossTenant;
-    @ApiModelProperty(value = "租户扩展信息（Json格式）")
+    @Schema(title = "租户扩展信息（Json格式）")
     private String parameters;
-    @ApiModelProperty(value = "租户状态", required = true)
+    @Schema(title = "租户状态", required = true)
     private CommonStatus status;
 
     /**

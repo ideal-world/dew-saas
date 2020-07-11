@@ -43,11 +43,11 @@ public class CacheHelper {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                CACHES.entrySet().forEach(entry -> {
-                    if (entry.getValue() == null
-                            || entry.getValue().get() == null
-                            || entry.getValue().get()._0 < System.currentTimeMillis()) {
-                        CACHES.remove(entry.getKey());
+                CACHES.forEach((key, value) -> {
+                    if (value == null
+                            || value.get() == null
+                            || value.get()._0 < System.currentTimeMillis()) {
+                        CACHES.remove(key);
                     }
                 });
             }

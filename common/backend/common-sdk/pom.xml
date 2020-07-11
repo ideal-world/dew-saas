@@ -23,14 +23,14 @@
     <parent>
         <groupId>group.idealworld.dew</groupId>
         <artifactId>saas-parent</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../../../</relativePath>
     </parent>
 
     <artifactId>saas-common-sdk</artifactId>
     <name>2.3 Dew SAAS Common SDK</name>
     <packaging>jar</packaging>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
 
     <properties>
     </properties>
@@ -39,12 +39,6 @@
         <dependency>
             <groupId>group.idealworld.dew</groupId>
             <artifactId>saas-common</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.springfox</groupId>
-                    <artifactId>springfox-swagger2</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

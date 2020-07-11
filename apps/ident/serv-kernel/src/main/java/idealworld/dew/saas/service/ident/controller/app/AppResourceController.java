@@ -24,8 +24,8 @@ import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.ResourceService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +33,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 应用控制台资源管理操作.
+ * 应用控制台资源管理操.
  *
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "应用控制台资源管理操作", description = "应用控制台资源管理操作")
+@Schema(name = "app resource", description = "应用控制台资源管理操作")
 @RequestMapping(value = "/app/resource")
 @Validated
 public class AppResourceController extends BasicController {
@@ -55,7 +55,7 @@ public class AppResourceController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "group")
-    @ApiOperation(value = "添加当前应用的资源组")
+    @Operation(description = "添加当前应用的资源组")
     public Resp<Long> addResourceGroup(@Validated @RequestBody AddResourceGroupReq addResourceGroupReq) {
         return resourceService.addResourceGroup(addResourceGroupReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -69,7 +69,7 @@ public class AppResourceController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "")
-    @ApiOperation(value = "添加当前应用的资源")
+    @Operation(description = "添加当前应用的资源")
     public Resp<Long> addResource(@Validated @RequestBody AddResourceReq addResourceReq) {
         return resourceService.addResource(addResourceReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -84,7 +84,7 @@ public class AppResourceController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "{resourceId}")
-    @ApiOperation(value = "修改当前应用的某个资源（组）")
+    @Operation(description = "修改当前应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long resourceId,
                                      @Validated @RequestBody ModifyResourceReq modifyResourceReq) {
         return resourceService.modifyResource(modifyResourceReq, resourceId,
@@ -99,7 +99,7 @@ public class AppResourceController extends BasicController {
      * @return the resource
      */
     @GetMapping(value = "{resourceId}")
-    @ApiOperation(value = "获取当前应用的某个资源（组）信息")
+    @Operation(description = "获取当前应用的某个资源（组）信息")
     public Resp<ResourceInfoResp> getResource(@PathVariable Long resourceId) {
         return resourceService.getResource(resourceId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -112,7 +112,7 @@ public class AppResourceController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "")
-    @ApiOperation(value = "获取当前应用的资源（组）列表信息")
+    @Operation(description = "获取当前应用的资源（组）列表信息")
     public Resp<List<ResourceInfoResp>> findResources() {
         return resourceService.findResources(
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -126,7 +126,7 @@ public class AppResourceController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{resourceId}")
-    @ApiOperation(value = "删除当前应用的某个资源（组）", notes = "资源（组）、权限")
+    @Operation(description = "删除当前应用的某个资源（组）、权限")
     public Resp<Void> deleteResource(@PathVariable Long resourceId) {
         return resourceService.deleteResource(resourceId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,

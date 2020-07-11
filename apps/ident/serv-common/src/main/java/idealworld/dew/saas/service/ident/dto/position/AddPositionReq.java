@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.position;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -34,23 +33,23 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加职位请求")
+@Schema(title = "添加职位请求")
 public class AddPositionReq implements Serializable {
 
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "职位编码", required = true)
+    @Schema(title = "职位编码", required = true)
     private String code;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "职位名称", required = true)
+    @Schema(title = "职位名称", required = true)
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "职位图标")
+    @Schema(title = "职位图标")
     private String icon;
-    @ApiModelProperty(value = "显示排序，asc")
+    @Schema(title = "显示排序，asc")
     private Integer sort;
 
     /**

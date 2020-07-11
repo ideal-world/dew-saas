@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.common.wechat.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -31,10 +30,10 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("订阅请求")
+@Schema(title = "订阅请求")
 public class SubscribeReq implements Serializable {
 
-    @ApiModelProperty(value = "模板Id", required = true)
+    @Schema(title = "模板Id", required = true)
     private String templateId;
 
     /**

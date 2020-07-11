@@ -22,8 +22,8 @@ import idealworld.dew.saas.service.ident.dto.post.AddPostReq;
 import idealworld.dew.saas.service.ident.dto.post.PostInfoResp;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.PostService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +31,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 应用控制台岗位管理操作.
+ * 应用控制台岗位管理操.
  *
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "应用控制台岗位管理操作", description = "应用控制台岗位管理操作")
+@Schema(name = "app post", description = "应用控制台岗位管理操作")
 @RequestMapping(value = "/app/post")
 @Validated
 public class AppPostController extends BasicController {
@@ -53,7 +53,7 @@ public class AppPostController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "")
-    @ApiOperation(value = "添加当前应用的岗位")
+    @Operation(description = "添加当前应用的岗位")
     public Resp<Long> addPost(@Validated @RequestBody AddPostReq addPostReq) {
         return postService.addPost(addPostReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -66,7 +66,7 @@ public class AppPostController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "")
-    @ApiOperation(value = "获取当前应用的岗位列表信息")
+    @Operation(description = "获取当前应用的岗位列表信息")
     public Resp<List<PostInfoResp>> findPostInfo() {
         return postService.findPostInfo(
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -80,7 +80,7 @@ public class AppPostController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "/{postId}")
-    @ApiOperation(value = "删除当前应用的某个岗位", notes = "删除岗位，关联账号岗位、权限")
+    @Operation(description = "删除当前应用的某个岗位、关联账号岗位、权限")
     public Resp<Void> deletePost(@PathVariable Long postId) {
         return postService.deletePost(postId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,

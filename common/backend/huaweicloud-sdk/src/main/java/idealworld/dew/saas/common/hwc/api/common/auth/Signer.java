@@ -16,7 +16,7 @@
 
 package idealworld.dew.saas.common.hwc.api.common.auth;
 
-import org.apache.http.client.methods.HttpRequestBase;
+import com.ecfront.dew.common.HttpHelper;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,6 +36,6 @@ public interface Signer {
      * @throws URISyntaxException the uri syntax exception
      * @throws IOException        the io exception
      */
-    void sign(HttpRequestBase request) throws URISyntaxException, IOException;
+    void sign(HttpHelper.PreRequestContext request) throws URISyntaxException, IOException;
 
 }

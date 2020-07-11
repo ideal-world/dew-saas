@@ -22,8 +22,8 @@ import idealworld.dew.saas.service.ident.dto.permission.AddPermissionReq;
 import idealworld.dew.saas.service.ident.dto.permission.PermissionInfoResp;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.PermissionService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +31,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 应用控制台权限管理操作.
+ * 应用控制台权限管理操.
  *
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "应用控制台权限管理操作", description = "应用控制台权限管理操作")
+@Schema(name = "app permission", description = "应用控制台权限管理操作")
 @RequestMapping(value = "/app/permission")
 @Validated
 public class AppPermissionController extends BasicController {
@@ -53,7 +53,7 @@ public class AppPermissionController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "")
-    @ApiOperation(value = "添加当前应用的权限")
+    @Operation(description = "添加当前应用的权限")
     public Resp<Long> addPermission(@Validated @RequestBody AddPermissionReq addPermissionReq) {
         return permissionService.addPermission(addPermissionReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -66,7 +66,7 @@ public class AppPermissionController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "")
-    @ApiOperation(value = "获取当前应用的权限列表信息")
+    @Operation(description = "获取当前应用的权限列表信息")
     public Resp<List<PermissionInfoResp>> findPermissionInfo() {
         return permissionService.findPermissionInfo(
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -80,7 +80,7 @@ public class AppPermissionController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{permissionId}")
-    @ApiOperation(value = "删除当前应用的某个权限")
+    @Operation(description = "删除当前应用的某个权限")
     public Resp<Void> deletePermission(@PathVariable Long permissionId) {
         return permissionService.deletePermission(permissionId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,

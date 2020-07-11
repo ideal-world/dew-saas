@@ -26,8 +26,8 @@ import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.OAuthService;
 import idealworld.dew.saas.service.ident.service.TenantService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "公共操作", description = "公共操作")
+@Schema(name = "common", description = "公共操作")
 @Validated
 public class CommonController extends BasicController {
 
@@ -56,7 +56,7 @@ public class CommonController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "/tenant/register")
-    @ApiOperation(value = "注册租户")
+    @Operation(description = "注册租户")
     public Resp<IdentOptInfo> registerTenant(@Validated @RequestBody RegisterTenantReq registerTenantReq) {
         return tenantService.registerTenant(registerTenantReq);
     }
@@ -69,7 +69,7 @@ public class CommonController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "/auth/{tenantId}/login")
-    @ApiOperation(value = "用户登录")
+    @Operation(description = "用户登录")
     public Resp<IdentOptInfo> login(@PathVariable Long tenantId,
                                     @Validated @RequestBody LoginReq loginReq) {
         return accountService.login(loginReq, tenantId);
@@ -84,7 +84,7 @@ public class CommonController extends BasicController {
      * @throws Exception the exception
      */
     @PostMapping(value = "/oauth/{tenantId}/login")
-    @ApiOperation(value = "OAuth用户注册/登录")
+    @Operation(description = "OAuth用户注册/登录")
     public Resp<IdentOptInfo> oauthLogin(@PathVariable Long tenantId,
                                          @Validated @RequestBody OAuthLoginReq oauthLoginReq) throws Exception {
         return oauthservice.login(oauthLoginReq, tenantId);
@@ -96,7 +96,7 @@ public class CommonController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "/auth/{tenantId}/logout")
-    @ApiOperation(value = "注销登录")
+    @Operation(description = "注销登录")
     public Resp<Void> logout() {
         Dew.auth.getOptInfo().ifPresent(info -> {
             var openId = (String) info.getAccountCode();

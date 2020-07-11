@@ -23,13 +23,13 @@
   <parent>
     <groupId>group.idealworld.dew</groupId>
     <artifactId>saas-ident-parent</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
 
   <artifactId>saas-ident-frontend</artifactId>
   <name>3.1 Dew SAAS Ident Frontend</name>
   <packaging>pom</packaging>
-  <version>2.1.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
 
 </project>

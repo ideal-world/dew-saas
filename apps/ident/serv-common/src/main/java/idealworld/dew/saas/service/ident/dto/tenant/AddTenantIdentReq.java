@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.tenant;
 
 import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -34,25 +33,25 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加租户认证请求")
+@Schema(title = "添加租户认证请求")
 public class AddTenantIdentReq implements Serializable {
 
     @NotNull
-    @ApiModelProperty(value = "租户认证类型名称", required = true)
+    @Schema(title = "租户认证类型名称", required = true)
     private AccountIdentKind kind;
     @Size(max = 2000)
-    @ApiModelProperty(value = "租户认证校验正则规则说明")
+    @Schema(title = "租户认证校验正则规则说明")
     private String validRuleNote;
     @Size(max = 2000)
-    @ApiModelProperty(value = "租户认证校验正则规则")
+    @Schema(title = "租户认证校验正则规则")
     private String validRule;
-    @ApiModelProperty(value = "租户认证有效时间（秒）")
+    @Schema(title = "租户认证有效时间（秒）")
     private Long validTimeSec;
     @Size(max = 1000)
-    @ApiModelProperty(value = "OAuth下的应用密钥ID或是AppId")
+    @Schema(title = "OAuth下的应用密钥ID或是AppId")
     private String oauthAk;
     @Size(max = 2000)
-    @ApiModelProperty(value = "OAuth下的应用密钥")
+    @Schema(title = "OAuth下的应用密钥")
     private String oauthSk;
 
     /**

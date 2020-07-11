@@ -17,11 +17,12 @@
 package idealworld.dew.saas.common.hwc.api.common.auth;
 
 import com.ecfront.dew.common.$;
-import org.apache.http.Header;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpRequestBase;
+import com.ecfront.dew.common.HttpHelper;
 
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -64,12 +65,12 @@ public class OBSSigner implements Signer {
     }
 
     @Override
-    public void sign(HttpRequestBase request)
+    public void sign(HttpHelper.PreRequestContext request)
             throws URISyntaxException, MalformedURLException {
         String date;
-        if (request.containsHeader(AUTH_BY_URL_FLAG)) {
-            if (request.containsHeader(EXPIRE_SEC_FLAG)) {
-                date = (System.currentTimeMillis() / 1000 + Long.parseLong(request.getHeaders(EXPIRE_SEC_FLAG)[0].getValue())) + "";
+        if (request.getHeader().containsKey(AUTH_BY_URL_FLAG)) {
+            if (request.getHeader().containsKey(EXPIRE_SEC_FLAG)) {
+                date = (System.currentTimeMillis() / 1000 + Long.parseLong(request.getHeader().get(EXPIRE_SEC_FLAG))) + "";
             } else {
                 date = (System.currentTimeMillis() / 1000 + DEFAULT_EXPIRE_SEC) + "";
             }
@@ -81,30 +82,27 @@ public class OBSSigner implements Signer {
 
         String method = request.getMethod();
         String content = "";
-        String contentType = request.getHeaders("Content-Type")[0].getValue();
-        String canonicalizedHeaders = Stream.of(request.getAllHeaders())
-                .filter(h -> h.getName().toLowerCase().startsWith("x-obs-"))
+        String contentType = request.getHeader().get("Content-Type");
+        String canonicalizedHeaders = request.getHeader().entrySet().stream()
+                .filter(h -> h.getKey().toLowerCase().startsWith("x-obs-"))
                 //.map(h -> new String[]{h.getName().toLowerCase().trim(), h.getValue().toLowerCase().trim()})
-                .collect(Collectors.groupingBy(Header::getName))
+                .collect(Collectors.groupingBy(Map.Entry::getKey))
                 .entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
-                .map(h -> h.getKey().toLowerCase().trim() + ":"
-                        + h.getValue().stream()
-                        .map(NameValuePair::getValue)
-                        .collect(Collectors.joining(","))
-                        + "\n")
+                .map(h -> h.getKey().toLowerCase().trim() + ":" + h.getValue())
                 .collect(Collectors.joining(""));
-        String canonicalQueryString = getCanonicalQuery(request.getURI().getRawQuery());
-        String canonicalizedResource = request.getURI().getPath() + canonicalQueryString;
+        URL url = new URL(request.getUrl());
+        String canonicalQueryString = getCanonicalQuery(url.getQuery());
+        String canonicalizedResource = url.getPath() + canonicalQueryString;
 
-        String signature = doSign(request.getURI().toString(), date, method, content, contentType, canonicalizedHeaders, canonicalizedResource);
-        if (request.containsHeader(AUTH_BY_URL_FLAG)) {
-            request.setURI(new URI(
-                    signByUrl(request.getURI().toString(),
-                            date, method, content, contentType, canonicalizedHeaders, canonicalizedResource)));
+        String signature = doSign(request.getUrl(), date, method, content, contentType, canonicalizedHeaders, canonicalizedResource);
+        if (request.getHeader().containsKey(AUTH_BY_URL_FLAG)) {
+            request.setUrl(
+                    signByUrl(request.getUrl(),
+                            date, method, content, contentType, canonicalizedHeaders, canonicalizedResource));
         } else {
-            request.addHeader("Date", date);
-            request.addHeader("Authorization", "OBS " + ak + ":" + signature);
+            request.getHeader().put("Date", date);
+            request.getHeader().put("Authorization", "OBS " + ak + ":" + signature);
         }
     }
 

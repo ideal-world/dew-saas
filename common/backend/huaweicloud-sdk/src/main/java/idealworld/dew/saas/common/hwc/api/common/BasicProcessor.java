@@ -18,11 +18,9 @@ package idealworld.dew.saas.common.hwc.api.common;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.HttpHelper;
-import com.ecfront.dew.common.HttpHelperFactory;
 import idealworld.dew.saas.common.hwc.api.common.auth.Signer;
 import idealworld.dew.saas.common.hwc.api.common.auth.SignerFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -60,10 +58,11 @@ public abstract class BasicProcessor<T> {
      * Instantiates a new Auth.
      */
     public BasicProcessor() {
-        http = $.http(200, 20, -1, -1, false, true, HttpHelperFactory.BACKEND.APACHE);
+        http = $.http(-1, true);
         http.setPreRequest(request -> {
             try {
-                signer.sign((HttpRequestBase) request);
+                signer.sign(request);
+                return request;
             } catch (URISyntaxException | IOException e) {
                 throw new RuntimeException(e);
             }

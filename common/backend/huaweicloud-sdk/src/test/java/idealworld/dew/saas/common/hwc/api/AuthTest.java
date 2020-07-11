@@ -18,13 +18,12 @@ package idealworld.dew.saas.common.hwc.api;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.exception.RTIOException;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URL;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,27 +39,29 @@ public class AuthTest {
      */
     @Test(expected = RTIOException.class)
     public void testSign() {
-        $.http.setPreRequest((Consumer<HttpRequestBase>) request -> {
+        $.http.setPreRequest(request -> {
             try {
                 String method = request.getMethod();
-                String canonicalURI = request.getURI().getPath();
+                URL url = new URL(request.getUrl());
+                String canonicalURI = url.getPath();
                 if (!canonicalURI.endsWith("/")) {
                     canonicalURI += "/";
                 }
                 String canonicalQueryString = "";
-                if (request.getURI().getRawQuery() != null && !request.getURI().getRawQuery().isEmpty()) {
-                    canonicalQueryString = Stream.of(request.getURI().getRawQuery().split("&"))
+                if (url.getQuery() != null && !url.getQuery().isEmpty()) {
+                    canonicalQueryString = Stream.of(url.getQuery().split("&"))
                             .map(q -> q.split("=", 2))
                             .sorted(Comparator.comparing(i -> i[0]))
                             .map(i -> i[0] + "=" + i[1])
                             .collect(Collectors.joining("&"));
                 }
-                String canonicalHeaders = Stream.of(request.getAllHeaders())
-                        .sorted(Comparator.comparing(h -> h.getName().toLowerCase().trim()))
-                        .map(h -> h.getName().toLowerCase().trim() + ":" + h.getValue().trim() + "\n")
+                String canonicalHeaders = request.getHeader().entrySet().stream()
+                        .sorted(Comparator.comparing(h -> h.getKey().toLowerCase().trim()))
+                        .map(h -> h.getKey().toLowerCase().trim() + ":" + h.getValue().trim() + "\n")
                         .collect(Collectors.joining(""));
-                String signedHeaders = Stream.of(request.getAllHeaders())
-                        .map(h -> h.getName().toLowerCase().trim())
+
+                String signedHeaders = request.getHeader().keySet().stream()
+                        .map(s -> s.toLowerCase().trim())
                         .sorted(Comparator.comparing(h -> h))
                         .collect(Collectors.joining(";"));
                 String requestPayload = "";
@@ -77,18 +78,19 @@ public class AuthTest {
                 String signature = $.security.digest.digest(stringToSign, "MFyfvK41ba2giqM7Uio6PznpdUKGpownRZlmVmHc", "HmacSHA256");
                 String authorization = "SDK-HMAC-SHA256 Access=QTWAOYTTINDUT2QVKYUC, SignedHeaders=" + signedHeaders + ", Signature=" + signature;
                 Assert.assertEquals("SDK-HMAC-SHA256 Access=QTWAOYTTINDUT2QVKYUC, "
-                                + "SignedHeaders=content-type;host;x-sdk-date, "
-                                + "Signature=d66f6a6c536e984129e13a4060f465225909fd126d212cb25e9e292346aae036",
+                                + "SignedHeaders=content-type;x-host;x-sdk-date, "
+                                + "Signature=52aa02855146a17410445d273ef67ab5d602816efe78949347ce4c408845d12b",
                         authorization);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+            return request;
         });
 
         $.http.get("https://service.region.example.com/v1/77b6a44cba5143ab91d13ab9a8ff44fd/vpcs?limit=2&marker=13551d6b-755d-4757-b956-536f674975c0",
                 new HashMap<>() {
                     {
-                        put("host", "service.region.example.com");
+                        put("X-Host", "service.region.example.com");
                         put("X-Sdk-Date", "20190329T074551Z");
                         put("Content-Type", "application/json");
                     }

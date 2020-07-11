@@ -17,11 +17,10 @@
 package idealworld.dew.saas.common.hwc.api.common.auth;
 
 import com.ecfront.dew.common.$;
-import idealworld.dew.saas.common.hwc.api.common.util.StringHelper;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpRequestBase;
+import com.ecfront.dew.common.HttpHelper;
 
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -61,57 +60,49 @@ public class GatewaySigner implements Signer {
     }
 
     @Override
-    public void sign(HttpRequestBase request) throws IOException {
+    public void sign(HttpHelper.PreRequestContext request) throws IOException {
         SimpleDateFormat sdf = new SimpleDateFormat(YYYY_MMDD_T_HHMMSS_Z);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         String requestTime = sdf.format(new Date());
-        request.setHeader("x-sdk-date", requestTime);
+        request.getHeader().put("X-Sdk-Date", requestTime);
 
         final String method = request.getMethod();
 
-        String canonicalURI = request.getURI().getPath();
+        URL url = new URL(request.getUrl());
+        String canonicalURI = url.getPath();
         if (!canonicalURI.endsWith("/")) {
             canonicalURI += "/";
         }
         String canonicalQueryString = "";
-        if (request.getURI().getRawQuery() != null && !request.getURI().getRawQuery().isEmpty()) {
-            canonicalQueryString = Stream.of(request.getURI().getRawQuery().split("&"))
+        if (url.getQuery() != null && !url.getQuery().isEmpty()) {
+            canonicalQueryString = Stream.of(url.getQuery().split("&"))
                     .map(q -> q.split("=", 2))
                     .sorted(Comparator.comparing(i -> i[0]))
                     .map(i -> i[0] + "=" + i[1])
                     .collect(Collectors.joining("&"));
         }
 
-        String canonicalHeaders = Stream.of(request.getAllHeaders())
-                .sorted(Comparator.comparing(h -> h.getName().toLowerCase().trim()))
-                .map(h -> h.getName().toLowerCase().trim() + ":" + h.getValue().trim() + "\n")
+        String canonicalHeaders = request.getHeader().entrySet().stream()
+                .sorted(Comparator.comparing(h -> h.getKey().toLowerCase().trim()))
+                .map(h -> h.getKey().toLowerCase().trim() + ":" + h.getValue().trim() + "\n")
                 .collect(Collectors.joining(""));
 
-        String signedHeaders = Stream.of(request.getAllHeaders())
-                .map(h -> h.getName().toLowerCase().trim())
+        String signedHeaders = request.getHeader().keySet().stream()
+                .map(s -> s.toLowerCase().trim())
                 .sorted(Comparator.comparing(h -> h))
                 .collect(Collectors.joining(";"));
-
-        String hexedRequestPayload;
-        if (request instanceof HttpEntityEnclosingRequestBase) {
-            byte[] payloadBytes = StringHelper.readFullyAsBytes(((HttpEntityEnclosingRequestBase) request).getEntity().getContent());
-            hexedRequestPayload = $.security.byte2HexStr($.security.digest.digest(payloadBytes, "SHA-256"));
-        } else {
-            hexedRequestPayload = $.security.digest.digest("", "SHA-256");
-        }
 
         String hashedCanonicalRequest = $.security.digest.digest(
                 method + "\n"
                         + canonicalURI + "\n"
                         + canonicalQueryString + "\n"
                         + canonicalHeaders + "\n"
-                        + signedHeaders + "\n"
-                        + hexedRequestPayload, "SHA-256").toLowerCase();
+                        + signedHeaders + "\n", "SHA-256").toLowerCase();
 
         String stringToSign = SDK_HMAC_SHA_256 + "\n" + requestTime + "\n" + hashedCanonicalRequest;
         String signature = $.security.digest.digest(stringToSign, sk, "HmacSHA256");
 
         String authorization = SDK_HMAC_SHA_256 + " Access=" + ak + ", SignedHeaders=" + signedHeaders + ", Signature=" + signature;
-        request.addHeader("Authorization", authorization);
+        request.getHeader().put("Authorization", authorization);
     }
 }

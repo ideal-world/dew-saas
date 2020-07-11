@@ -25,10 +25,10 @@ import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.OAuthService;
 import idealworld.dew.saas.service.ident.service.PermissionService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "应用控制台认证管理操作", description = "应用控制台认证管理操作")
+@Schema(name = "app auth", description = "应用控制台认证管理操作")
 @RequestMapping(value = "/app/auth")
 @Validated
 public class AppAuthController extends BasicController {
@@ -59,7 +59,7 @@ public class AppAuthController extends BasicController {
      * @return the opt info
      */
     @GetMapping(value = "optinfo")
-    @ApiOperation(value = "获取当前登录用户")
+    @Operation(description = "获取当前登录用户")
     public Resp<IdentOptInfo> getOptInfo() {
         if (Dew.auth.getOptInfo().isEmpty()) {
             return StandardResp.unAuthorized("OPT_INFO", "Token不存在或已过期");
@@ -74,11 +74,10 @@ public class AppAuthController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "permission/sub")
-    @ApiOperation(value = "订阅当前应用的权限信息")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "heartbeatPeriodSec", value = "心跳周期", paramType = "query", dataType = "int", required = true)
-    })
-    public Resp<String> subPermissions(@RequestParam(value = "heartbeatPeriodSec") Integer heartbeatPeriodSec) {
+    @Operation(description = "订阅当前应用的权限信息")
+    public Resp<String> subPermissions(
+            @Parameter(name = "heartbeatPeriodSec", description = "心跳周期", in = ParameterIn.QUERY, required = true)
+            @RequestParam(value = "heartbeatPeriodSec") Integer heartbeatPeriodSec) {
         return permissionService.subPermissions(
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1, heartbeatPeriodSec);
     }
@@ -90,11 +89,10 @@ public class AppAuthController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "permission/heartbeat")
-    @ApiOperation(value = "当前应用的权限信息订阅的心跳检测")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "heartbeatPeriodSec", value = "心跳周期", paramType = "query", dataType = "int", required = true)
-    })
-    public Resp<Void> subHeartbeat(@RequestParam(value = "heartbeatPeriodSec") Integer heartbeatPeriodSec) {
+    @Operation(description = "当前应用的权限信息订阅的心跳检测")
+    public Resp<Void> subHeartbeat(
+            @Parameter(name = "heartbeatPeriodSec", description = "心跳周期", in = ParameterIn.QUERY, required = true)
+            @RequestParam(value = "heartbeatPeriodSec") Integer heartbeatPeriodSec) {
         return permissionService.subHeartbeat(
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1, heartbeatPeriodSec);
     }
@@ -105,7 +103,7 @@ public class AppAuthController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "permission/sub")
-    @ApiOperation(value = "取消当前应用的订阅权限信息", notes = "此操作会取消当前应用的所有实例订阅，在多实例场景下慎用")
+    @Operation(description = "取消当前应用的订阅权限信息，此操作会取消当前应用的所有实例订阅，在多实例场景下慎用")
     public Resp<Void> unSubPermission() {
         return permissionService.unSubPermission(appHandlerInterceptor.getCurrentTenantAndAppId()._1);
     }
@@ -117,7 +115,7 @@ public class AppAuthController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "tenant/oauth/{oauthKind}/access-token")
-    @ApiOperation(value = "获取OAuth的AccessToken")
+    @Operation(description = "获取OAuth的AccessToken")
     public Resp<String> oauthGetAccessToken(@PathVariable String oauthKind) {
         return oauthservice.getAccessToken(oauthKind, appHandlerInterceptor.getCurrentTenantAndAppId()._0);
     }
@@ -130,7 +128,7 @@ public class AppAuthController extends BasicController {
      * @return the account ident info
      */
     @GetMapping(value = "account/oauth/{accountOpenId}/{accountIdentKind}/ident-ak")
-    @ApiOperation(value = "获取当前租户某个账号的某个认证AK")
+    @Operation(description = "获取当前租户某个账号的某个认证AK")
     public Resp<String> getAccountIdentInfo(@PathVariable String accountOpenId,
                                             @PathVariable String accountIdentKind) {
         return accountService.getAccountIdentAk(accountOpenId, accountIdentKind,

@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.app;
 
 import idealworld.dew.saas.common.enumeration.CommonStatus;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,19 +32,19 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("修改应用请求")
+@Schema(title = "修改应用请求")
 public class ModifyAppReq implements Serializable {
 
     @Size(max = 255)
-    @ApiModelProperty(value = "应用名称")
+    @Schema(title = "应用名称")
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "应用图标")
+    @Schema(title = "应用图标")
     private String icon;
     @Size(max = 2000)
-    @ApiModelProperty(value = "应用扩展信息（Json格式）")
+    @Schema(title = "应用扩展信息（Json格式）")
     private String parameters;
-    @ApiModelProperty(value = "应用状态")
+    @Schema(title = "应用状态")
     private CommonStatus status;
 
     /**

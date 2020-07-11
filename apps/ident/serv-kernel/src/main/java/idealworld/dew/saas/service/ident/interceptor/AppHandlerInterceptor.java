@@ -32,6 +32,9 @@ import javax.security.auth.message.AuthException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * App Servlet拦截器.
@@ -74,6 +77,14 @@ public class AppHandlerInterceptor extends HandlerInterceptorAdapter {
         var reqSignature = authorization.split(":")[1];
         var reqMethod = request.getMethod();
         var reqDate = request.getHeader("Dew-Date");
+        var sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        if (sdf.parse(reqDate).getTime() + identConfig.getSecurity().getAppRequestDateOffsetMs() < System.currentTimeMillis()) {
+            ErrorController.error(request, response, Integer.parseInt(StandardCode.UNAUTHORIZED.toString()),
+                    "请求时间已过期",
+                    AuthException.class.getName());
+            return false;
+        }
         var reqPath = request.getRequestURI();
         var reqQuery = request.getQueryString() != null ? request.getQueryString() : "";
         var sk = legalSkAndAppIdR.getBody()._0;

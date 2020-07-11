@@ -20,10 +20,10 @@ import com.ecfront.dew.common.Resp;
 import idealworld.dew.saas.common.controller.BasicController;
 import idealworld.dew.saas.common.wechat.dto.SubscribeReq;
 import idealworld.dew.saas.common.wechat.service.WechatCommonSubscribeService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "订阅操作", description = "订阅操作")
+@Schema(name = "subscribe", description = "订阅操作")
 @RequestMapping(value = "/subscribe")
 @Validated
 public class WechatCommonSubscribeController extends BasicController {
@@ -52,11 +52,10 @@ public class WechatCommonSubscribeController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "counter")
-    @ApiOperation(value = "获取当前可订阅的数量")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "templateId", value = "模板Id", paramType = "query", dataType = "string", required = true)
-    })
-    public Resp<Integer> counter(@RequestParam(value = "templateId") String templateId) {
+    @Operation(description = "获取当前可订阅的数量")
+    public Resp<Integer> counter(
+            @Parameter(name = "templateId", description = "模板Id", in = ParameterIn.QUERY, required = true)
+            @RequestParam(value = "templateId") String templateId) {
         return wechatCommonSubscribeService.counter(templateId, getCurrentOpenId());
     }
 
@@ -67,7 +66,7 @@ public class WechatCommonSubscribeController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "req")
-    @ApiOperation(value = "订阅消息")
+    @Operation(description = "订阅消息")
     public Resp<Integer> requestSubscribeMessage(@Validated @RequestBody SubscribeReq subscribeReq) {
         return wechatCommonSubscribeService.requestSubscribeMessage(subscribeReq, getCurrentOpenId());
     }

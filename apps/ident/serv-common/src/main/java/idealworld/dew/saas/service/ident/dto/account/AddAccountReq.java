@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.account;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -34,24 +33,24 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加账号请求")
+@Schema(title = "添加账号请求")
 public class AddAccountReq implements Serializable {
 
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "账号名称", required = true)
+    @Schema(title = "账号名称", required = true)
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "账号头像")
+    @Schema(title = "账号头像")
     private String avatar;
     @Size(max = 2000)
-    @ApiModelProperty(value = "账号扩展信息，Json格式")
+    @Schema(title = "账号扩展信息，Json格式")
     private String parameters;
     @NotNull
-    @ApiModelProperty(value = "账号认证", required = true)
+    @Schema(title = "账号认证", required = true)
     private AddAccountIdentReq identReq;
-    @ApiModelProperty(value = "账号岗位")
+    @Schema(title = "账号岗位")
     private AddAccountPostReq postReq;
 
     /**

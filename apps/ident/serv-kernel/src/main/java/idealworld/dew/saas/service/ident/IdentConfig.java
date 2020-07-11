@@ -49,6 +49,7 @@ public class IdentConfig {
 
         private Integer skKindByVCodeExpireSec = 60 * 5;
         private Integer skKindByVCodeMaxErrorTimes = 5;
+        private Integer appRequestDateOffsetMs = 5000;
 
     }
 

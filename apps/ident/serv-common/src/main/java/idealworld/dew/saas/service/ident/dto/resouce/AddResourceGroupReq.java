@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.resouce;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -34,20 +33,20 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加资源组请求")
+@Schema(title = "添加资源组请求")
 public class AddResourceGroupReq implements Serializable {
 
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "资源组名称", required = true)
+    @Schema(title = "资源组名称", required = true)
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "资源组图标")
+    @Schema(title = "资源组图标")
     private String icon;
-    @ApiModelProperty(value = "资源组显示排序，asc")
+    @Schema(title = "资源组显示排序，asc")
     private Integer sort;
-    @ApiModelProperty(value = "资源组所属节点")
+    @Schema(title = "资源组所属节点")
     private Long parentId;
 
     /**

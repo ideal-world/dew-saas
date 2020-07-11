@@ -22,10 +22,10 @@ import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.dto.account.*;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.AccountService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +38,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "应用控制台账号管理操作", description = "应用控制台账号管理操作")
+@Schema(name = "app account", description = "应用控制台账号管理操作")
 @RequestMapping(value = "/app/account")
 @Validated
 public class AppAccountController extends BasicController {
@@ -55,7 +55,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "")
-    @ApiOperation(value = "添加当前租户的账号")
+    @Operation(description = "添加当前租户的账号")
     public Resp<Long> addAccount(@Validated @RequestBody AddAccountReq addAccountReq) {
         return accountService.addAccountExt(addAccountReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
@@ -69,13 +69,11 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "")
-    @ApiOperation(value = "获取当前租户的账号列表信息")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "pageNumber", value = "当前页码", paramType = "query", dataType = "long", required = true),
-            @ApiImplicitParam(name = "pageSize", value = "每页记录数", paramType = "query", dataType = "int", required = true)
-    })
+    @Operation(description = "获取当前租户的账号列表信息")
     public Resp<Page<AccountInfoResp>> findAccountInfo(
+            @Parameter(name = "pageNumber", description = "当前页码", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "pageNumber") Long pageNumber,
+            @Parameter(name = "pageSize", description = "每页记录数", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "pageSize") Integer pageSize
     ) {
         return accountService.pageAccountInfo(pageNumber, pageSize,
@@ -89,7 +87,7 @@ public class AppAccountController extends BasicController {
      * @return the account info
      */
     @GetMapping(value = "{accountId}")
-    @ApiOperation(value = "获取当前租户的某个账号信息")
+    @Operation(description = "获取当前租户的某个账号信息")
     public Resp<AccountInfoResp> getAccountInfo(@PathVariable Long accountId) {
         return accountService.getAccountInfo(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
@@ -103,7 +101,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "{accountId}")
-    @ApiOperation(value = "修改当前租户的某个账号")
+    @Operation(description = "修改当前租户的某个账号")
     public Resp<Void> modifyAccount(@PathVariable Long accountId,
                                     @Validated @RequestBody ModifyAccountReq modifyAccountReq) {
         return accountService.modifyAccount(modifyAccountReq, accountId,
@@ -117,7 +115,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{accountId}")
-    @ApiOperation(value = "删除当前租户的某个账号", notes = "删除账号，关联的账号认证、账号岗位")
+    @Operation(description = "删除当前租户的某个账号、关联的账号认证、账号岗位")
     public Resp<Void> deleteAccount(@PathVariable Long accountId) {
         return accountService.deleteAccount(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
@@ -133,7 +131,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "{accountId}/ident")
-    @ApiOperation(value = "添加当前租户某个账号的认证")
+    @Operation(description = "添加当前租户某个账号的认证")
     public Resp<Long> addAccountIdent(@PathVariable Long accountId,
                                       @Validated @RequestBody AddAccountIdentReq addAccountIdentReq) {
         return accountService.addAccountIdent(addAccountIdentReq, accountId,
@@ -147,7 +145,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "{accountId}/ident")
-    @ApiOperation(value = "获取当前租户某个账号的认证列表信息")
+    @Operation(description = "获取当前租户某个账号的认证列表信息")
     public Resp<List<AccountIdentInfoResp>> findAccountIdentInfo(@PathVariable Long accountId) {
         return accountService.findAccountIdentInfo(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
@@ -162,7 +160,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "{accountId}/ident/{accountIdentId}")
-    @ApiOperation(value = "修改当前租户某个账号的某个认证")
+    @Operation(description = "修改当前租户某个账号的某个认证")
     public Resp<Void> modifyAccountIdent(@PathVariable Long accountId,
                                          @PathVariable Long accountIdentId,
                                          @Validated @RequestBody ModifyAccountIdentReq modifyAccountIdentReq) {
@@ -178,7 +176,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{accountId}/ident/{accountIdentId}")
-    @ApiOperation(value = "删除当前租户某个账号的某个认证")
+    @Operation(description = "删除当前租户某个账号的某个认证")
     public Resp<Void> deleteAccountIdent(@PathVariable Long accountId,
                                          @PathVariable Long accountIdentId) {
         return accountService.deleteAccountIdent(accountIdentId, accountId,
@@ -192,7 +190,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{accountId}/ident")
-    @ApiOperation(value = "删除当前租户某个账号的所有认证")
+    @Operation(description = "删除当前租户某个账号的所有认证")
     public Resp<Long> deleteAccountIdents(@PathVariable Long accountId) {
         return accountService.deleteAccountIdents(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
@@ -208,7 +206,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "{accountId}/post")
-    @ApiOperation(value = "添加当前租户某个账号的岗位")
+    @Operation(description = "添加当前租户某个账号的岗位")
     public Resp<Long> addAccountPost(@PathVariable Long accountId,
                                      @Validated @RequestBody AddAccountPostReq addAccountPostReq) {
         return accountService.addAccountPost(addAccountPostReq, accountId,
@@ -222,7 +220,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "{accountId}/post")
-    @ApiOperation(value = "获取当前租户某个账号的岗位列表信息")
+    @Operation(description = "获取当前租户某个账号的岗位列表信息")
     public Resp<List<AccountPostInfoResp>> findAccountPostInfo(@PathVariable Long accountId) {
         return accountService.findAccountPostInfo(accountId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._0);
@@ -236,7 +234,7 @@ public class AppAccountController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{accountId}/post/{accountPostId}")
-    @ApiOperation(value = "删除当前租户某个账号的某个岗位")
+    @Operation(description = "删除当前租户某个账号的某个岗位")
     public Resp<Void> deleteAccountPost(@PathVariable Long accountId,
                                         @PathVariable Long accountPostId) {
         return accountService.deleteAccountPost(accountPostId, accountId,

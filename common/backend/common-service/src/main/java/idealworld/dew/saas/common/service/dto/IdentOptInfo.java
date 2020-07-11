@@ -17,8 +17,7 @@
 package idealworld.dew.saas.common.service.dto;
 
 import group.idealworld.dew.core.auth.dto.OptInfo;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Map;
@@ -29,13 +28,13 @@ import java.util.Map;
  * @author gudaoxuri
  */
 @Data
-@ApiModel(value = "操作用户信息")
+@Schema(title = "操作用户信息")
 public class IdentOptInfo extends OptInfo<IdentOptInfo> {
 
-    @ApiModelProperty(value = "关联租户Id", required = true)
+    @Schema(title = "关联租户Id", required = true)
     private Long relTenantId;
 
-    @ApiModelProperty(value = "账号扩展信息", required = true)
+    @Schema(title = "账号扩展信息", required = true)
     private Map<String, Object> parameters;
 
 }

@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.tenant;
 
 import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -35,37 +34,37 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("租户注册请求")
+@Schema(title = "租户注册请求")
 public class RegisterTenantReq implements Serializable {
 
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "租户名称", required = true)
+    @Schema(title = "租户名称", required = true)
     private String tenantName;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "账户名称", required = true)
+    @Schema(title = "账户名称", required = true)
     private String accountName;
-    @ApiModelProperty(value = "是否开放账号注册")
+    @Schema(title = "是否开放账号注册")
     private Boolean allowAccountRegister = false;
-    @ApiModelProperty(value = "是否是全局账号")
+    @Schema(title = "是否是全局账号")
     private Boolean globalAccount = true;
-    @ApiModelProperty(value = "是否允许跨租户")
+    @Schema(title = "是否允许跨租户")
     private Boolean allowCrossTenant = false;
     @NotNull
-    @ApiModelProperty(value = "认证类型", required = true)
+    @Schema(title = "认证类型", required = true)
     private AccountIdentKind identKind;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "认证名", required = true)
+    @Schema(title = "认证名", required = true)
     private String ak;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "认证密钥", required = true)
+    @Schema(title = "认证密钥", required = true)
     private String sk;
 
     /**

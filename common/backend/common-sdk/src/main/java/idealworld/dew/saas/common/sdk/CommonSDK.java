@@ -18,7 +18,6 @@ package idealworld.dew.saas.common.sdk;
 
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.HttpHelper;
-import com.ecfront.dew.common.HttpHelperFactory;
 import com.ecfront.dew.common.Resp;
 import com.ecfront.dew.common.exception.RTException;
 import idealworld.dew.saas.common.utils.ResponseProcessor;
@@ -107,11 +106,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
                 || config.getBasic().getAppSk().isBlank()) {
             throw new RTException("参数错误：缺少[basic.appSk]");
         }
-        httpHelper = $.http(config.getPerf().getMaxTotal(),
-                config.getPerf().getMaxPerRoute(),
-                config.getPerf().getDefaultConnectTimeoutMS(),
-                config.getPerf().getDefaultSocketTimeoutMS(),
-                true, false, HttpHelperFactory.BACKEND.APACHE);
+        httpHelper = $.http(config.getPerf().getDefaultCTimeoutMS(), false);
         baseUrl = serviceUrl;
         INITIALIZED.set(true);
     }
@@ -151,8 +146,7 @@ public abstract class CommonSDK<E extends CommonConfig> extends ResponseProcesso
         log.trace("Request: [" + method + "] " + uri);
         var result = httpHelper.request(method, uri, body, header,
                 null, null,
-                config.getPerf().getDefaultConnectTimeoutMS(),
-                config.getPerf().getDefaultSocketTimeoutMS()).result;
+                config.getPerf().getDefaultCTimeoutMS()).result;
         return $.json.toObject(result, Resp.class);
     }
 

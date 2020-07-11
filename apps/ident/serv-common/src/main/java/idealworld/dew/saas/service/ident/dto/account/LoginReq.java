@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
 import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -35,21 +34,21 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("登录请求")
+@Schema(title = "登录请求")
 public class LoginReq implements Serializable {
 
     @NotNull
-    @ApiModelProperty(value = "认证类型", notes = "只能是非OAuth类型的认证", required = true)
+    @Schema(title = "认证类型", description = "只能是非OAuth类型的认证", required = true)
     private AccountIdentKind identKind;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "认证名", required = true)
+    @Schema(title = "认证名", required = true)
     private String ak;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "认证密钥", required = true)
+    @Schema(title = "认证密钥", required = true)
     private String sk;
 
     /**

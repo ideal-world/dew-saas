@@ -22,8 +22,8 @@ import idealworld.dew.saas.service.ident.dto.organization.AddOrganizationReq;
 import idealworld.dew.saas.service.ident.dto.organization.ModifyOrganizationReq;
 import idealworld.dew.saas.service.ident.dto.organization.OrganizationInfoResp;
 import idealworld.dew.saas.service.ident.service.OrganizationService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +36,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台机构管理操作", description = "租户控制台机构管理操作")
+@Schema(name = "console organization", description = "租户控制台机构管理操作")
 @RequestMapping(value = "/console/organization")
 @Validated
 public class ConsoleOrganizationController extends BasicController {
@@ -52,7 +52,7 @@ public class ConsoleOrganizationController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "{appId}")
-    @ApiOperation(value = "添加当前租户某个应用的机构")
+    @Operation(description = "添加当前租户某个应用的机构")
     public Resp<Long> addOrganization(@PathVariable Long appId,
                                       @Validated @RequestBody AddOrganizationReq addOrganizationReq) {
         return organizationService.AddOrganization(addOrganizationReq, appId, getCurrentTenantId());
@@ -65,7 +65,7 @@ public class ConsoleOrganizationController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "{appId}")
-    @ApiOperation(value = "获取当前租户某个应用的机构列表信息")
+    @Operation(description = "获取当前租户某个应用的机构列表信息")
     public Resp<List<OrganizationInfoResp>> findOrganizationInfo(@PathVariable Long appId) {
         return organizationService.findOrganizationInfo(appId, getCurrentTenantId());
     }
@@ -79,7 +79,7 @@ public class ConsoleOrganizationController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "{appId}/{organizationId}")
-    @ApiOperation(value = "修改当前租户某个应用的某个机构")
+    @Operation(description = "修改当前租户某个应用的某个机构")
     public Resp<Void> modifyOrganization(@PathVariable Long appId,
                                          @PathVariable Long organizationId,
                                          @Validated @RequestBody ModifyOrganizationReq modifyOrganizationReq) {
@@ -95,7 +95,7 @@ public class ConsoleOrganizationController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{appId}/{organizationId}")
-    @ApiOperation(value = "删除当前租户某个应用的某个机构", notes = "级联删除机构，关联的岗位、账号岗位、权限")
+    @Operation(description = "删除当前租户某个应用的某个机构、关联的岗位、账号岗位、权限")
     public Resp<Long> deleteOrganization(@PathVariable Long appId, @PathVariable Long organizationId) {
         return organizationService.deleteOrganization(organizationId, appId, getCurrentTenantId());
     }

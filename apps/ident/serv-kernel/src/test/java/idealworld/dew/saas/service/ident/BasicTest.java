@@ -79,7 +79,6 @@ public abstract class BasicTest extends ResponseProcessor {
         }
         var result = $.http.request(method, formatUrl(url), body, header,
                 null, null,
-                -1,
                 -1).result;
         return $.json.toObject(result, Resp.class);
     }

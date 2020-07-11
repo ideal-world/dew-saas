@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.post;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -31,18 +30,18 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("岗位信息")
+@Schema(title = "岗位信息")
 public class PostInfoResp implements Serializable {
 
-    @ApiModelProperty(value = "岗位Id", required = true)
+    @Schema(title = "岗位Id", required = true)
     private Long id;
-    @ApiModelProperty(value = "关联机构编码")
+    @Schema(title = "关联机构编码")
     private String relOrganizationCode;
-    @ApiModelProperty(value = "关联职位编码", required = true)
+    @Schema(title = "关联职位编码", required = true)
     private String relPositionCode;
-    @ApiModelProperty(value = "显示排序，asc", required = true)
+    @Schema(title = "显示排序，asc", required = true)
     private Integer sort;
-    @ApiModelProperty(value = "岗位所属应用", required = true)
+    @Schema(title = "岗位所属应用", required = true)
     private Long relAppId;
 
     /**

@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
 import idealworld.dew.saas.common.enumeration.CommonStatus;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,40 +32,40 @@ import java.util.Date;
  */
 @Data
 @Builder
-@ApiModel("账号信息")
+@Schema(title = "账号信息")
 public class AccountInfoResp implements Serializable {
 
     /**
      * The Create user name.
      */
-    @ApiModelProperty(value = "创建者", required = true)
+    @Schema(title = "创建者", required = true)
     protected String createUserName;
     /**
      * The Update user name.
      */
-    @ApiModelProperty(value = "最后一次修改者", required = true)
+    @Schema(title = "最后一次修改者", required = true)
     protected String updateUserName;
     /**
      * The Create time.
      */
-    @ApiModelProperty(value = "创建时间", required = true)
+    @Schema(title = "创建时间", required = true)
     protected Date createTime;
     /**
      * The Update time.
      */
-    @ApiModelProperty(value = "最后一次修改时间", required = true)
+    @Schema(title = "最后一次修改时间", required = true)
     protected Date updateTime;
-    @ApiModelProperty(value = "账号Id", required = true)
+    @Schema(title = "账号Id", required = true)
     private Long id;
-    @ApiModelProperty(value = "OpenId", required = true)
+    @Schema(title = "OpenId", required = true)
     private String openId;
-    @ApiModelProperty(value = "账号名称", required = true)
+    @Schema(title = "账号名称", required = true)
     private String name;
-    @ApiModelProperty(value = "账号头像")
+    @Schema(title = "账号头像")
     private String avatar;
-    @ApiModelProperty(value = "账号扩展信息（Json格式）")
+    @Schema(title = "账号扩展信息（Json格式）")
     private String parameters;
-    @ApiModelProperty(value = "账号状态", required = true)
+    @Schema(title = "账号状态", required = true)
     private CommonStatus status;
 
     /**

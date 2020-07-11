@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
 import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -35,21 +34,21 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加账号认证请求")
+@Schema(title = "添加账号认证请求")
 public class AddAccountIdentReq implements Serializable {
 
     @NotNull
-    @ApiModelProperty(value = "账号认证类型名称", required = true)
+    @Schema(title = "账号认证类型名称", required = true)
     private AccountIdentKind kind;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "账号认证名称", required = true)
+    @Schema(title = "账号认证名称", required = true)
     private String ak;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "账号认证密钥", notes = "手机、邮件的认证类型对应的sk为验证码", required = true)
+    @Schema(title = "账号认证密钥", description = "手机、邮件的认证类型对应的sk为验证码", required = true)
     private String sk;
 
     /**

@@ -52,9 +52,7 @@ public abstract class BasicTest extends ResponseProcessor {
             header.put(Dew.dewConfig.getSecurity().getTokenFlag(), identOptInfo.getToken());
         }
         var result = $.http.request(method, formatUrl(url), body, header,
-                null, null,
-                -1,
-                -1).result;
+                null, null, -1).result;
         return $.json.toObject(result, Resp.class);
     }
 

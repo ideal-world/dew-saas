@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.permission;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -31,16 +30,16 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("权限信息")
+@Schema(title = "权限信息")
 public class PermissionInfoResp implements Serializable {
 
-    @ApiModelProperty(value = "权限Id", required = true)
+    @Schema(title = "权限Id", required = true)
     private Long id;
-    @ApiModelProperty(value = "关联岗位", required = true)
+    @Schema(title = "关联岗位", required = true)
     private Long relPostId;
-    @ApiModelProperty(value = "关联资源（组）", required = true)
+    @Schema(title = "关联资源（组）", required = true)
     private Long relResourceId;
-    @ApiModelProperty(value = "权限所属应用", required = true)
+    @Schema(title = "权限所属应用", required = true)
     private Long relAppId;
 
     /**

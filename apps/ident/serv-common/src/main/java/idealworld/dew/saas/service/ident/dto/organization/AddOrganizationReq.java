@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.organization;
 
 import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -35,34 +34,34 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加机构请求")
+@Schema(title = "添加机构请求")
 public class AddOrganizationReq implements Serializable {
 
     @NotNull
-    @ApiModelProperty(value = "机构类型", required = true)
+    @Schema(title = "机构类型", required = true)
     private OrganizationKind kind;
     @NotNull
     @NotBlank
     @Size(max = 1000)
-    @ApiModelProperty(value = "机构编码", required = true)
+    @Schema(title = "机构编码", required = true)
     private String code;
     @Size(max = 1000)
-    @ApiModelProperty(value = "业务编码")
+    @Schema(title = "业务编码")
     private String busCode;
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "机构名称", required = true)
+    @Schema(title = "机构名称", required = true)
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "机构图标")
+    @Schema(title = "机构图标")
     private String icon;
     @Size(max = 2000)
-    @ApiModelProperty(value = "机构扩展信息（Json格式）")
+    @Schema(title = "机构扩展信息（Json格式）")
     private String parameters;
-    @ApiModelProperty(value = "机构显示排序，asc")
+    @Schema(title = "机构显示排序，asc")
     private Integer sort;
-    @ApiModelProperty(value = "上级机构", required = true)
+    @Schema(title = "上级机构", required = true)
     private Long parentId;
 
     /**

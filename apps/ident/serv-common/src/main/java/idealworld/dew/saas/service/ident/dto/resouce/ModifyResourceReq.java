@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.resouce;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -32,24 +31,24 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("修改资源（组）请求")
+@Schema(title = "修改资源（组）请求")
 public class ModifyResourceReq implements Serializable {
 
     @Size(max = 1000)
-    @ApiModelProperty(value = "资源标识")
+    @Schema(title = "资源标识")
     private String identifier;
     @Size(max = 50)
-    @ApiModelProperty(value = "资源方法")
+    @Schema(title = "资源方法")
     private String method;
     @Size(max = 255)
-    @ApiModelProperty(value = "资源（组）名称")
+    @Schema(title = "资源（组）名称")
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "资源（组）图标")
+    @Schema(title = "资源（组）图标")
     private String icon;
-    @ApiModelProperty(value = "资源（组）显示排序，asc")
+    @Schema(title = "资源（组）显示排序，asc")
     private Integer sort;
-    @ApiModelProperty(value = "资源所属组")
+    @Schema(title = "资源所属组")
     private Long parentId;
 
     /**

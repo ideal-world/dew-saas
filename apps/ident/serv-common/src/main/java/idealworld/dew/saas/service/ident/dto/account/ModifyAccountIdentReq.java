@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.account;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,17 +32,17 @@ import java.util.Date;
  */
 @Data
 @Builder
-@ApiModel("修改账号认证请求")
+@Schema(title = "修改账号认证请求")
 public class ModifyAccountIdentReq implements Serializable {
 
     @Size(max = 255)
-    @ApiModelProperty(value = "账号认证密钥")
+    @Schema(title = "账号认证密钥")
     private String sk;
-    @ApiModelProperty(value = "账号认证有效开始时间")
+    @Schema(title = "账号认证有效开始时间")
     private Date validStartTime;
-    @ApiModelProperty(value = "账号认证有效结束时间")
+    @Schema(title = "账号认证有效结束时间")
     private Date validEndTime;
-    @ApiModelProperty(value = "账号认证剩余有效次数")
+    @Schema(title = "账号认证剩余有效次数")
     private Long validTimes;
 
     /**

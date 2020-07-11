@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
 import idealworld.dew.saas.common.enumeration.CommonStatus;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,19 +32,19 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("修改账号请求")
+@Schema(title = "修改账号请求")
 public class ModifyAccountReq implements Serializable {
 
     @Size(max = 255)
-    @ApiModelProperty(value = "账号名称")
+    @Schema(title = "账号名称")
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "账号头像")
+    @Schema(title = "账号头像")
     private String avatar;
     @Size(max = 2000)
-    @ApiModelProperty(value = "账号扩展信息（Json格式）")
+    @Schema(title = "账号扩展信息（Json格式）")
     private String parameters;
-    @ApiModelProperty(value = "账号状态")
+    @Schema(title = "账号状态")
     private CommonStatus status;
 
     /**

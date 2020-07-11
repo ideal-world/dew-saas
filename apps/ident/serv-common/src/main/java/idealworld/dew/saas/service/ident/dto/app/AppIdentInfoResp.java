@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.app;
 
 import idealworld.dew.saas.common.enumeration.CommonStatus;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,40 +32,40 @@ import java.util.Date;
  */
 @Data
 @Builder
-@ApiModel("应用认证信息")
+@Schema(title = "应用认证信息")
 public class AppIdentInfoResp implements Serializable {
 
     /**
      * The Create user name.
      */
-    @ApiModelProperty(value = "创建者", required = true)
+    @Schema(title = "创建者", required = true)
     protected String createUserName;
     /**
      * The Update user name.
      */
-    @ApiModelProperty(value = "最后一次修改者", required = true)
+    @Schema(title = "最后一次修改者", required = true)
     protected String updateUserName;
     /**
      * The Create time.
      */
-    @ApiModelProperty(value = "创建时间", required = true)
+    @Schema(title = "创建时间", required = true)
     protected Date createTime;
     /**
      * The Update time.
      */
-    @ApiModelProperty(value = "最后一次修改时间", required = true)
+    @Schema(title = "最后一次修改时间", required = true)
     protected Date updateTime;
-    @ApiModelProperty(value = "应用认证Id", required = true)
+    @Schema(title = "应用认证Id", required = true)
     private Long id;
-    @ApiModelProperty(value = "应用认证用途", required = true)
+    @Schema(title = "应用认证用途", required = true)
     private String note;
-    @ApiModelProperty(value = "应用认证名称", required = true)
+    @Schema(title = "应用认证名称", required = true)
     private String ak;
-    @ApiModelProperty(value = "应用认证密钥", required = true)
+    @Schema(title = "应用认证密钥", required = true)
     private String sk;
-    @ApiModelProperty(value = "应用认证有效时间")
+    @Schema(title = "应用认证有效时间")
     private Date validTime;
-    @ApiModelProperty(value = "应用认证状态", required = true)
+    @Schema(title = "应用认证状态", required = true)
     private CommonStatus status;
 
     /**

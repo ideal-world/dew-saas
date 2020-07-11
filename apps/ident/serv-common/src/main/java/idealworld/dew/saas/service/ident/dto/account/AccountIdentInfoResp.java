@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.account;
 
 import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -33,42 +32,42 @@ import java.util.Date;
  */
 @Data
 @Builder
-@ApiModel("账号认证信息")
+@Schema(title = "账号认证信息")
 public class AccountIdentInfoResp implements Serializable {
 
     /**
      * The Create user name.
      */
-    @ApiModelProperty(value = "创建者", required = true)
+    @Schema(title = "创建者", required = true)
     protected String createUserName;
     /**
      * The Update user name.
      */
-    @ApiModelProperty(value = "最后一次修改者", required = true)
+    @Schema(title = "最后一次修改者", required = true)
     protected String updateUserName;
     /**
      * The Create time.
      */
-    @ApiModelProperty(value = "创建时间", required = true)
+    @Schema(title = "创建时间", required = true)
     protected Date createTime;
     /**
      * The Update time.
      */
-    @ApiModelProperty(value = "最后一次修改时间", required = true)
+    @Schema(title = "最后一次修改时间", required = true)
     protected Date updateTime;
-    @ApiModelProperty(value = "账号认证Id", required = true)
+    @Schema(title = "账号认证Id", required = true)
     private Long id;
-    @ApiModelProperty(value = "账号认证类型名称", required = true)
+    @Schema(title = "账号认证类型名称", required = true)
     private AccountIdentKind kind;
-    @ApiModelProperty(value = "账号认证名称", required = true)
+    @Schema(title = "账号认证名称", required = true)
     private String ak;
-    @ApiModelProperty(value = "账号认证密钥", notes = "手机、邮件的认证类型对应的sk为验证码", required = true)
+    @Schema(title = "账号认证密钥", description = "手机、邮件的认证类型对应的sk为验证码", required = true)
     private String sk;
-    @ApiModelProperty(value = "账号认证有效开始时间", required = true)
+    @Schema(title = "账号认证有效开始时间", required = true)
     private Date validStartTime;
-    @ApiModelProperty(value = "账号认证有效结束时间", required = true)
+    @Schema(title = "账号认证有效结束时间", required = true)
     private Date validEndTime;
-    @ApiModelProperty(value = "账号认证剩余有效次数")
+    @Schema(title = "账号认证剩余有效次数")
     private Long validTimes;
 
     /**

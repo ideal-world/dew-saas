@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.permission;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -32,12 +31,12 @@ import java.util.List;
  */
 @Data
 @Builder
-@ApiModel("权限信息订阅")
+@Schema(title = "权限信息订阅")
 public class PermissionInfoSub implements Serializable {
 
-    @ApiModelProperty(value = "删除的权限Ids")
+    @Schema(title = "删除的权限Ids")
     private List<Long> removedPermissionIds;
-    @ApiModelProperty(value = "变更的权限信息")
+    @Schema(title = "变更的权限信息")
     private List<PermissionExtInfo> changedPermissions;
 
     /**

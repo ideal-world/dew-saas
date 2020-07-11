@@ -20,8 +20,8 @@ import com.ecfront.dew.common.Resp;
 import idealworld.dew.saas.service.ident.controller.BasicController;
 import idealworld.dew.saas.service.ident.dto.tenant.*;
 import idealworld.dew.saas.service.ident.service.TenantService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +34,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Api(value = "租户控制台租户管理操作", description = "租户控制台租户管理操作")
+@Schema(name = "console tenant", description = "租户控制台租户管理操作")
 @RequestMapping(value = "/console/tenant")
 @Validated
 public class ConsoleTenantController extends BasicController {
@@ -48,7 +48,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the tenant
      */
     @GetMapping(value = "")
-    @ApiOperation(value = "获取当前的租户信息")
+    @Operation(description = "获取当前的租户信息")
     public Resp<TenantInfoResp> getTenant() {
         return tenantService.getTenantInfo(getCurrentTenantId());
     }
@@ -60,7 +60,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "")
-    @ApiOperation(value = "修改当前的租户")
+    @Operation(description = "修改当前的租户")
     public Resp<Void> modifyTenant(@Validated @RequestBody ModifyTenantReq modifyTenantReq) {
         return tenantService.modifyTenant(modifyTenantReq, getCurrentTenantId());
     }
@@ -71,7 +71,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "")
-    @ApiOperation(value = "注销当前的租户", notes = "必须先删除关联的应用，此操作会同时与此租户相关的所有数据")
+    @Operation(description = "注销当前的租户，必须先删除关联的应用，此操作会同时与此租户相关的所有数据")
     public Resp<Void> unRegisterTenant() {
         return tenantService.unRegisterTenant(getCurrentTenantId());
     }
@@ -85,7 +85,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "ident")
-    @ApiOperation(value = "添加当前租户的认证")
+    @Operation(description = "添加当前租户的认证")
     public Resp<Long> addTenantIdent(@Validated @RequestBody AddTenantIdentReq addTenantIdentReq) {
         return tenantService.addTenantIdent(addTenantIdentReq, getCurrentTenantId());
     }
@@ -96,7 +96,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "ident")
-    @ApiOperation(value = "获取当前租户的认证列表信息")
+    @Operation(description = "获取当前租户的认证列表信息")
     public Resp<List<TenantIdentInfoResp>> findTenantIdentInfo() {
         return tenantService.findTenantIdentInfo(getCurrentTenantId());
     }
@@ -109,7 +109,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "ident/{tenantIdentId}")
-    @ApiOperation(value = "修改当前租户的某个认证")
+    @Operation(description = "修改当前租户的某个认证")
     public Resp<Void> modifyTenantIdent(@PathVariable Long tenantIdentId,
                                         @Validated @RequestBody ModifyTenantIdentReq modifyTenantIdentReq) {
         return tenantService.modifyTenantIdent(modifyTenantIdentReq, tenantIdentId, getCurrentTenantId());
@@ -122,7 +122,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "ident/{tenantIdentId}")
-    @ApiOperation(value = "删除当前租户的某个认证")
+    @Operation(description = "删除当前租户的某个认证")
     public Resp<Void> deleteTenantIdent(@PathVariable Long tenantIdentId) {
         return tenantService.deleteTenantIdent(tenantIdentId, getCurrentTenantId());
     }
@@ -133,7 +133,7 @@ public class ConsoleTenantController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "ident")
-    @ApiOperation(value = "删除当前租户的所有认证")
+    @Operation(description = "删除当前租户的所有认证")
     public Resp<Long> deleteTenantIdent() {
         return tenantService.deleteTenantIdent(getCurrentTenantId());
     }

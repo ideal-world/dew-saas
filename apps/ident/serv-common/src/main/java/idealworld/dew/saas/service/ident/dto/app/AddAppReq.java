@@ -16,8 +16,7 @@
 
 package idealworld.dew.saas.service.ident.dto.app;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -34,19 +33,19 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@ApiModel("添加应用请求")
+@Schema(title = "添加应用请求")
 public class AddAppReq implements Serializable {
 
     @NotNull
     @NotBlank
     @Size(max = 255)
-    @ApiModelProperty(value = "应用名称", required = true)
+    @Schema(title = "应用名称", required = true)
     private String name;
     @Size(max = 1000)
-    @ApiModelProperty(value = "应用图标")
+    @Schema(title = "应用图标")
     private String icon;
     @Size(max = 2000)
-    @ApiModelProperty(value = "应用扩展信息（Json格式）")
+    @Schema(title = "应用扩展信息（Json格式）")
     private String parameters;
 
     /**

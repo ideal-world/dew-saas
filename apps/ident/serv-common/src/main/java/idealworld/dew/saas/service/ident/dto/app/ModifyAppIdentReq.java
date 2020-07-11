@@ -17,8 +17,7 @@
 package idealworld.dew.saas.service.ident.dto.app;
 
 import idealworld.dew.saas.common.enumeration.CommonStatus;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.Tolerate;
@@ -36,17 +35,17 @@ import java.util.Date;
  */
 @Data
 @Builder
-@ApiModel("修改应用认证请求")
+@Schema(title = "修改应用认证请求")
 public class ModifyAppIdentReq implements Serializable {
 
     @NotNull
     @NotBlank
     @Size(max = 1000)
-    @ApiModelProperty(value = "应用认证用途", required = true)
+    @Schema(title = "应用认证用途", required = true)
     private String note;
-    @ApiModelProperty(value = "应用认证有效时间")
+    @Schema(title = "应用认证有效时间")
     private Date validTime;
-    @ApiModelProperty(value = "应用认证状态")
+    @Schema(title = "应用认证状态")
     private CommonStatus status;
 
     /**
