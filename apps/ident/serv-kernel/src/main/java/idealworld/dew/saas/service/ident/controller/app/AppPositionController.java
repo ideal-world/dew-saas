@@ -24,7 +24,7 @@ import idealworld.dew.saas.service.ident.dto.position.PositionInfoResp;
 import idealworld.dew.saas.service.ident.interceptor.AppHandlerInterceptor;
 import idealworld.dew.saas.service.ident.service.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +37,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Schema(name = "app position", description = "应用控制台职位管理操作")
+@Tag(name = "app position", description = "应用控制台职位管理操作")
 @RequestMapping(value = "/app/position")
 @Validated
 public class AppPositionController extends BasicController {
@@ -54,7 +54,7 @@ public class AppPositionController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "")
-    @Operation(description = "添加当前应用的职位")
+    @Operation(summary = "添加当前应用的职位")
     public Resp<Long> addPosition(@Validated @RequestBody AddPositionReq addPositionReq) {
         return positionService.addPosition(addPositionReq,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -67,7 +67,7 @@ public class AppPositionController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "")
-    @Operation(description = "获取当前应用的职位列表信息")
+    @Operation(summary = "获取当前应用的职位列表信息")
     public Resp<List<PositionInfoResp>> findPositionInfo() {
         return positionService.findPositionInfo(
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,
@@ -82,7 +82,7 @@ public class AppPositionController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "/{positionId}")
-    @Operation(description = "修改当前应用的某个职位")
+    @Operation(summary = "修改当前应用的某个职位")
     public Resp<Void> modifyPosition(@PathVariable Long positionId,
                                      @Validated @RequestBody ModifyPositionReq modifyPositionReq) {
         return positionService.modifyPosition(modifyPositionReq, positionId,
@@ -97,7 +97,7 @@ public class AppPositionController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "/{positionId}")
-    @Operation(description = "删除当前应用的某个职位、关联的岗位、账号岗位、权限")
+    @Operation(summary = "删除当前应用的某个职位、关联的岗位、账号岗位、权限")
     public Resp<Void> deletePosition(@PathVariable Long positionId) {
         return positionService.deletePosition(positionId,
                 appHandlerInterceptor.getCurrentTenantAndAppId()._1,

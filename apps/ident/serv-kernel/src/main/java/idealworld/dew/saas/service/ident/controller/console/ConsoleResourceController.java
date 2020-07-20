@@ -24,7 +24,7 @@ import idealworld.dew.saas.service.ident.dto.resouce.ModifyResourceReq;
 import idealworld.dew.saas.service.ident.dto.resouce.ResourceInfoResp;
 import idealworld.dew.saas.service.ident.service.ResourceService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +37,7 @@ import java.util.List;
  * @author gudaoxuri
  */
 @RestController
-@Schema(name = "console resource", description = "租户控制台资源管理操作")
+@Tag(name = "console resource", description = "租户控制台资源管理操作")
 @RequestMapping(value = "/console/resource")
 @Validated
 public class ConsoleResourceController extends BasicController {
@@ -53,7 +53,7 @@ public class ConsoleResourceController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "{appId}/group")
-    @Operation(description = "添加当前租户某个应用的资源组")
+    @Operation(summary = "添加当前租户某个应用的资源组")
     public Resp<Long> addResourceGroup(@PathVariable Long appId,
                                        @Validated @RequestBody AddResourceGroupReq addResourceGroupReq) {
         return resourceService.addResourceGroup(addResourceGroupReq, appId, getCurrentTenantId());
@@ -67,7 +67,7 @@ public class ConsoleResourceController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "{appId}")
-    @Operation(description = "添加当前租户某个应用的资源")
+    @Operation(summary = "添加当前租户某个应用的资源")
     public Resp<Long> addResource(@PathVariable Long appId,
                                   @Validated @RequestBody AddResourceReq addResourceReq) {
         return resourceService.addResource(addResourceReq, appId, getCurrentTenantId());
@@ -82,7 +82,7 @@ public class ConsoleResourceController extends BasicController {
      * @return the resp
      */
     @PatchMapping(value = "{appId}/{resourceId}")
-    @Operation(description = "修改当前租户某个应用的某个资源（组）")
+    @Operation(summary = "修改当前租户某个应用的某个资源（组）")
     public Resp<Void> modifyResource(@PathVariable Long appId,
                                      @PathVariable Long resourceId,
                                      @Validated @RequestBody ModifyResourceReq modifyResourceReq) {
@@ -97,7 +97,7 @@ public class ConsoleResourceController extends BasicController {
      * @return the resource
      */
     @GetMapping(value = "{appId}/{resourceId}")
-    @Operation(description = "获取当前租户某个应用的某个资源（组）信息")
+    @Operation(summary = "获取当前租户某个应用的某个资源（组）信息")
     public Resp<ResourceInfoResp> getResource(@PathVariable Long appId,
                                               @PathVariable Long resourceId) {
         return resourceService.getResource(resourceId, appId, getCurrentTenantId());
@@ -110,7 +110,7 @@ public class ConsoleResourceController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "{appId}")
-    @Operation(description = "获取当前租户某个应用的资源（组）列表信息")
+    @Operation(summary = "获取当前租户某个应用的资源（组）列表信息")
     public Resp<List<ResourceInfoResp>> findResources(@PathVariable Long appId) {
         return resourceService.findResources(appId, getCurrentTenantId());
     }
@@ -123,7 +123,7 @@ public class ConsoleResourceController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "{appId}/{resourceId}")
-    @Operation(description = "删除当前租户某个应用的某个资源（组）、权限")
+    @Operation(summary = "删除当前租户某个应用的某个资源（组）、权限")
     public Resp<Void> deleteResource(@PathVariable Long appId, @PathVariable Long resourceId) {
         return resourceService.deleteResource(resourceId, appId, getCurrentTenantId());
     }

@@ -34,7 +34,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Basic service.
+ * The type Common service.
  *
  * @param <D> the type parameter
  * @param <P> the type parameter

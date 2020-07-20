@@ -52,7 +52,7 @@ public class WechatCommonSubscribeController extends BasicController {
      * @return the resp
      */
     @GetMapping(value = "counter")
-    @Operation(description = "获取当前可订阅的数量")
+    @Operation(summary = "获取当前可订阅的数量")
     public Resp<Integer> counter(
             @Parameter(name = "templateId", description = "模板Id", in = ParameterIn.QUERY, required = true)
             @RequestParam(value = "templateId") String templateId) {
@@ -66,7 +66,7 @@ public class WechatCommonSubscribeController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "req")
-    @Operation(description = "订阅消息")
+    @Operation(summary = "订阅消息")
     public Resp<Integer> requestSubscribeMessage(@Validated @RequestBody SubscribeReq subscribeReq) {
         return wechatCommonSubscribeService.requestSubscribeMessage(subscribeReq, getCurrentOpenId());
     }

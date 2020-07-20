@@ -27,7 +27,7 @@ import idealworld.dew.saas.service.ident.service.AccountService;
 import idealworld.dew.saas.service.ident.service.OAuthService;
 import idealworld.dew.saas.service.ident.service.TenantService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
  * @author gudaoxuri
  */
 @RestController
-@Schema(name = "common", description = "公共操作")
+@Tag(name = "common", description = "公共操作")
 @Validated
 public class CommonController extends BasicController {
 
@@ -56,7 +56,7 @@ public class CommonController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "/tenant/register")
-    @Operation(description = "注册租户")
+    @Operation(summary = "注册租户")
     public Resp<IdentOptInfo> registerTenant(@Validated @RequestBody RegisterTenantReq registerTenantReq) {
         return tenantService.registerTenant(registerTenantReq);
     }
@@ -69,7 +69,7 @@ public class CommonController extends BasicController {
      * @return the resp
      */
     @PostMapping(value = "/auth/{tenantId}/login")
-    @Operation(description = "用户登录")
+    @Operation(summary = "用户登录")
     public Resp<IdentOptInfo> login(@PathVariable Long tenantId,
                                     @Validated @RequestBody LoginReq loginReq) {
         return accountService.login(loginReq, tenantId);
@@ -84,7 +84,7 @@ public class CommonController extends BasicController {
      * @throws Exception the exception
      */
     @PostMapping(value = "/oauth/{tenantId}/login")
-    @Operation(description = "OAuth用户注册/登录")
+    @Operation(summary = "OAuth用户注册/登录")
     public Resp<IdentOptInfo> oauthLogin(@PathVariable Long tenantId,
                                          @Validated @RequestBody OAuthLoginReq oauthLoginReq) throws Exception {
         return oauthservice.login(oauthLoginReq, tenantId);
@@ -96,7 +96,7 @@ public class CommonController extends BasicController {
      * @return the resp
      */
     @DeleteMapping(value = "/auth/{tenantId}/logout")
-    @Operation(description = "注销登录")
+    @Operation(summary = "注销登录")
     public Resp<Void> logout() {
         Dew.auth.getOptInfo().ifPresent(info -> {
             var openId = (String) info.getAccountCode();
