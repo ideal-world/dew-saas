@@ -197,8 +197,8 @@ public class AccountService extends IdentBasicService {
      */
     public Resp<AccountInfoResp> getAccountInfo(Long accountId, Long relTenantId) {
         var qAccount = QAccount.account;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var query = sqlBuilder
                 .select(Projections.bean(
                         AccountInfoResp.class,
@@ -230,8 +230,8 @@ public class AccountService extends IdentBasicService {
      */
     public Resp<Page<AccountInfoResp>> pageAccountInfo(Long pageNumber, Integer pageSize, Long relTenantId) {
         var qAccount = QAccount.account;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var query = sqlBuilder
                 .select(Projections.bean(
                         AccountInfoResp.class,
@@ -420,8 +420,8 @@ public class AccountService extends IdentBasicService {
             return StandardResp.error(membershipCheckR);
         }
         var qAccountIdent = QAccountIdent.accountIdent;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var query = sqlBuilder
                 .select(Projections.bean(
                         AccountIdentInfoResp.class,

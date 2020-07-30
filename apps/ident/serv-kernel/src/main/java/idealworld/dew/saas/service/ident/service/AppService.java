@@ -92,8 +92,8 @@ public class AppService extends IdentBasicService {
      */
     public Resp<List<AppInfoResp>> findAppInfo(Long relTenantId) {
         var qApp = QApp.app;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var query = sqlBuilder
                 .select(Projections.bean(
                         AppInfoResp.class,
@@ -215,8 +215,8 @@ public class AppService extends IdentBasicService {
             return StandardResp.error(membershipCheckR);
         }
         var qAppIdent = QAppIdent.appIdent;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var query = sqlBuilder
                 .select(Projections.bean(
                         AppIdentInfoResp.class,

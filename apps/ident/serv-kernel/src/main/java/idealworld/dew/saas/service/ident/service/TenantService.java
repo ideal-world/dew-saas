@@ -135,8 +135,8 @@ public class TenantService extends IdentBasicService {
      */
     public Resp<TenantInfoResp> getTenantInfo(Long tenantId) {
         var qTenant = QTenant.tenant;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var tenantQuery = sqlBuilder
                 .select(Projections.bean(
                         TenantInfoResp.class,
@@ -286,8 +286,8 @@ public class TenantService extends IdentBasicService {
      */
     public Resp<List<TenantIdentInfoResp>> findTenantIdentInfo(Long relTenantId) {
         var qTenantIdent = QTenantIdent.tenantIdent;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var query = sqlBuilder
                 .select(Projections.bean(
                         TenantIdentInfoResp.class,

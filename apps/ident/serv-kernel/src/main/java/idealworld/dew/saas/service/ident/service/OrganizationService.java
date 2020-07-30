@@ -96,8 +96,8 @@ public class OrganizationService extends IdentBasicService {
      */
     public Resp<List<OrganizationInfoResp>> findOrganizationInfo(Long relAppId, Long relTenantId) {
         var qOrganization = QOrganization.organization;
-        var qAccountCreateUser = QAccount.account;
-        var qAccountUpdateUser = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
         var qOrganizationQuery = sqlBuilder
                 .select(Projections.bean(
                         OrganizationInfoResp.class,
