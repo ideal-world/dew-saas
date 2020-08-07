@@ -19,18 +19,23 @@ package idealworld.dew.saas.common.service;
 import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.Page;
 import com.ecfront.dew.common.Resp;
-import com.querydsl.jpa.impl.JPADeleteClause;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.jpa.JPAQueryBase;
+import com.querydsl.jpa.JPQLSerializer;
+import com.querydsl.jpa.impl.*;
 import idealworld.dew.saas.common.resp.StandardResp;
 import idealworld.dew.saas.common.service.domain.BasicSoftDelEntity;
 import idealworld.dew.saas.common.service.domain.PkEntity;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -230,12 +235,41 @@ public abstract class CommonService<D extends BasicSoftDelEntity, P extends Seri
      * @param pageSize   the page size
      * @return the resp
      */
+    @SneakyThrows
     protected <E> Resp<Page<E>> pageDTOs(JPAQuery<E> jpaQuery, Long pageNumber, Integer pageSize) {
-        var obj = jpaQuery
-                .limit(pageSize)
-                .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
-                .fetchResults();
-        return StandardResp.success(Page.build(pageNumber, pageSize, obj.getTotal(), obj.getResults()));
+        if (jpaQuery.getMetadata().getGroupBy().size() > 1) {
+            // Fixed https://github.com/querydsl/querydsl/pull/2605/files
+            // Get JPQLSerializer
+            var serializer = (JPQLSerializer) $.bean.invoke(jpaQuery,
+                    JPAQueryBase.class.getDeclaredMethod("serialize", boolean.class), false);
+            String hql = serializer.toString();
+            // HQL to Native SQL
+            var translatorFactory = new ASTQueryTranslatorFactory();
+            var hibernateSession = entityManager.getEntityManagerFactory().unwrap(SessionFactory.class);
+            var translator = translatorFactory
+                    .createQueryTranslator("", hql, Collections.EMPTY_MAP, (SessionFactoryImplementor) hibernateSession, null);
+            translator.compile(Collections.EMPTY_MAP, false);
+            var sql = translator.getSQLString();
+            // Package COUNT
+            var countSql = "select count(1) from (" + sql + ") _tmp_" + System.currentTimeMillis();
+            var nativeQuery = entityManager.createNativeQuery(countSql);
+            // Add sql parameters
+            JPAUtil.setConstants(nativeQuery, serializer.getConstantToAllLabels(), jpaQuery.getMetadata().getParams());
+            // Fetch total number
+            var totalNumber = ((BigInteger) (nativeQuery.getSingleResult())).longValue();
+            // Fetch paginated records
+            var objs = jpaQuery
+                    .limit(pageSize)
+                    .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
+                    .fetch();
+            return StandardResp.success(Page.build(pageNumber, pageSize, totalNumber, objs));
+        } else {
+            var objs = jpaQuery
+                    .limit(pageSize)
+                    .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
+                    .fetchResults();
+            return StandardResp.success(Page.build(pageNumber, pageSize, objs.getTotal(), objs.getResults()));
+        }
     }
 
     /**
