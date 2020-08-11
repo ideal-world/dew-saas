@@ -99,6 +99,7 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
         /**
          * 获取当前登录用户.
          *
+         * @param <E>          the type parameter
          * @param token        the token
          * @param optInfoClazz the opt info clazz
          * @return 账号Id opt info
@@ -119,6 +120,15 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
          */
         public Resp<String> oauthGetAccessToken(AccountIdentKind oauthKind) {
             return getToEntity("/app/auth/tenant/oauth/" + oauthKind.toString() + "/access-token", String.class);
+        }
+
+        /**
+         * 获取当前应用的租户Id.
+         *
+         * @return the current tenant id
+         */
+        public Resp<Long> getCurrentTenantId() {
+            return getToEntity("/app/auth/tenant/tenant-id", Long.class);
         }
 
         /**
@@ -200,6 +210,16 @@ public class IdentSDK extends CommonSDK<IdentConfig> {
          */
         public Resp<Page<AccountInfoResp>> findAccountInfo(Long pageNumber, Integer pageSize) {
             return getToPage("app/account", pageNumber, pageSize, AccountInfoResp.class);
+        }
+
+        /**
+         * 获取当前租户的某个账号信息.
+         *
+         * @param openId the open id
+         * @return the account info
+         */
+        public Resp<AccountInfoResp> getAccountInfoByOpenId(String openId) {
+            return getToEntity("app/account/open-id/" + openId, AccountInfoResp.class);
         }
 
         /**

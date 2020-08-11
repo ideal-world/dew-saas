@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static idealworld.dew.saas.common.Constant.ROLE_SPLIT;
+import static idealworld.dew.saas.service.ident.Constant.*;
 
 /**
  * Auth processor.
@@ -41,7 +42,7 @@ import static idealworld.dew.saas.common.Constant.ROLE_SPLIT;
  */
 @Component
 @Slf4j
-public class AuthProcessor {
+public class IdentProcessor {
 
     private static final Map<Long, PermissionExtInfo> PERMISSIONS = new HashMap<>();
     @Autowired
@@ -101,6 +102,22 @@ public class AuthProcessor {
                     ));
             BasicHandlerInterceptor.fillAuthInfo(null, roleAuth);
         });
+    }
+
+    /**
+     * Event subscribes.
+     *
+     * @param identSubscribe the ident subscribe
+     */
+    public void eventSubscribes(IdentSubscribe identSubscribe) {
+        Long tenantId = identSDK.auth.getCurrentTenantId().getBody();
+        String[] events = {EVENT_ACCOUNT_ADD_BY_TENANT, EVENT_ACCOUNT_MODIFY_BY_TENANT, EVENT_ACCOUNT_DELETE_BY_TENANT};
+        for (String event : events) {
+            Dew.cluster.mq.subscribe(event + tenantId, msg -> {
+                log.trace("Received [{}{}] body: {}", event, tenantId, msg.getBody());
+                identSubscribe.subscribe(event, msg.getBody());
+            });
+        }
     }
 
 }

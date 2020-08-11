@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static idealworld.dew.saas.service.ident.Constant.*;
+
 /**
  * Account Service.
  *
@@ -185,6 +187,7 @@ public class AccountService extends IdentBasicService {
                     .build());
         }
         addAccountPost(addAccountReq.getPostReq(), account.getId(), relTenantId);
+        Dew.cluster.mq.publish(EVENT_ACCOUNT_ADD_BY_TENANT + relTenantId, account.getOpenId());
         return StandardResp.success(account.getId());
     }
 
@@ -216,6 +219,32 @@ public class AccountService extends IdentBasicService {
                 .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.openId))
                 .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.openId))
                 .where(qAccount.id.eq(accountId))
+                .where(qAccount.relTenantId.eq(relTenantId));
+        return getDTO(query);
+    }
+
+
+    public Resp<AccountInfoResp> getAccountInfoByOpenId(String openId, Long relTenantId) {
+        var qAccount = QAccount.account;
+        var qAccountCreateUser = new QAccount("createUser");
+        var qAccountUpdateUser = new QAccount("updateUser");
+        var query = sqlBuilder
+                .select(Projections.bean(
+                        AccountInfoResp.class,
+                        qAccount.id,
+                        qAccount.openId,
+                        qAccount.name,
+                        qAccount.avatar,
+                        qAccount.parameters,
+                        qAccount.status,
+                        qAccount.createTime,
+                        qAccount.updateTime,
+                        qAccountCreateUser.name.as("createUserName"),
+                        qAccountUpdateUser.name.as("updateUserName")))
+                .from(qAccount)
+                .leftJoin(qAccountCreateUser).on(qAccount.createUser.eq(qAccountCreateUser.openId))
+                .leftJoin(qAccountUpdateUser).on(qAccount.updateUser.eq(qAccountUpdateUser.openId))
+                .where(qAccount.openId.eq(openId))
                 .where(qAccount.relTenantId.eq(relTenantId));
         return getDTO(query);
     }
@@ -293,7 +322,11 @@ public class AccountService extends IdentBasicService {
         if (modifyAccountReq.getStatus() != null) {
             updateClause.set(qAccount.status, modifyAccountReq.getStatus());
         }
-        return updateEntity(updateClause);
+        var updateR = updateEntity(updateClause);
+        if (updateR.ok()) {
+            Dew.cluster.mq.publish(EVENT_ACCOUNT_MODIFY_BY_TENANT + relTenantId, getOpenId(accountId).getBody());
+        }
+        return updateR;
     }
 
     /**
@@ -308,11 +341,15 @@ public class AccountService extends IdentBasicService {
         deleteAccountIdents(accountId, relTenantId);
         deleteAccountPosts(accountId, relTenantId);
         var qAccount = QAccount.account;
-        return deleteEntity(sqlBuilder
+        var deleteR = deleteEntity(sqlBuilder
                 .delete(qAccount)
                 .where(qAccount.id.eq(accountId))
                 .where(qAccount.relTenantId.eq(relTenantId))
         );
+        if (deleteR.ok()) {
+            Dew.cluster.mq.publish(EVENT_ACCOUNT_DELETE_BY_TENANT + relTenantId, getOpenId(accountId).getBody());
+        }
+        return deleteR;
     }
 
     /**
@@ -326,10 +363,14 @@ public class AccountService extends IdentBasicService {
         deleteAccountIdents(relTenantId);
         deleteAccountPosts(relTenantId);
         var qAccount = QAccount.account;
-        return softDelEntity(sqlBuilder
+        var deleteR = softDelEntity(sqlBuilder
                 .selectFrom(qAccount)
                 .where(qAccount.relTenantId.eq(relTenantId))
         );
+        if (deleteR.ok()) {
+            Dew.cluster.mq.publish(EVENT_ACCOUNT_DELETE_BY_TENANT + relTenantId, "");
+        }
+        return deleteR;
     }
 
     /**

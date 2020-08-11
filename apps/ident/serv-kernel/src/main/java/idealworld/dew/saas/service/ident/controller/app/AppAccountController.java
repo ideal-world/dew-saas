@@ -94,6 +94,19 @@ public class AppAccountController extends BasicController {
     }
 
     /**
+     * 获取当前租户的某个账号信息.
+     *
+     * @param openId the open id
+     * @return the account info by open id
+     */
+    @GetMapping(value = "open-id/{openId}")
+    @Operation(summary = "获取当前租户的某个账号信息")
+    public Resp<AccountInfoResp> getAccountInfoByOpenId(@PathVariable String openId) {
+        return accountService.getAccountInfoByOpenId(openId,
+                appHandlerInterceptor.getCurrentTenantAndAppId()._0);
+    }
+
+    /**
      * 修改当前租户的某个账号.
      *
      * @param accountId        the account id

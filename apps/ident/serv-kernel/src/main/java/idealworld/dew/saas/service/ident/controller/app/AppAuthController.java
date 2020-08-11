@@ -121,6 +121,17 @@ public class AppAuthController extends BasicController {
     }
 
     /**
+     * 获取当前应用的租户Id.
+     *
+     * @return the resp
+     */
+    @GetMapping(value = "tenant/tenant-id")
+    @Operation(summary = "获取当前应用的租户Id")
+    public Resp<Long> fetchCurrentTenantId() {
+        return Resp.success(appHandlerInterceptor.getCurrentTenantAndAppId()._0);
+    }
+
+    /**
      * 获取当前租户某个账号的某个认证AK.
      *
      * @param accountOpenId    the account open id

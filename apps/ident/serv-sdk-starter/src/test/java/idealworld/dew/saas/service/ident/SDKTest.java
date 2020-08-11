@@ -35,7 +35,7 @@ import idealworld.dew.saas.service.ident.dto.tenant.RegisterTenantReq;
 import idealworld.dew.saas.service.ident.enumeration.AccountIdentKind;
 import idealworld.dew.saas.service.ident.enumeration.OrganizationKind;
 import idealworld.dew.saas.service.ident.enumeration.ResourceKind;
-import idealworld.dew.saas.service.ident.service.sdk.AuthProcessor;
+import idealworld.dew.saas.service.ident.service.sdk.IdentProcessor;
 import idealworld.dew.saas.service.ident.service.sdk.IdentSDK;
 import org.junit.Assert;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class SDKTest extends BasicTest {
     private IdentSDK sdk;
 
     @Autowired
-    private AuthProcessor authProcessor;
+    private IdentProcessor identProcessor;
 
     /**
      * Test sdk.
@@ -87,7 +87,7 @@ public class SDKTest extends BasicTest {
         sdk.getConfig().getBasic().setAppAk(appIdent.getAk());
         sdk.getConfig().getBasic().setAppSk(appIdent.getSk());
         sdk.init();
-        authProcessor.doSub();
+        identProcessor.doSub();
         // 等待2s用于建立mq连接
         Thread.sleep(2000);
         var orgId = testOrganization();
