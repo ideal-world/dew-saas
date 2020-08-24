@@ -18,9 +18,9 @@ package idealworld.dew.saas.common.hwc.api;
 
 import idealworld.dew.saas.common.hwc.BasicTest;
 import idealworld.dew.saas.common.hwc.api.face.Face;
-import idealworld.dew.saas.common.hwc.api.face.FaceAddResult;
-import idealworld.dew.saas.common.hwc.api.face.FaceSearchResult;
-import idealworld.dew.saas.common.hwc.api.face.FaceSetResult;
+import idealworld.dew.saas.common.hwc.api.face.FaceAddResp;
+import idealworld.dew.saas.common.hwc.api.face.FaceSearchResp;
+import idealworld.dew.saas.common.hwc.api.face.FaceSetResp;
 import idealworld.dew.saas.common.hwc.api.obs.OBS;
 import org.junit.Assert;
 
@@ -59,31 +59,31 @@ public class FaceTest extends BasicTest {
         // FaceSet
         face.findAllFaceSet().forEach(faceSet -> face.deleteFaceSet(faceSet.getFaceSetName()));
         face.createFaceSet("test-faceset");
-        FaceSetResult faceSetResult = face.getFaceSet("test-faceset").get();
-        Assert.assertEquals(0, faceSetResult.getFaceNumber().longValue());
-        Assert.assertEquals(100000, faceSetResult.getFaceCapacity().longValue());
-        List<FaceSetResult> faceSetResults = face.findAllFaceSet();
-        Assert.assertEquals(1, faceSetResults.size());
-        Assert.assertEquals(0, faceSetResults.get(0).getFaceNumber().longValue());
+        FaceSetResp faceSetResp = face.getFaceSet("test-faceset").get();
+        Assert.assertEquals(0, faceSetResp.getFaceNumber().longValue());
+        Assert.assertEquals(100000, faceSetResp.getFaceCapacity().longValue());
+        List<FaceSetResp> faceSetResps = face.findAllFaceSet();
+        Assert.assertEquals(1, faceSetResps.size());
+        Assert.assertEquals(0, faceSetResps.get(0).getFaceNumber().longValue());
 
         // Face
-        List<FaceAddResult> faces = face.addFace(obs.get("/test/1-1.jpg", 60 * 5), "test-faceset");
+        List<FaceAddResp> faces = face.addFace(obs.get("/test/1-1.jpg", 60 * 5), "test-faceset");
         Assert.assertEquals(1, faces.size());
         final String faceId1 = faces.get(0).getFaceId();
         faces = face.addFace(obs.get("/test/0-1.jpg", 60 * 5), "test-faceset");
         Assert.assertEquals(2, faces.size());
         Thread.sleep(1000);
-        faceSetResult = face.getFaceSet("test-faceset").get();
-        Assert.assertEquals(3, faceSetResult.getFaceNumber().longValue());
+        faceSetResp = face.getFaceSet("test-faceset").get();
+        Assert.assertEquals(3, faceSetResp.getFaceNumber().longValue());
 
         face.deleteFaceByFaceId(faces.get(0).getFaceId(), "test-faceset");
         Thread.sleep(1000);
-        faceSetResult = face.getFaceSet("test-faceset").get();
-        Assert.assertEquals(2, faceSetResult.getFaceNumber().longValue());
+        faceSetResp = face.getFaceSet("test-faceset").get();
+        Assert.assertEquals(2, faceSetResp.getFaceNumber().longValue());
         // Search
-        List<FaceSearchResult> faceSearchResults = face.searchFaceByImageUrl(obs.get("/test/1-2.jpg", 60 * 5), "test-faceset");
-        Assert.assertEquals(2, faceSearchResults.size());
-        Assert.assertEquals(faceId1, faceSearchResults.get(0).getFaceId());
+        List<FaceSearchResp> faceSearchResps = face.searchFaceByImageUrl(obs.get("/test/1-2.jpg", 60 * 5), "test-faceset");
+        Assert.assertEquals(2, faceSearchResps.size());
+        Assert.assertEquals(faceId1, faceSearchResps.get(0).getFaceId());
 
         // FaceSet
         face.deleteFaceSet("test-faceset");

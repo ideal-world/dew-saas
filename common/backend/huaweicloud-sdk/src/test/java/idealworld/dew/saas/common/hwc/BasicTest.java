@@ -30,10 +30,14 @@ public abstract class BasicTest {
         var oauthJson = $.json.toJson(config);
         AK = oauthJson.get("ak").asText();
         SK = oauthJson.get("sk").asText();
+        AK_IAM = oauthJson.get("ak_iam").asText();
+        SK_IAM = oauthJson.get("sk_iam").asText();
+        ACCOUNT_NAME = oauthJson.get("aname").asText();
         PROJECT_ID = oauthJson.get("pid").asText();
         OBS_HOST = oauthJson.get("obs_host").asText();
         FACE_HOST = oauthJson.get("face_host").asText();
         MODERATION_HOST = oauthJson.get("moderation_host").asText();
+        VOD_HOST = oauthJson.get("vod_host").asText();
     }
 
     /**
@@ -44,11 +48,23 @@ public abstract class BasicTest {
      * The constant SK.
      */
     protected static String SK;
+    /**
+     * The constant AK_IAM.
+     */
+    protected static String AK_IAM;
+    /**
+     * The constant SK_IAM.
+     */
+    protected static String SK_IAM;
 
     /**
      * The constant PROJECT_ID.
      */
     protected static String PROJECT_ID;
+    /**
+     * The constant ACCOUNT_NAME.
+     */
+    protected static String ACCOUNT_NAME;
     /**
      * The constant OBS_HOST.
      */
@@ -62,5 +78,9 @@ public abstract class BasicTest {
      * The constant MODERATION_HOST.
      */
     protected static String MODERATION_HOST;
+    /**
+     * The constant VOD_HOST.
+     */
+    protected static String VOD_HOST;
 
 }

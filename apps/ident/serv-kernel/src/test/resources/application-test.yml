@@ -8,6 +8,13 @@ spring:
     url: jdbc:h2:./ident.db;AUTO_SERVER=TRUE
 
 dew:
+  basic:
+    name: web示例
+    version: 1.0
+    desc: 这是一个Web示例
+    web-site: http://www.idealworld.group
+    doc:
+      base-package: idealworld.dew.saas.service.ident.controller
   saas:
     ident:
       allow-tenant-register: true

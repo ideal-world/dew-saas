@@ -18,6 +18,7 @@ package idealworld.dew.saas.common.hwc.api.common.auth;
 
 import idealworld.dew.saas.common.hwc.api.common.BasicProcessor;
 import idealworld.dew.saas.common.hwc.api.obs.OBS;
+import idealworld.dew.saas.common.hwc.api.vod.VOD;
 
 /**
  * The type Signer factory.
@@ -29,14 +30,18 @@ public class SignerFactory {
     /**
      * Instance signer.
      *
-     * @param ak        the ak
-     * @param sk        the sk
-     * @param processor the processor
+     * @param ak          the ak
+     * @param sk          the sk
+     * @param projectId   the project id
+     * @param accountName the account name
+     * @param processor   the processor
      * @return the signer
      */
-    public static Signer instance(String ak, String sk, BasicProcessor processor) {
+    public static Signer instance(String ak, String sk, String projectId, String accountName, BasicProcessor<?> processor) {
         if (processor instanceof OBS) {
             return new OBSSigner(ak, sk);
+        } else if (processor instanceof VOD) {
+            return new TokenSigner(ak, sk, projectId, accountName);
         } else {
             return new GatewaySigner(ak, sk);
         }

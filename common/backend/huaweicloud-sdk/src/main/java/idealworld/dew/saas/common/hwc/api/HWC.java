@@ -19,6 +19,7 @@ package idealworld.dew.saas.common.hwc.api;
 import idealworld.dew.saas.common.hwc.api.face.Face;
 import idealworld.dew.saas.common.hwc.api.moderation.Moderation;
 import idealworld.dew.saas.common.hwc.api.obs.OBS;
+import idealworld.dew.saas.common.hwc.api.vod.VOD;
 import idealworld.dew.saas.common.hwc.scene.FaceGroup;
 
 /**
@@ -35,6 +36,7 @@ public class HWC {
     public static OBS obs = new OBS();
     public static Moderation moderation = new Moderation();
     public static Face face = new Face();
+    public static VOD vod = new VOD();
 
     public static OBS obs() {
         return new OBS();
@@ -46,6 +48,10 @@ public class HWC {
 
     public static Face face() {
         return new Face();
+    }
+
+    public static VOD vod() {
+        return new VOD();
     }
 
     public static FaceGroup faceGroup(Face face, OBS obs, String faceSetName, FaceGroup.DBProcessor processor) {

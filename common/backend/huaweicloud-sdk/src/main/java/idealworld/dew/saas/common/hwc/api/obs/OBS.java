@@ -16,6 +16,7 @@
 
 package idealworld.dew.saas.common.hwc.api.obs;
 
+import com.ecfront.dew.common.HttpHelper;
 import idealworld.dew.saas.common.hwc.api.common.BasicProcessor;
 import idealworld.dew.saas.common.hwc.api.common.OptException;
 import idealworld.dew.saas.common.hwc.api.common.auth.OBSSigner;
@@ -34,15 +35,15 @@ import java.util.Map;
 public class OBS extends BasicProcessor<OBS> {
 
     @Override
-    protected String respFilter(String response) {
-        if (!response.isEmpty()) {
-            Match doc = JOOX.$(response);
+    protected String respFilter(HttpHelper.ResponseWrap response) {
+        if (!response.result.isEmpty()) {
+            Match doc = JOOX.$(response.result);
             if (!doc.matchTag("Error").isEmpty()) {
                 throw new OptException(doc.find("Code").get(0).getTextContent(),
-                        doc.find("Message").get(0).getTextContent(), response);
+                        doc.find("Message").get(0).getTextContent(), response.result);
             }
         }
-        return response;
+        return response.result;
     }
 
     /**
@@ -53,7 +54,7 @@ public class OBS extends BasicProcessor<OBS> {
      * @link https ://support.huaweicloud.com/api-obs/zh-cn_topic_0100846775.html#section2
      */
     public void put(String path, Object obj) {
-        respFilter(http.put(url + path, obj));
+        respFilter(http.putWrap(url + path, obj));
     }
 
     /**
@@ -63,7 +64,7 @@ public class OBS extends BasicProcessor<OBS> {
      * @link https ://support.huaweicloud.com/api-obs/zh-cn_topic_0100846782.html
      */
     public void delete(String path) {
-        respFilter(http.delete(url + path));
+        respFilter(http.deleteWrap(url + path));
     }
 
     /**
@@ -75,7 +76,7 @@ public class OBS extends BasicProcessor<OBS> {
      */
     public String get(String path, long expireSec) {
         try {
-            return ((OBSSigner) signer).signByUrl("GET", "",url + path, expireSec);
+            return ((OBSSigner) signer).signByUrl("GET", "", url + path, expireSec);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -90,9 +91,9 @@ public class OBS extends BasicProcessor<OBS> {
      * @param expireSec   访问过期时间
      * @return 文件地址 sign url
      */
-    public String signUrl(String method,String contentType, String path, long expireSec) {
+    public String signUrl(String method, String contentType, String path, long expireSec) {
         try {
-            return ((OBSSigner) signer).signByUrl(method, contentType,url + path, expireSec);
+            return ((OBSSigner) signer).signByUrl(method, contentType, url + path, expireSec);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -105,7 +106,7 @@ public class OBS extends BasicProcessor<OBS> {
      * @param expireSec 访问过期时间
      * @return 文件地址 sign url
      */
-    public Map<String,String> signByPostRequest(String path, long expireSec) {
+    public Map<String, String> signByPostRequest(String path, long expireSec) {
         try {
             return ((OBSSigner) signer).signByPostRequest(url + path, expireSec);
         } catch (MalformedURLException e) {

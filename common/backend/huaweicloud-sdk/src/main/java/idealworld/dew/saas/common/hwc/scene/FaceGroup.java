@@ -20,9 +20,9 @@ import com.ecfront.dew.common.$;
 import com.ecfront.dew.common.exception.RTException;
 import idealworld.dew.saas.common.hwc.api.common.util.Similar;
 import idealworld.dew.saas.common.hwc.api.face.Face;
-import idealworld.dew.saas.common.hwc.api.face.FaceAddResult;
+import idealworld.dew.saas.common.hwc.api.face.FaceAddResp;
 import idealworld.dew.saas.common.hwc.api.face.FaceImageKind;
-import idealworld.dew.saas.common.hwc.api.face.FaceSearchResult;
+import idealworld.dew.saas.common.hwc.api.face.FaceSearchResp;
 import idealworld.dew.saas.common.hwc.api.obs.OBS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +123,7 @@ public class FaceGroup {
                     .flatMap(path -> {
                         String url = obs.get(path, 60 * 20);
                         // 图片中找到的人脸集合
-                        List<FaceAddResult> matchedFaceResult = face.addFace(url, faceSetName);
+                        List<FaceAddResp> matchedFaceResult = face.addFace(url, faceSetName);
                         if (matchedFaceResult.size() == 0) {
                             // 没有匹配到的人脸
                             return new ArrayList<FaceGroupResult>() {
@@ -146,13 +146,13 @@ public class FaceGroup {
                                         } catch (InterruptedException e) {
                                             throw new RTException(e);
                                         }
-                                        List<FaceSearchResult> faceSearchResults =
+                                        List<FaceSearchResp> faceSearchResps =
                                                 face.searchFace(
                                                         faceInfo.getFaceId(),
                                                         FaceImageKind.FACE_ID, faceThreshold, FACE_SEARCH_NUMBER, faceSetName);
                                         logger.debug("FaceId [" + faceInfo.getFaceId() + "] at image [" + path + "] "
-                                                + "found [" + faceSearchResults.size() + "] similar faces");
-                                        if (faceSearchResults.size() == 0) {
+                                                + "found [" + faceSearchResps.size() + "] similar faces");
+                                        if (faceSearchResps.size() == 0) {
                                             return new FaceGroupResult()
                                                     .setImagePath(path)
                                                     .setImageUrl(url)
@@ -160,23 +160,23 @@ public class FaceGroup {
                                                     .setMatchedUserId("");
                                         }
                                         logger.debug("FaceId [" + faceInfo.getFaceId() + "] at image [" + path + "] "
-                                                + "similar detail:" + $.json.toJsonString(faceSearchResults));
+                                                + "similar detail:" + $.json.toJsonString(faceSearchResps));
                                         // 添加到匹配到的人脸Id到集合
-                                        Map<String, Double> similar = faceSearchResults.stream()
-                                                .collect(Collectors.toMap(FaceSearchResult::getFaceId, r -> r.getSimilarity() * 10));
+                                        Map<String, Double> similar = faceSearchResps.stream()
+                                                .collect(Collectors.toMap(FaceSearchResp::getFaceId, r -> r.getSimilarity() * 10));
                                         // 添加当前的人脸Id，权重为10
                                         similar.put(faceInfo.getFaceId(), 10D);
                                         similarFaceIds.add(similar);
                                         // 自增人脸Id的命中次数
-                                        faceSearchResults.forEach(faceSearchResult ->
-                                                processor.addFaceIdHitTimes(faceSearchResult.getFaceId())
+                                        faceSearchResps.forEach(faceSearchResp ->
+                                                processor.addFaceIdHitTimes(faceSearchResp.getFaceId())
                                         );
                                         return new FaceGroupResult()
                                                 .setImagePath(path)
                                                 .setImageUrl(url)
                                                 .setCurrentFaceId(faceInfo.getFaceId())
                                                 // 根据人脸Id找用户Id
-                                                .setMatchedUserId(processor.getUserIdByFaceId(faceSearchResults.get(0).getFaceId()).orElse(""))
+                                                .setMatchedUserId(processor.getUserIdByFaceId(faceSearchResps.get(0).getFaceId()).orElse(""))
                                                 .setMatchedBoxTopX(faceInfo.getBoxTopX())
                                                 .setMatchedBoxTopY(faceInfo.getBoxTopY())
                                                 .setMatchedBoxWidth(faceInfo.getBoxWidth())

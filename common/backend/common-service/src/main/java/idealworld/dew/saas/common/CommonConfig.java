@@ -41,10 +41,16 @@ public class CommonConfig {
 
         private String ak;
         private String sk;
+        private String akIAM;
+        private String skIAM;
+        private String accountName;
         private String projectId = "";
         private String obsHost = "";
         private String faceHost = "";
         private String moderationHost = "";
+        private String vodBucket = "";
+        private String vodLocation = "";
+        private String vodHost = "";
 
     }
 

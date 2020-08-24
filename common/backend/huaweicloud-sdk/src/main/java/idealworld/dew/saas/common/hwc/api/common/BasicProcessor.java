@@ -49,10 +49,15 @@ public abstract class BasicProcessor<T> {
      */
     protected String url;
 
+
     /**
-     * The P id.
+     * The Account name.
      */
-    protected String pId;
+    protected String accountName;
+    /**
+     * The Project id.
+     */
+    protected String projectId;
 
     /**
      * Instantiates a new Auth.
@@ -77,7 +82,7 @@ public abstract class BasicProcessor<T> {
      * @return the t
      */
     public T auth(String ak, String sk) {
-        signer = SignerFactory.instance(ak, sk, this);
+        signer = SignerFactory.instance(ak, sk, projectId, accountName, this);
         return (T) this;
     }
 
@@ -93,13 +98,24 @@ public abstract class BasicProcessor<T> {
     }
 
     /**
-     * Project id.
+     * Account name t.
      *
-     * @param pId the p id
+     * @param accountName the account name
      * @return the t
      */
-    public T projectId(String pId) {
-        this.pId = pId;
+    public T accountName(String accountName) {
+        this.accountName = accountName;
+        return (T) this;
+    }
+
+    /**
+     * Project id.
+     *
+     * @param projectId the project id
+     * @return the t
+     */
+    public T projectId(String projectId) {
+        this.projectId = projectId;
         return (T) this;
     }
 
@@ -110,6 +126,6 @@ public abstract class BasicProcessor<T> {
      * @param response the response
      * @return the e
      */
-    protected abstract <E> E respFilter(String response);
+    protected abstract <E> E respFilter(HttpHelper.ResponseWrap response);
 
 }

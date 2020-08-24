@@ -42,7 +42,7 @@ public class ModerationTest extends BasicTest {
         obs.host(OBS_HOST).auth(AK, SK);
         moderation.host(MODERATION_HOST).auth(AK, SK);
         // Text
-        TextModerationResult textModerationResult = moderation.text("666666luo聊请+110亚砷酸钾六位qq，fuck666666666666666",
+        TextModerationResp textModerationResult = moderation.text("666666luo聊请+110亚砷酸钾六位qq，fuck666666666666666",
                 TextCategory.AD, TextCategory.POLITICS, TextCategory.ABUSE, TextCategory.PORN, TextCategory.CONTRABAND, TextCategory.FLOOD);
         Assert.assertEquals(Suggestion.BLOCK, textModerationResult.getSuggestion());
         Assert.assertEquals("六位qq", textModerationResult.getHitDetail().get(TextCategory.AD).iterator().next());
@@ -50,23 +50,23 @@ public class ModerationTest extends BasicTest {
         obs.put("/test/moderation-test-3.jpg", new File(ModerationTest.class.getResource("/").getPath() + "moderation-test/moderation-test-3.jpg"));
         String imageUrl = obs.image("/test/moderation-test-3.jpg", 60 * 5);
         System.out.println(imageUrl);
-        ImageModerationResult imageModerationResult = moderation.image(imageUrl,
+        ImageModerationResp imageModerationResp = moderation.image(imageUrl,
                 ImageCategory.AD, ImageCategory.POLITICS, ImageCategory.TERRORISM, ImageCategory.PORN);
-        Assert.assertEquals(Suggestion.BLOCK, imageModerationResult.getSuggestion());
+        Assert.assertEquals(Suggestion.BLOCK, imageModerationResp.getSuggestion());
         Assert.assertEquals("习近平(中华人民共和国中央军事委员会主席)",
-                imageModerationResult.getHitDetail().get(ImageCategory.POLITICS).getDetails().get(0).getLabel());
+                imageModerationResp.getHitDetail().get(ImageCategory.POLITICS).getDetails().get(0).getLabel());
         // Image batch
         obs.put("/test/moderation-test-1.jpg", new File(ModerationTest.class.getResource("/").getPath() + "moderation-test/moderation-test-1.jpg"));
-        List<ImageModerationResult> imageModerationResults = moderation.image(new ArrayList<String>() {
+        List<ImageModerationResp> imageModerationResps = moderation.image(new ArrayList<String>() {
             {
                 add(obs.image("/test/moderation-test-1.jpg", 60 * 5));
                 add(obs.image("/test/moderation-test-3.jpg", 60 * 5));
             }
         }, ImageCategory.AD, ImageCategory.POLITICS, ImageCategory.TERRORISM, ImageCategory.PORN);
-        Assert.assertEquals(Suggestion.PASS, imageModerationResults.get(0).getSuggestion());
-        Assert.assertEquals(Suggestion.BLOCK, imageModerationResults.get(1).getSuggestion());
+        Assert.assertEquals(Suggestion.PASS, imageModerationResps.get(0).getSuggestion());
+        Assert.assertEquals(Suggestion.BLOCK, imageModerationResps.get(1).getSuggestion());
         Assert.assertEquals("习近平(中华人民共和国中央军事委员会主席)",
-                imageModerationResults.get(1).getHitDetail().get(ImageCategory.POLITICS).getDetails().get(0).getLabel());
+                imageModerationResps.get(1).getHitDetail().get(ImageCategory.POLITICS).getDetails().get(0).getLabel());
 
     }
 }
