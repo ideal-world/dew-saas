@@ -260,13 +260,13 @@ public abstract class CommonService<D extends BasicSoftDelEntity, P extends Seri
             // Fetch paginated records
             var objs = jpaQuery
                     .limit(pageSize)
-                    .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
+                    .offset(pageNumber == 1 ? 0 : (pageNumber - 1) * pageSize)
                     .fetch();
             return StandardResp.success(Page.build(pageNumber, pageSize, totalNumber, objs));
         } else {
             var objs = jpaQuery
                     .limit(pageSize)
-                    .offset(pageNumber == 1 ? 0 : pageNumber * pageSize)
+                    .offset(pageNumber == 1 ? 0 : (pageNumber - 1) * pageSize)
                     .fetchResults();
             return StandardResp.success(Page.build(pageNumber, pageSize, objs.getTotal(), objs.getResults()));
         }
