@@ -66,6 +66,11 @@
             <groupId>group.idealworld.dew</groupId>
             <artifactId>test-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
