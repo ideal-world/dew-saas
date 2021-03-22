@@ -23,16 +23,16 @@
     <parent>
         <groupId>group.idealworld.dew</groupId>
         <artifactId>parent-starter</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0-Beta2</version>
     </parent>
 
     <artifactId>saas-parent</artifactId>
     <name>1 Dew SAAS Parent</name>
     <packaging>pom</packaging>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0-Beta2</version>
 
     <properties>
-        <dew-saas.version>3.0.0-SNAPSHOT</dew-saas.version>
+        <dew-saas.version>3.0.0-Beta2</dew-saas.version>
         <checkstyle.config.path>./checkstyle/checkstyle.xml</checkstyle.config.path>
     </properties>
 
@@ -105,6 +105,7 @@
         <module>common/backend/wechat-common-service</module>
         <module>common/backend/huaweicloud-sdk</module>
         <module>apps/ident</module>
+        <module>apps/xyy</module>
         <!--测试项目-->
        <!-- <module>apps/starfk</module>
         <module>apps/date</module>
