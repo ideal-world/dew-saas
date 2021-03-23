@@ -341,13 +341,18 @@ public class AccountService extends IdentBasicService {
         deleteAccountIdents(accountId, relTenantId);
         deleteAccountPosts(accountId, relTenantId);
         var qAccount = QAccount.account;
+        var openId = sqlBuilder.select(qAccount.openId)
+                .from(qAccount)
+                .where(qAccount.id.eq(accountId))
+                .where(qAccount.relTenantId.eq(relTenantId))
+                .fetchOne();
         var deleteR = deleteEntity(sqlBuilder
                 .delete(qAccount)
                 .where(qAccount.id.eq(accountId))
                 .where(qAccount.relTenantId.eq(relTenantId))
         );
         if (deleteR.ok()) {
-            Dew.cluster.mq.publish(EVENT_ACCOUNT_DELETE_BY_TENANT + relTenantId, getOpenId(accountId).getBody());
+            Dew.cluster.mq.publish(EVENT_ACCOUNT_DELETE_BY_TENANT + relTenantId, openId);
         }
         return deleteR;
     }

@@ -109,8 +109,8 @@
         <!--测试项目-->
        <!-- <module>apps/starfk</module>
         <module>apps/date</module>
-        <module>apps/xyy</module>-->
-        <module>apps/mooc.kids</module>
+        <module>apps/xyy</module>
+        <module>apps/mooc.kids</module>-->
     </modules>
 
     <repositories>

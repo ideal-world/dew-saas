@@ -26,6 +26,7 @@ import idealworld.dew.saas.service.ident.domain.Post;
 import idealworld.dew.saas.service.ident.domain.QPosition;
 import idealworld.dew.saas.service.ident.service.IdentBasicService;
 import idealworld.dew.saas.service.ident.service.InterceptService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -38,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author gudaoxuri
  */
 @Service
+@Slf4j
 public class IdentInitiator extends IdentBasicService implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
@@ -111,5 +113,6 @@ public class IdentInitiator extends IdentBasicService implements ApplicationList
                 .relAppId(Constant.OBJECT_UNDEFINED)
                 .relTenantId(Constant.OBJECT_UNDEFINED)
                 .build());
+        log.info("Data initialization completed");
     }
 }
